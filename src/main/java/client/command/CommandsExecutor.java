@@ -44,19 +44,19 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 public class CommandsExecutor {
-    
+
     public static CommandsExecutor instance = new CommandsExecutor();
-    
+
     public static CommandsExecutor getInstance() {
         return instance;
     }
-    
+
     private static final char USER_HEADING = '@';
     private static final char GM_HEADING = '!';
-    
-    public static boolean isCommand(MapleClient client, String content){
+
+    public static boolean isCommand(MapleClient client, String content) {
         char heading = content.charAt(0);
-        if (client.getPlayer().isGM()){
+        if (client.getPlayer().isGM()) {
             return heading == USER_HEADING || heading == GM_HEADING;
         }
         return heading == USER_HEADING;
@@ -66,7 +66,7 @@ public class CommandsExecutor {
     private Pair<List<String>, List<String>> levelCommandsCursor;
     private List<Pair<List<String>, List<String>>> commandsNameDesc = new ArrayList<>();
 
-    private CommandsExecutor(){
+    private CommandsExecutor() {
         registerLv0Commands();
         registerLv1Commands();
         registerLv2Commands();
@@ -79,8 +79,8 @@ public class CommandsExecutor {
     public List<Pair<List<String>, List<String>>> getGmCommands() {
         return commandsNameDesc;
     }
-    
-    public void handle(MapleClient client, String message){
+
+    public void handle(MapleClient client, String message) {
         if (client.tryacquireClient()) {
             try {
                 handleInternal(client, message);
@@ -91,8 +91,8 @@ public class CommandsExecutor {
             client.getPlayer().dropMessage(5, "Try again in a while... Latest commands are currently being processed.");
         }
     }
-    
-    private void handleInternal(MapleClient client, String message){
+
+    private void handleInternal(MapleClient client, String message) {
         if (client.getPlayer().getMapId() == 300000012) {
             client.getPlayer().yellowMessage("You do not have permission to use commands while in jail.");
             return;
@@ -102,17 +102,17 @@ public class CommandsExecutor {
         if (splitedMessage.length < 2) {
             splitedMessage = new String[]{splitedMessage[0], ""};
         }
-        
+
         client.getPlayer().setLastCommandMessage(splitedMessage[1]);    // thanks Tochi & Nulliphite for noticing string messages being marshalled lowercase
         final String commandName = splitedMessage[0].toLowerCase();
         final String[] lowercaseParams = splitedMessage[1].toLowerCase().split(splitRegex);
-        
+
         final Command command = registeredCommands.get(commandName);
-        if (command == null){
+        if (command == null) {
             client.getPlayer().yellowMessage("Command '" + commandName + "' is not available. See @commands for a list of available commands.");
             return;
         }
-        if (client.getPlayer().gmLevel() < command.getRank()){
+        if (client.getPlayer().gmLevel() < command.getRank()) {
             client.getPlayer().yellowMessage("You do not have permission to use this command.");
             return;
         }
@@ -122,12 +122,12 @@ public class CommandsExecutor {
         } else {
             params = new String[]{};
         }
-        
+
         command.execute(client, params);
         writeLog(client, message);
     }
 
-    private void writeLog(MapleClient client, String command){
+    private void writeLog(MapleClient client, String command) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         FilePrinter.print(FilePrinter.USED_COMMANDS, client.getPlayer().getName() + " used: " + command + " on "
                 + sdf.format(Calendar.getInstance().getTime()));
@@ -137,52 +137,51 @@ public class CommandsExecutor {
         try {
             levelCommandsCursor.getRight().add(commandClass.newInstance().getDescription());
             levelCommandsCursor.getLeft().add(name);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    private void addCommand(String[] syntaxs, Class<? extends Command> commandClass){
-        for (String syntax : syntaxs){
-            addCommand(syntax, 0, commandClass);
-        }
-    }
-    private void addCommand(String syntax, Class<? extends Command> commandClass){
-        //for (String syntax : syntaxs){
-            addCommand(syntax, 0, commandClass);
-        //}
-    }
 
-    private void addCommand(String[] surtaxes, int rank, Class<? extends Command> commandClass){
-        for (String syntax : surtaxes){
-            addCommand(syntax, rank, commandClass);
+    @SuppressWarnings("SameParameterValue")
+    private void addCommand(String[] commandNames, Class<? extends Command> commandClass) {
+        for (String commandName : commandNames) {
+            addCommand(commandName, 0, commandClass);
         }
     }
 
-    private void addCommand(String syntax, int rank,  Class<? extends Command> commandClass){
-        if (registeredCommands.containsKey(syntax.toLowerCase())){
-            System.out.println("Error on register command with name: " + syntax + ". Already exists.");
+    private void addCommand(String commandName, Class<? extends Command> commandClass) {
+        addCommand(commandName, 0, commandClass);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void addCommand(String[] commandNames, int rank, Class<? extends Command> commandClass) {
+        for (String commandName : commandNames) {
+            addCommand(commandName, rank, commandClass);
+        }
+    }
+
+    private void addCommand(String commandName, int rank, Class<? extends Command> commandClass) {
+        commandName = commandName.toLowerCase();
+        if (registeredCommands.containsKey(commandName)) {
+            System.out.println("Error on register command with name: " + commandName + ". Already exists.");
             return;
         }
-        
-        String commandName = syntax.toLowerCase();
+
         addCommandInfo(commandName, commandClass);
-        
+
         try {
             Command commandInstance = commandClass.newInstance();     // thanks Halcyon for noticing commands getting reinstanced every call
             commandInstance.setRank(rank);
-            
+
             registeredCommands.put(commandName, commandInstance);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
-    private void registerLv0Commands(){
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+    private void registerLv0Commands() {
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand(new String[]{"help", "commands"}, HelpCommand.class);
         addCommand("droplimit", DropLimitCommand.class);
         addCommand("time", TimeCommand.class);
@@ -192,7 +191,7 @@ public class CommandsExecutor {
         addCommand("gacha", GachaCommand.class);
         addCommand("dispose", DisposeCommand.class);
         addCommand("changel", ChangeLanguageCommand.class);
-        addCommand("equiplv",  EquipLvCommand.class);
+        addCommand("equiplv", EquipLvCommand.class);
         addCommand("showrates", ShowRatesCommand.class);
         addCommand("rates", RatesCommand.class);
         addCommand("online", OnlineCommand.class);
@@ -211,26 +210,26 @@ public class CommandsExecutor {
         addCommand("mylawn", MapOwnerClaimCommand.class);
         addCommand("bosshp", BossHpCommand.class);
         addCommand("mobhp", MobHpCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
 
     private void registerLv1Commands() {
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("whatdropsfrom", 1, WhatDropsFromCommand.class);
         addCommand("whodrops", 1, WhoDropsCommand.class);
         addCommand("buffme", 1, BuffMeCommand.class);
         addCommand("goto", 1, GotoCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
 
-    private void registerLv2Commands(){
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+    private void registerLv2Commands() {
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("recharge", 2, RechargeCommand.class);
         addCommand("whereami", 2, WhereaMiCommand.class);
         addCommand("hide", 2, HideCommand.class);
@@ -267,13 +266,13 @@ public class CommandsExecutor {
         addCommand("id", 2, IdCommand.class);
         addCommand("gachalist", GachaListCommand.class);
         addCommand("loot", LootCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
     private void registerLv3Commands() {
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("debuff", 3, DebuffCommand.class);
         addCommand("fly", 3, FlyCommand.class);
         addCommand("spawn", 3, SpawnCommand.class);
@@ -337,9 +336,9 @@ public class CommandsExecutor {
         commandsNameDesc.add(levelCommandsCursor);
     }
 
-    private void registerLv4Commands(){
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+    private void registerLv4Commands() {
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("servermessage", 4, ServerMessageCommand.class);
         addCommand("proitem", 4, ProItemCommand.class);
         addCommand("seteqstat", 4, SetEqStatCommand.class);
@@ -364,26 +363,26 @@ public class CommandsExecutor {
         addCommand("pnpcremove", 4, PnpcRemoveCommand.class);
         addCommand("pmob", 4, PmobCommand.class);
         addCommand("pmobremove", 4, PmobRemoveCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
-    private void registerLv5Commands(){
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+    private void registerLv5Commands() {
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("debug", 5, DebugCommand.class);
         addCommand("set", 5, SetCommand.class);
         addCommand("showpackets", 5, ShowPacketsCommand.class);
         addCommand("showmovelife", 5, ShowMoveLifeCommand.class);
         addCommand("showsessions", 5, ShowSessionsCommand.class);
         addCommand("iplist", 5, IpListCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
-    private void registerLv6Commands(){
-        levelCommandsCursor = new Pair<>((List<String>) new ArrayList<String>(), (List<String>) new ArrayList<String>());
-        
+    private void registerLv6Commands() {
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
+
         addCommand("setgmlevel", 6, SetGmLevelCommand.class);
         addCommand("warpworld", 6, WarpWorldCommand.class);
         addCommand("saveall", 6, SaveAllCommand.class);
@@ -400,7 +399,7 @@ public class CommandsExecutor {
         addCommand("addworld", 6, ServerAddWorldCommand.class);
         addCommand("removechannel", 6, ServerRemoveChannelCommand.class);
         addCommand("removeworld", 6, ServerRemoveWorldCommand.class);
-        
+
         commandsNameDesc.add(levelCommandsCursor);
     }
 
