@@ -300,4 +300,6 @@ public class ServerConfig {
     //Event End Timestamp
     public long EVENT_END_TIMESTAMP;
 
+    // Enable all commands to all users. For debugging purpose.
+    public boolean ENABLE_ALL_COMMANDS;
 }

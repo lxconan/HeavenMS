@@ -456,3 +456,5 @@ server:
     #Event End Timestamp
     EVENT_END_TIMESTAMP: 1428897600000
 
+    # Enable all commands to all users. For debugging purpose.
+    ENABLE_ALL_COMMANDS: true
