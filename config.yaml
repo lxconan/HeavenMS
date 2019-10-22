@@ -8,8 +8,8 @@ worlds:
     event_message: Scania!
     why_am_i_recommended: Welcome to Scania!
     channels: 3
-    exp_rate: 10
-    meso_rate: 10
+    exp_rate: 1
+    meso_rate: 100
     drop_rate: 10
     boss_drop_rate: 10                      #NOTE: Boss drop rate OVERRIDES common drop rate, for bosses-only.
     quest_rate: 5                           #Multiplier for Exp & Meso gains when completing a quest. Only available when USE_QUEST_RATE is true. Stacks with server Exp & Meso rates.
@@ -164,7 +164,7 @@ server:
     #Database Configuration
     DB_URL: "jdbc:mysql://localhost:3306/heavenms"
     DB_USER: "root"
-    DB_PASS: ""
+    DB_PASS: "root"
     DB_CONNECTION_POOL: true        #Installs a connection pool to hub DB connections. Set false to default.
 
     #Login Configuration
