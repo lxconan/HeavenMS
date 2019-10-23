@@ -48,6 +48,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import abstraction.ApplicationContext;
 import abstraction.ApplicationContextFactory;
 import abstraction.DataConnectionFactory;
+import abstraction.dao.PlayerNpcField;
+import abstraction.dao.PlayerNpcFieldGateway;
 import config.YamlConfig;
 import net.server.audit.ThreadTracker;
 import net.server.audit.locks.MonitoredLockType;
@@ -165,9 +167,11 @@ public class Server {
     public static long uptime = System.currentTimeMillis();
 
     private final ApplicationContext applicationContext;
+    private final PlayerNpcFieldGateway playerNpcFieldGateway;
 
     public Server(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        playerNpcFieldGateway = new PlayerNpcFieldGateway(this.applicationContext);
     }
 
     public int getCurrentTimestamp() {
@@ -220,22 +224,15 @@ public class Server {
 
     private void loadPlayerNpcMapStepFromDb() {
         try {
-            List<World> wlist = this.getWorlds();
-
-            Connection con = createConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs_field");
-
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()) {
-                int world = rs.getInt("world"), map = rs.getInt("map"), step = rs.getInt("step"), podium = rs.getInt("podium");
-
-                World w = wlist.get(world);
-                if(w != null) w.setPlayerNpcMapData(map, step, podium);
+            List<World> worldList = this.getWorlds();
+            for (PlayerNpcField playerNpcField : playerNpcFieldGateway.findAll()) {
+                World w = worldList.get(playerNpcField.getWorld());
+                if(w != null) {
+                    w.setPlayerNpcMapData(playerNpcField.getMap(),
+                        playerNpcField.getStep(),
+                        playerNpcField.getPodium());
+                }
             }
-
-            rs.close();
-            ps.close();
-            con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
