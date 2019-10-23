@@ -241,11 +241,7 @@ public class Server {
     public World getWorld(int id) {
         wldRLock.lock();
         try {
-            try {
-                return worlds.get(id);
-            } catch (IndexOutOfBoundsException e) {
-                return null;
-            }
+            return id >= 0 && id < worlds.size() ? worlds.get(id) : null;
         } finally {
             wldRLock.unlock();
         }
