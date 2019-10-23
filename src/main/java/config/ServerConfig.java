@@ -1,16 +1,23 @@
 package config;
 
 public class ServerConfig {
-    //Thread Tracker Configuration
+    // Thread Tracker Configuration
     public boolean USE_THREAD_TRACKER;
 
-    //Database Configuration
+    // Database Configuration
     public String DB_URL;
     public String DB_USER;
     public String DB_PASS;
     public boolean DB_CONNECTION_POOL;
 
-    //Login Configuration
+    // Migration Configuration
+    public boolean DB_ENABLE_MIGRATION;
+    public String DB_MIGRATION_URL;
+    public String DB_MIGRATION_SCHEMA;
+    public String DB_MIGRATION_USER;
+    public String DB_MIGRATION_PASS;
+
+    // Login Configuration
     public int WORLDS;
     public int WLDLIST_SIZE;
     public int CHANNEL_SIZE;

@@ -92,7 +92,6 @@ import client.SkillFactory;
 import client.command.CommandsExecutor;
 import client.inventory.Item;
 import client.inventory.ItemFactory;
-import client.inventory.MaplePet;
 import client.inventory.manipulator.MapleCashidGenerator;
 import client.newyear.NewYearCardRecord;
 import constants.inventory.ItemConstants;
@@ -107,10 +106,7 @@ import server.TimerManager;
 import server.expeditions.MapleExpeditionBossLog;
 import server.life.MaplePlayerNPCFactory;
 import server.quest.MapleQuest;
-import tools.AutoJCE;
-import tools.DatabaseConnection;
-import tools.FilePrinter;
-import tools.Pair;
+import tools.*;
 import org.apache.mina.core.session.IoSession;
 
 public class Server {
@@ -963,6 +959,7 @@ public class Server {
         System.setProperty("wzpath", "wz");
         Security.setProperty("crypto.policy", "unlimited");
         AutoJCE.removeCryptographyRestrictions();
+        DatabaseMigration.migrate();
         Server.getInstance().init();
     }
 

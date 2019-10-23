@@ -31,7 +31,7 @@ dependencies {
     compile group: 'com.zaxxer', name: 'HikariCP', version: '2.4.7'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'org.apache.mina', name: 'mina-core', version: '2.0.19'
-
+    compile group: 'org.flywaydb', name: 'flyway-core', version: '5.2.4'
 
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
