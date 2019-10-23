@@ -210,8 +210,8 @@ public class Server {
         return newyears.get(cardid);
     }
 
-    public NewYearCardRecord removeNewYearCard(int cardid) {
-        return newyears.remove(cardid);
+    public void removeNewYearCard(int cardId) {
+        newyears.remove(cardId);
     }
 
     public void setAvailableDeveloperRoom() {
