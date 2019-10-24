@@ -64,6 +64,8 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scripting.event.EventScriptManager;
 import server.TimerManager;
 import server.events.gm.MapleEvent;
@@ -82,6 +84,7 @@ import net.server.channel.services.task.BaseService;
 import server.maps.MapleMiniDungeonInfo;
 
 public final class Channel {
+    private static final Logger logger = LoggerFactory.getLogger(Channel.class);
 
     private int port = 7575;
     private PlayerStorage players = new PlayerStorage();
@@ -101,18 +104,18 @@ public final class Channel {
     private boolean finishedShutdown = false;
     private int usedDojo = 0;
     private Set<Integer> usedMC = new HashSet<>();
-    
+
     private int[] dojoStage;
     private long[] dojoFinishTime;
     private ScheduledFuture<?>[] dojoTask;
     private Map<Integer, Integer> dojoParty = new HashMap<>();
     private Map<Integer, MapleMiniDungeon> dungeons = new HashMap<>();
-    
+
     private List<Integer> chapelReservationQueue = new LinkedList<>();
     private List<Integer> cathedralReservationQueue = new LinkedList<>();
     private ScheduledFuture<?> chapelReservationTask;
     private ScheduledFuture<?> cathedralReservationTask;
-    
+
     private Integer ongoingChapel = null;
     private Boolean ongoingChapelType = null;
     private Set<Integer> ongoingChapelGuests = null;
@@ -120,19 +123,19 @@ public final class Channel {
     private Boolean ongoingCathedralType = null;
     private Set<Integer> ongoingCathedralGuests = null;
     private long ongoingStartTime;
-    
+
     private ReentrantReadWriteLock merchantLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.MERCHANT, true);
     private ReadLock merchRlock = merchantLock.readLock();
     private WriteLock merchWlock = merchantLock.writeLock();
-    
+
     private MonitoredReentrantLock faceLock[] = new MonitoredReentrantLock[YamlConfig.config.server.CHANNEL_LOCKS];
-    
+
     private MonitoredReentrantLock lock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.CHANNEL, true);
-    
+
     public Channel(final int world, final int channel, long startTime) {
         this.world = world;
         this.channel = channel;
-        
+
         this.ongoingStartTime = startTime + 10000;  // rude approach to a world's last channel boot time, placeholder for the 1st wedding reservation ever
         this.mapManager = new MapleMapManager(null, world, channel);
         try {
@@ -150,7 +153,7 @@ public final class Channel {
             for (MapleExpeditionType exped : MapleExpeditionType.values()) {
             	expedType.add(exped);
             }
-            
+
             if (Server.getInstance().isOnline()) {  // postpone event loading to improve boot time... thanks Riizade, daronhudson for noticing slow startup times
                 eventSM = new EventScriptManager(this, getEvents());
                 eventSM.init();
@@ -158,7 +161,7 @@ public final class Channel {
                 String[] ev = {};
                 eventSM = new EventScriptManager(null, ev);
             }
-            
+
             dojoStage = new int[20];
             dojoFinishTime = new long[20];
             dojoTask = new ScheduledFuture<?>[20];
@@ -167,20 +170,20 @@ public final class Channel {
                 dojoFinishTime[i] = 0;
                 dojoTask[i] = null;
             }
-            
+
             services = new ServicesManager();
-            
-            System.out.println("    Channel " + getId() + ": Listening on port " + port);
+
+            logger.info("    Channel " + getId() + ": Listening on port " + port);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("Exception occurred while creating channel", e);
         }
     }
-    
+
     public synchronized void reloadEventScriptManager(){
         if (finishedShutdown) {
             return;
         }
-        
+
     	eventSM.cancel();
     	eventSM = null;
     	eventSM = new EventScriptManager(this, getEvents());
@@ -192,38 +195,39 @@ public final class Channel {
             if (finishedShutdown) {
                 return;
             }
-            
-            System.out.println("Shutting down Channel " + channel + " on World " + world);
-            
+
+            logger.info("Shutting down Channel " + channel + " on World " + world);
+
             closeAllMerchants();
             disconnectAwayPlayers();
             players.disconnectAll();
-            
+
             eventSM.cancel();
             eventSM = null;
-            
+
             mapManager.dispose();
             mapManager = null;
-            
+
             closeChannelSchedules();
             players = null;
-            
+
             MapleServerHandler handler = (MapleServerHandler) acceptor.getHandler();
             handler.dispose();
             acceptor.unbind();
-            
+
             finishedShutdown = true;
-            System.out.println("Successfully shut down Channel " + channel + " on World " + world + "\r\n");
+            logger.info("Successfully shut down Channel " + channel + " on World " + world);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error while shutting down Channel " + channel + " on World " + world + "\r\n" + e);
+            logger.error(
+                "Error while shutting down Channel " + channel + " on World " + world,
+                e);
         }
     }
-    
+
     private void closeChannelServices() {
         services.shutdown();
     }
-    
+
     private void closeChannelSchedules() {
         for(int i = 0; i < 20; i++) {
             if(dojoTask[i] != null) {
@@ -231,11 +235,11 @@ public final class Channel {
                 dojoTask[i] = null;
             }
         }
-        
+
         closeChannelServices();
         disposeLocks();
     }
-    
+
     private void disposeLocks() {
         LockCollector.getInstance().registerDisposeAction(new Runnable() {
             @Override
@@ -244,19 +248,19 @@ public final class Channel {
             }
         });
     }
-    
+
     private void emptyLocks() {
         for(int i = 0; i < YamlConfig.config.server.CHANNEL_LOCKS; i++) {
             faceLock[i] = faceLock[i].dispose();
         }
-        
+
         lock = lock.dispose();
     }
-    
+
     private void closeAllMerchants() {
         try {
             List<MapleHiredMerchant> merchs;
-            
+
             merchWlock.lock();
             try {
                 merchs = new ArrayList<>(hiredMerchants.values());
@@ -272,28 +276,28 @@ public final class Channel {
             e.printStackTrace();
         }
     }
-    
+
     public MapleMapManager getMapFactory() {
         return mapManager;
     }
-    
+
     public BaseService getServiceAccess(ServiceType sv) {
         return services.getAccess(sv).getService();
     }
-    
+
     public int getWorld() {
         return world;
     }
-    
+
     public World getWorldServer() {
         return Server.getInstance().getWorld(world);
     }
-    
+
     public void addPlayer(MapleCharacter chr) {
         players.addPlayer(chr);
         chr.announce(MaplePacketCreator.serverMessage(serverMessage));
     }
-    
+
     public String getServerMessage() {
         return serverMessage;
     }
@@ -305,7 +309,7 @@ public final class Channel {
     public boolean removePlayer(MapleCharacter chr) {
         return players.removePlayer(chr.getId()) != null;
     }
-    
+
     public int getChannelCapacity() {
         return (int)(Math.ceil(((float) players.getAllCharacters().size() / YamlConfig.config.server.CHANNEL_LOAD) * 800));
     }
@@ -315,7 +319,7 @@ public final class Channel {
             chr.announce(data);
         }
     }
-    
+
     public final int getId() {
         return channel;
     }
@@ -356,19 +360,19 @@ public final class Channel {
         }
         return partym;
     }
-    
+
     public void insertPlayerAway(int chrId) {   // either they in CS or MTS
         playersAway.add(chrId);
     }
-    
+
     public void removePlayerAway(int chrId) {
         playersAway.remove(chrId);
     }
-    
+
     public boolean canUninstall() {
         return players.getSize() == 0 && playersAway.isEmpty();
     }
-    
+
     private void disconnectAwayPlayers() {
         World wserv = getWorldServer();
         for (Integer cid : playersAway) {
@@ -378,7 +382,7 @@ public final class Channel {
             }
         }
     }
-        
+
     public Map<Integer, MapleHiredMerchant> getHiredMerchants() {
         merchRlock.lock();
         try {
@@ -399,7 +403,7 @@ public final class Channel {
 
     public void removeHiredMerchant(int chrid) {
         merchWlock.lock();
-        try {        
+        try {
             hiredMerchants.remove(chrid);
         } finally {
             merchWlock.unlock();
@@ -424,54 +428,54 @@ public final class Channel {
         }
         return retArr;
     }
-    
+
     public boolean addExpedition(MapleExpedition exped) {
         synchronized (expeditions) {
             if (expeditions.containsKey(exped.getType())) {
                 return false;
             }
-            
+
             expeditions.put(exped.getType(), exped);
             exped.beginRegistration();  // thanks Conrad for noticing leader still receiving packets on failure-to-register cases
             return true;
         }
     }
-    
+
     public void removeExpedition(MapleExpedition exped) {
         synchronized (expeditions) {
             expeditions.remove(exped.getType());
         }
     }
-    
+
     public MapleExpedition getExpedition(MapleExpeditionType type) {
         return expeditions.get(type);
     }
-    
+
     public List<MapleExpedition> getExpeditions() {
         synchronized (expeditions) {
             return new ArrayList<>(expeditions.values());
         }
     }
-    
+
     public boolean isConnected(String name) {
         return getPlayerStorage().getCharacterByName(name) != null;
     }
-    
+
     public boolean isActive() {
         EventScriptManager esm = this.getEventSM();
         return esm != null && esm.isActive();
     }
-    
+
     public boolean finishedShutdown() {
         return finishedShutdown;
     }
-    
+
     public void setServerMessage(String message) {
         this.serverMessage = message;
         broadcastPacket(MaplePacketCreator.serverMessage(message));
         getWorldServer().resetDisabledServerMessages();
     }
-    
+
     private static String [] getEvents(){
     	List<String> events = new ArrayList<String>();
     	for (File file : new File("scripts/event").listFiles()){
@@ -479,7 +483,7 @@ public final class Channel {
     	}
     	return events.toArray(new String[0]);
     }
-	
+
     public int getStoredVar(int key) {
         if(storedVars.containsKey(key)) {
             return storedVars.get(key);
@@ -487,63 +491,63 @@ public final class Channel {
 
         return 0;
     }
-    
+
     public void setStoredVar(int key, int val) {
         this.storedVars.put(key, val);
     }
-    
+
     public synchronized int lookupPartyDojo(MapleParty party) {
         if(party == null) return -1;
-        
+
         Integer i = dojoParty.get(party.hashCode());
         return (i != null) ? i : -1;
     }
-    
+
     public int getAvailableDojo(boolean isPartyDojo) {
         return getAvailableDojo(isPartyDojo, null);
     }
-    
+
     public synchronized int getAvailableDojo(boolean isPartyDojo, MapleParty party) {
         int dojoList = this.usedDojo;
         int range, slot = 0;
-        
+
         if(!isPartyDojo) {
             dojoList = dojoList >> 5;
             range = 15;
         } else {
             range = 5;
         }
-        
+
         while((dojoList & 1) != 0) {
             dojoList = (dojoList >> 1);
             slot++;
         }
-        
+
         if(slot < range) {
             if(party != null) {
                 if(dojoParty.containsKey(party.hashCode())) return -2;
                 dojoParty.put(party.hashCode(), slot);
             }
-                
+
             this.usedDojo |= (1 << ((!isPartyDojo ? 5 : 0) + slot));
             return slot;
         } else {
             return -1;
         }
     }
-    
+
     private void freeDojoSlot(int slot, MapleParty party) {
         int mask = 0b11111111111111111111;
         mask ^= (1 << slot);
-        
+
         usedDojo &= mask;
         if(party != null) {
             if(dojoParty.remove(party.hashCode()) != null) return;
         }
-        
+
         if(dojoParty.containsValue(slot)) {    // strange case, no party there!
             Set<Entry<Integer, Integer>> es = Collections.unmodifiableSet(dojoParty.entrySet());
-            
+
             for(Entry<Integer, Integer> e: es) {
                 if(e.getValue() == slot) {
                     dojoParty.remove(e.getKey());
@@ -552,31 +556,31 @@ public final class Channel {
             }
         }
     }
-    
+
     private static int getDojoSlot(int dojoMapId) {
         return (dojoMapId % 100) + ((dojoMapId / 10000 == 92502) ? 5 : 0);
     }
-    
+
     public void resetDojoMap(int fromMapId) {
         for(int i = 0; i < (((fromMapId / 100) % 100 <= 36) ? 5 : 2); i++) {
             this.getMapFactory().getMap(fromMapId + (100 * i)).resetMapObjects();
         }
     }
-    
+
     public void resetDojo(int dojoMapId) {
         resetDojo(dojoMapId, 0);
     }
-    
+
     public void resetDojo(int dojoMapId, int thisStg) {
         int slot = getDojoSlot(dojoMapId);
         this.dojoStage[slot] = thisStg;
-        
+
         if(this.dojoTask[slot] != null) {
             this.dojoTask[slot].cancel(false);
             this.dojoTask[slot] = null;
         }
     }
-    
+
     public void freeDojoSectionIfEmpty(int dojoMapId) {
             final int slot = getDojoSlot(dojoMapId);
             final int delta = (dojoMapId) % 100;
@@ -590,15 +594,15 @@ public final class Channel {
                 MapleMap dojoMap = getMapFactory().getMap(dojoBaseMap + (100 * (stage + i)) + delta);
                 if(!dojoMap.getAllPlayers().isEmpty()) return;
             }
-            
+
             freeDojoSlot(slot, null);
     }
-    
+
     public void startDojoSchedule(final int dojoMapId) {
         final int slot = getDojoSlot(dojoMapId);
         final int stage = (dojoMapId / 100) % 100;
         if(stage <= dojoStage[slot]) return;
-        
+
         long clockTime = (stage > 36 ? 15 : (stage / 6) + 5) * 60000;
         this.dojoTask[slot] = TimerManager.getInstance().schedule(new Runnable() {
             @Override
@@ -606,7 +610,7 @@ public final class Channel {
                 final int delta = (dojoMapId) % 100;
                 final int dojoBaseMap = (slot < 5) ? 925030000 : 925020000;
                 MapleParty party = null;
-                
+
                 for (int i = 0; i < 5; i++) { //only 32 stages, but 38 maps
                     if (stage + i > 38) {
                         break;
@@ -618,31 +622,31 @@ public final class Channel {
                         party = chr.getParty();
                     }
                 }
-                
+
                 freeDojoSlot(slot, party);
             }
         }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
-        
+
         dojoFinishTime[slot] = Server.getInstance().getCurrentTime() + clockTime;
     }
-    
+
     public void dismissDojoSchedule(int dojoMapId, MapleParty party) {
         int slot = getDojoSlot(dojoMapId);
         int stage = (dojoMapId / 100) % 100;
         if(stage <= dojoStage[slot]) return;
-        
+
         if(this.dojoTask[slot] != null) {
             this.dojoTask[slot].cancel(false);
             this.dojoTask[slot] = null;
         }
-        
+
         freeDojoSlot(slot, party);
     }
-    
+
     public boolean setDojoProgress(int dojoMapId) {
         int slot = getDojoSlot(dojoMapId);
         int dojoStg = (dojoMapId / 100) % 100;
-        
+
         if(this.dojoStage[slot] < dojoStg) {
             this.dojoStage[slot] = dojoStg;
             return true;
@@ -650,26 +654,26 @@ public final class Channel {
             return false;
         }
     }
-    
+
     public long getDojoFinishTime(int dojoMapId) {
         return dojoFinishTime[getDojoSlot(dojoMapId)];
     }
-    
+
     public boolean addMiniDungeon(int dungeonid) {
         lock.lock();
         try {
             if(dungeons.containsKey(dungeonid)) return false;
-            
+
             MapleMiniDungeonInfo mmdi = MapleMiniDungeonInfo.getDungeon(dungeonid);
             MapleMiniDungeon mmd = new MapleMiniDungeon(mmdi.getBase(), this.getMapFactory().getMap(mmdi.getDungeonId()).getTimeLimit());   // thanks Conrad for noticing hardcoded time limit for minidungeons
-            
+
             dungeons.put(dungeonid, mmd);
             return true;
         } finally {
             lock.unlock();
         }
     }
-    
+
     public MapleMiniDungeon getMiniDungeon(int dungeonid) {
         lock.lock();
         try {
@@ -678,7 +682,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public void removeMiniDungeon(int dungeonid) {
         lock.lock();
         try {
@@ -687,10 +691,10 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public Pair<Boolean, Pair<Integer, Set<Integer>>> getNextWeddingReservation(boolean cathedral) {
         Integer ret;
-        
+
         lock.lock();
         try {
             List<Integer> weddingReservationQueue = (cathedral ? cathedralReservationQueue : chapelReservationQueue);
@@ -701,21 +705,21 @@ public final class Channel {
         } finally {
             lock.unlock();
         }
-        
+
         World wserv = getWorldServer();
-        
+
         Pair<Integer, Integer> coupleId = wserv.getMarriageQueuedCouple(ret);
         Pair<Boolean, Set<Integer>> typeGuests = wserv.removeMarriageQueued(ret);
-        
+
         Pair<String, String> couple = new Pair<>(MapleCharacter.getNameById(coupleId.getLeft()), MapleCharacter.getNameById(coupleId.getRight()));
         wserv.dropMessage(6, couple.getLeft() + " and " + couple.getRight() + "'s wedding is going to be started at " + (cathedral ? "Cathedral" : "Chapel") + " on Channel " + channel + ".");
-        
+
         return new Pair<>(typeGuests.getLeft(), new Pair<>(ret, typeGuests.getRight()));
     }
-    
+
     public boolean isWeddingReserved(Integer weddingId) {
         World wserv = getWorldServer();
-        
+
         lock.lock();
         try {
             return wserv.isMarriageQueued(weddingId) || weddingId.equals(ongoingCathedral) || weddingId.equals(ongoingChapel);
@@ -723,15 +727,15 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public int getWeddingReservationStatus(Integer weddingId, boolean cathedral) {
         if(weddingId == null) return -1;
-        
+
         lock.lock();
         try {
             if(cathedral) {
                 if(weddingId.equals(ongoingCathedral)) return 0;
-            
+
                 for(int i  = 0; i < cathedralReservationQueue.size(); i++) {
                     if(weddingId.equals(cathedralReservationQueue.get(i))) {
                         return i + 1;
@@ -739,30 +743,30 @@ public final class Channel {
                 }
             } else {
                 if(weddingId.equals(ongoingChapel)) return 0;
-            
+
                 for(int i  = 0; i < chapelReservationQueue.size(); i++) {
                     if(weddingId.equals(chapelReservationQueue.get(i))) {
                         return i + 1;
                     }
                 }
             }
-            
+
             return -1;
         } finally {
             lock.unlock();
         }
     }
-    
+
     public int pushWeddingReservation(Integer weddingId, boolean cathedral, boolean premium, Integer groomId, Integer brideId) {
         if(weddingId == null || isWeddingReserved(weddingId)) return -1;
-        
+
         World wserv = getWorldServer();
         wserv.putMarriageQueued(weddingId, cathedral, premium, groomId, brideId);
-        
+
         lock.lock();
         try {
             List<Integer> weddingReservationQueue = (cathedral ? cathedralReservationQueue : chapelReservationQueue);
-        
+
             int delay = YamlConfig.config.server.WEDDING_RESERVATION_DELAY - 1 - weddingReservationQueue.size();
             for(int i = 0; i < delay; i++) {
                 weddingReservationQueue.add(null);  // push empty slots to fill the waiting time
@@ -774,7 +778,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public boolean isOngoingWeddingGuest(boolean cathedral, int playerId) {
         lock.lock();
         try {
@@ -787,7 +791,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public Integer getOngoingWedding(boolean cathedral) {
         lock.lock();
         try {
@@ -796,7 +800,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public boolean getOngoingWeddingType(boolean cathedral) {
         lock.lock();
         try {
@@ -805,7 +809,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public void closeOngoingWedding(boolean cathedral) {
         lock.lock();
         try {
@@ -822,7 +826,7 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public void setOngoingWedding(final boolean cathedral, Boolean premium, Integer weddingId, Set<Integer> guests) {
         lock.lock();
         try {
@@ -838,7 +842,7 @@ public final class Channel {
         } finally {
             lock.unlock();
         }
-        
+
         ongoingStartTime = System.currentTimeMillis();
         if(weddingId != null) {
             ScheduledFuture<?> weddingTask = TimerManager.getInstance().schedule(new Runnable() {
@@ -847,7 +851,7 @@ public final class Channel {
                     closeOngoingWedding(cathedral);
                 }
             }, YamlConfig.config.server.WEDDING_RESERVATION_TIMEOUT * 60 * 1000);
-            
+
             if(cathedral) {
                 cathedralReservationTask = weddingTask;
             } else {
@@ -855,93 +859,93 @@ public final class Channel {
             }
         }
     }
-    
+
     public synchronized boolean acceptOngoingWedding(final boolean cathedral) {     // couple succeeded to show up and started the ceremony
         if(cathedral) {
             if(cathedralReservationTask == null) return false;
-            
+
             cathedralReservationTask.cancel(false);
             cathedralReservationTask = null;
         } else {
             if(chapelReservationTask == null) return false;
-            
+
             chapelReservationTask.cancel(false);
             chapelReservationTask = null;
         }
-        
+
         return true;
     }
-    
+
     private static String getTimeLeft(long futureTime) {
         StringBuilder str = new StringBuilder();
         long leftTime = futureTime - System.currentTimeMillis();
-        
+
         if(leftTime < 0) {
             return null;
         }
-        
+
         byte mode = 0;
         if(leftTime / (60*1000) > 0) {
             mode++;     //counts minutes
-            
+
             if(leftTime / (60*60*1000) > 0)
                 mode++;     //counts hours
         }
-        
+
         switch(mode) {
             case 2:
                 int hours   = (int) ((leftTime / (1000*60*60)));
                 str.append(hours + " hours, ");
-                
+
             case 1:
                 int minutes = (int) ((leftTime / (1000*60)) % 60);
                 str.append(minutes + " minutes, ");
-                
+
             default:
                 int seconds = (int) (leftTime / 1000) % 60 ;
                 str.append(seconds + " seconds");
         }
-        
+
         return str.toString();
     }
-    
+
     public long getWeddingTicketExpireTime(int resSlot) {
         return ongoingStartTime + getRelativeWeddingTicketExpireTime(resSlot);
     }
-    
+
     public static long getRelativeWeddingTicketExpireTime(int resSlot) {
         return (resSlot * YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL * 60 * 1000);
     }
-    
+
     public String getWeddingReservationTimeLeft(Integer weddingId) {
         if(weddingId == null) return null;
-        
+
         lock.lock();
         try {
             boolean cathedral = true;
-            
+
             int resStatus;
             resStatus = getWeddingReservationStatus(weddingId, true);
             if(resStatus < 0) {
                 cathedral = false;
                 resStatus = getWeddingReservationStatus(weddingId, false);
-                
+
                 if(resStatus < 0) {
                     return null;
                 }
             }
-            
+
             String venue = (cathedral ? "Cathedral" : "Chapel");
             if(resStatus == 0) {
                 return venue + " - RIGHT NOW";
             }
-            
+
             return venue + " - " + getTimeLeft(ongoingStartTime + (resStatus * YamlConfig.config.server.WEDDING_RESERVATION_INTERVAL * 60 * 1000)) + " from now";
         } finally {
             lock.unlock();
         }
     }
-    
+
     public Pair<Integer, Integer> getWeddingCoupleForGuest(int guestId, boolean cathedral) {
         lock.lock();
         try {
@@ -950,72 +954,68 @@ public final class Channel {
             lock.unlock();
         }
     }
-    
+
     public void dropMessage(int type, String message) {
         for (MapleCharacter player : getPlayerStorage().getAllCharacters()) {
             player.dropMessage(type, message);
         }
     }
-    
+
     public void registerOwnedMap(MapleMap map) {
         ownedMaps.add(map);
     }
-    
+
     public void unregisterOwnedMap(MapleMap map) {
         ownedMaps.remove(map);
     }
-    
+
     public void runCheckOwnedMapsSchedule() {
         if (!ownedMaps.isEmpty()) {
             List<MapleMap> ownedMapsList;
-            
+
             synchronized (ownedMaps) {
                 ownedMapsList = new ArrayList<>(ownedMaps);
             }
-            
+
             for (MapleMap map : ownedMapsList) {
                 map.checkMapOwnerActivity();
             }
         }
     }
-    
+
     private static int getMonsterCarnivalRoom(boolean cpq1, int field) {
         return (cpq1 ? 0 : 100) + field;
     }
-    
+
     public void initMonsterCarnival(boolean cpq1, int field) {
         usedMC.add(getMonsterCarnivalRoom(cpq1, field));
     }
-    
+
     public void finishMonsterCarnival(boolean cpq1, int field) {
         usedMC.remove(getMonsterCarnivalRoom(cpq1, field));
     }
-    
+
     public boolean canInitMonsterCarnival(boolean cpq1, int field) {
         return !usedMC.contains(getMonsterCarnivalRoom(cpq1, field));
     }
-    
+
     public void debugMarriageStatus() {
-        System.out.println(" ----- WORLD DATA -----");
+        logger.debug(" ----- WORLD DATA -----");
         getWorldServer().debugMarriageStatus();
-        
-        System.out.println(" ----- CH. " + channel + " -----");
-        System.out.println(" ----- CATHEDRAL -----");
-        System.out.println("Current Queue: " + cathedralReservationQueue);
-        System.out.println("Cancel Task: " + (cathedralReservationTask != null));
-        System.out.println("Ongoing wid: " + ongoingCathedral);
-        System.out.println();
-        System.out.println("Ongoing wid: " + ongoingCathedral + " isPremium: " + ongoingCathedralType);
-        System.out.println("Guest list: " + ongoingCathedralGuests);
-        System.out.println();
-        System.out.println(" ----- CHAPEL -----");
-        System.out.println("Current Queue: " + chapelReservationQueue);
-        System.out.println("Cancel Task: " + (chapelReservationTask != null));
-        System.out.println("Ongoing wid: " + ongoingChapel);
-        System.out.println();
-        System.out.println("Ongoing wid: " + ongoingChapel + " isPremium: " + ongoingChapelType);
-        System.out.println("Guest list: " + ongoingChapelGuests);
-        System.out.println();
-        System.out.println("Starttime: " + ongoingStartTime);
+
+        logger.debug(" ----- CH. " + channel + " -----");
+        logger.debug(" ----- CATHEDRAL -----");
+        logger.debug("Current Queue: " + cathedralReservationQueue);
+        logger.debug("Cancel Task: " + (cathedralReservationTask != null));
+        logger.debug("Ongoing wid: " + ongoingCathedral);
+        logger.debug("Ongoing wid: " + ongoingCathedral + " isPremium: " + ongoingCathedralType);
+        logger.debug("Guest list: " + ongoingCathedralGuests);
+        logger.debug(" ----- CHAPEL -----");
+        logger.debug("Current Queue: " + chapelReservationQueue);
+        logger.debug("Cancel Task: " + (chapelReservationTask != null));
+        logger.debug("Ongoing wid: " + ongoingChapel);
+        logger.debug("Ongoing wid: " + ongoingChapel + " isPremium: " + ongoingChapelType);
+        logger.debug("Guest list: " + ongoingChapelGuests);
+        logger.debug("Starttime: " + ongoingStartTime);
     }
 }

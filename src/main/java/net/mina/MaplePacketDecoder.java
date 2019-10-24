@@ -29,6 +29,8 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.HexTool;
 import tools.MapleAESOFB;
 import tools.data.input.ByteArrayByteStream;
@@ -38,6 +40,7 @@ import tools.FilePrinter;
 
 public class MaplePacketDecoder extends CumulativeProtocolDecoder {
     private static final String DECODER_STATE_KEY = MaplePacketDecoder.class.getName() + ".STATE";
+    private static final Logger logger = LoggerFactory.getLogger(MaplePacketDecoder.class);
 
     private static class DecoderState {
         public int packetlength = -1;
@@ -50,13 +53,13 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
             MapleSessionCoordinator.getInstance().closeSession(session, true);
             return false;
         }
-        
+
         DecoderState decoderState = (DecoderState) session.getAttribute(DECODER_STATE_KEY);
         if (decoderState == null) {
             decoderState = new DecoderState();
             session.setAttribute(DECODER_STATE_KEY, decoderState);
         }
-        
+
         MapleAESOFB rcvdCrypto = client.getReceiveCrypto();
         if (in.remaining() >= 4 && decoderState.packetlength == -1) {
             int packetHeader = in.getInt();
@@ -83,9 +86,9 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
                 String Send = "ClientSend:" + op + " [" + pHeaderStr + "] (" + packetLen + ")\r\n";
                 if (packetLen <= 3000) {
                     String SendTo = Send + HexTool.toString(decryptedPacket) + "\r\n" + HexTool.toStringFromAscii(decryptedPacket);
-                    System.out.println(SendTo);
+                    logger.info(SendTo);
                     if (op == null) {
-                        System.out.println("UnknownPacket:" + SendTo);
+                        logger.warn("UnknownPacket:" + SendTo);
                     }
                 } else {
                     FilePrinter.print(FilePrinter.PACKET_STREAM + MapleSessionCoordinator.getSessionRemoteAddress(session) + ".txt", HexTool.toString(new byte[]{decryptedPacket[0], decryptedPacket[1]}) + "...");
@@ -95,7 +98,7 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
         }
         return false;
     }
-    
+
     private String lookupSend(int val) {
         return OpcodeConstants.recvOpcodeNames.get(val);
     }

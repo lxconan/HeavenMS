@@ -49,10 +49,13 @@ import net.server.handlers.login.ViewAllCharHandler;
 import net.server.handlers.login.ViewAllCharRegisterPicHandler;
 import net.server.handlers.login.ViewAllCharSelectedHandler;
 import net.server.handlers.login.ViewAllCharSelectedWithPicHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PacketProcessor {
 
     private final static Map<String, PacketProcessor> instances = new LinkedHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(PacketProcessor.class);
     private MaplePacketHandler[] handlers;
 
     private PacketProcessor() {
@@ -80,8 +83,7 @@ public final class PacketProcessor {
         try {
             handlers[code.getValue()] = handler;
         } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
-            System.out.println("Error registering handler - " + code.name());
+            logger.warn("Error registering handler - " + code.name(), e);
         }
     }
 

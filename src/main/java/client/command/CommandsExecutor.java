@@ -34,6 +34,8 @@ import client.command.commands.gm6.*;
 import client.MapleClient;
 
 import config.YamlConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.FilePrinter;
 import tools.Pair;
 
@@ -46,6 +48,7 @@ import java.util.HashMap;
 
 public class CommandsExecutor {
     private static CommandsExecutor instance = new CommandsExecutor(YamlConfig.config.server.ENABLE_ALL_COMMANDS);
+    private static final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
 
     public static CommandsExecutor getInstance() {
         return instance;
@@ -164,7 +167,7 @@ public class CommandsExecutor {
     private void addCommand(String commandName, int rank, Class<? extends Command> commandClass) {
         commandName = commandName.toLowerCase();
         if (registeredCommands.containsKey(commandName)) {
-            System.out.println("Error on register command with name: " + commandName + ". Already exists.");
+            logger.warn("Error on register command with name: " + commandName + ". Already exists.");
             return;
         }
 
