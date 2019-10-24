@@ -99,6 +99,9 @@ import constants.game.GameConstants;
 import constants.net.OpcodeConstants;
 import constants.net.ServerConstants;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.CashShop.CashItemFactory;
 import server.MapleSkillbookInformationProvider;
 import server.ThreadManager;
@@ -110,6 +113,7 @@ import tools.*;
 import org.apache.mina.core.session.IoSession;
 
 public class Server {
+    private static Logger logger = LoggerFactory.getLogger(Server.class);
 
     private static Server instance = null;
 
