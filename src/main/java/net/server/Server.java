@@ -221,14 +221,14 @@ public class Server {
     private void loadPlayerNpcMapStepFromDb() {
         try {
             List<World> worldList = this.getWorlds();
-            for (PlayerNpcField playerNpcField : playerNpcFieldGateway.findAll()) {
+            playerNpcFieldGateway.forEach(playerNpcField -> {
                 World w = worldList.get(playerNpcField.getWorld());
                 if(w != null) {
                     w.setPlayerNpcMapData(playerNpcField.getMap(),
                         playerNpcField.getStep(),
                         playerNpcField.getPodium());
                 }
-            }
+            });
         } catch (SQLException e) {
             e.printStackTrace();
         }
