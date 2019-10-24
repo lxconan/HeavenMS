@@ -21,18 +21,22 @@
 */
 package tools.data.input;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
  * Provides an abstract layer to a byte stream. This layer can be accessed
  * randomly.
- * 
+ *
  * @author Frz
  * @version 1.0
  * @since Revision 323
  */
 public class RandomAccessByteStream implements SeekableInputStreamBytestream {
+    private static final Logger logger = LoggerFactory.getLogger(RandomAccessByteStream.class);
     private RandomAccessFile raf;
     private long read = 0;
 
@@ -76,8 +80,7 @@ public class RandomAccessByteStream implements SeekableInputStreamBytestream {
         try {
             return raf.length() - raf.getFilePointer();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("ERROR " + e);
+            logger.error("ERROR", e);
             return 0;
         }
     }

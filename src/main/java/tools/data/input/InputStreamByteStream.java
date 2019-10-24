@@ -21,17 +21,22 @@
 */
 package tools.data.input;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * Provides an abstract wrapper to a stream of bytes.
- * 
+ *
  * @author Frz
  * @version 1.0
  * @since Revision 323
  */
 public class InputStreamByteStream implements ByteInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(InputStreamByteStream.class);
+
     private InputStream is;
     private long read = 0;
 
@@ -85,8 +90,7 @@ public class InputStreamByteStream implements ByteInputStream {
         try {
             return is.available();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("ERROR" + e);
+            logger.error("ERROR", e);
             return 0;
         }
     }

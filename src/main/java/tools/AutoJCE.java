@@ -14,7 +14,6 @@ public class AutoJCE{   // AutoJCE into server source thanks to Acernis dev team
 	 */
 	public static byte removeCryptographyRestrictions(){
 		if(!isRestrictedCryptography()){
-			//System.out.println("Cryptography restrictions removal not needed");
 			return 0;
 		}
 		try{
@@ -43,12 +42,11 @@ public class AutoJCE{   // AutoJCE into server source thanks to Acernis dev team
 			final Field instance = cryptoAllPermission.getDeclaredField("INSTANCE");
 			instance.setAccessible(true);
 			defaultPolicy.add((Permission) instance.get(null));
-                        
-			//System.out.println("Successfully removed cryptography restrictions");
+
                         return 1;
 		}catch(final Exception e){
 			e.printStackTrace();
-                        
+
                         System.err.println("Failed to remove cryptography restrictions");
                         return -1;
 		}

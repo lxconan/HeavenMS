@@ -40,10 +40,14 @@ import constants.skills.Paladin;
 import constants.skills.ThunderBreaker;
 import constants.skills.WindArcher;
 import net.AbstractMaplePacketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public final class SkillEffectHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(SkillEffectHandler.class);
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         int skillId = slea.readInt();
@@ -73,8 +77,7 @@ public final class SkillEffectHandler extends AbstractMaplePacketHandler {
                 c.getPlayer().getMap().broadcastMessage(c.getPlayer(), MaplePacketCreator.skillEffect(c.getPlayer(), skillId, level, flags, speed, aids), false);
                 return;
             default:
-                System.out.println(c.getPlayer() + " entered SkillEffectHandler without being handled using " + skillId + ".");
-                return;
+                logger.warn(c.getPlayer() + " entered SkillEffectHandler without being handled using " + skillId + ".");
         }
     }
 }

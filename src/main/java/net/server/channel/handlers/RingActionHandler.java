@@ -37,6 +37,8 @@ import client.processor.npc.DueyProcessor;
 import net.AbstractMaplePacketHandler;
 import net.server.world.World;
 import net.server.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.MapleItemInformationProvider;
 import scripting.event.EventInstanceManager;
 import tools.DatabaseConnection;
@@ -51,15 +53,17 @@ import tools.packets.Wedding;
  * @author Drago/Dragohe4rt - on Wishlist
  */
 public final class RingActionHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(RingActionHandler.class);
+
     private static int getBoxId(int useItemId) {
         return useItemId == 2240000 ? 4031357 : (useItemId == 2240001 ? 4031359 : (useItemId == 2240002 ? 4031361 : (useItemId == 2240003 ? 4031363 : (1112300 + (useItemId - 2240004)))));
     }
-    
+
     public static void sendEngageProposal(final MapleClient c, final String name, final int itemid) {
         final int newBoxId = getBoxId(itemid);
         final MapleCharacter target = c.getChannelServer().getPlayerStorage().getCharacterByName(name);
         final MapleCharacter source = c.getPlayer();
-        
+
         // TODO: get the correct packet bytes for these popups
         if (source.isMarried()) {
             source.dropMessage(1, "You're already married!");
@@ -125,11 +129,11 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             source.announce(Wedding.OnMarriageResult((byte) 0));
             return;
         }
-        
+
         source.setMarriageItemId(itemid);
         target.announce(Wedding.OnMarriageRequest(source.getName(), source.getId()));
     }
-    
+
     private static void eraseEngagementOffline(int characterId) {
         try {
             Connection con = DatabaseConnection.getConnection();
@@ -139,7 +143,7 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             sqle.printStackTrace();
         }
     }
-    
+
     private static void eraseEngagementOffline(int characterId, Connection con) throws SQLException {
         PreparedStatement ps = con.prepareStatement("UPDATE characters SET marriageItemId=-1, partnerId=-1 WHERE id=?");
         ps.setInt(1, characterId);
@@ -147,7 +151,7 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
 
         ps.close();
     }
-    
+
     private static void breakEngagementOffline(int characterId) {
         try {
             Connection con = DatabaseConnection.getConnection();
@@ -156,40 +160,40 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int marriageItemId = rs.getInt("marriageItemId");
-                
+
                 if (marriageItemId > 0) {
                     PreparedStatement ps2 = con.prepareStatement("UPDATE inventoryitems SET expiration=0 WHERE itemid=? AND characterid=?");
                     ps2.setInt(1, marriageItemId);
                     ps2.setInt(2, characterId);
-                    
+
                     ps2.executeUpdate();
                     ps2.close();
                 }
             }
             rs.close();
             ps.close();
-            
+
             eraseEngagementOffline(characterId, con);
-            
+
             con.close();
         } catch (SQLException ex) {
-            System.out.println("Error updating offline breakup " + ex.getMessage());
+            logger.warn("Error updating offline breakup.", ex);
         }
     }
-    
+
     private synchronized static void breakMarriage(MapleCharacter chr) {
         int partnerid = chr.getPartnerId();
         if(partnerid <= 0) return;
-        
+
         chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
         MapleRing.removeRing(chr.getMarriageRing());
-        
+
         MapleCharacter partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
         if(partner == null) {
             eraseEngagementOffline(partnerid);
         } else {
             partner.dropMessage(5, chr.getName() + " has decided to break up the marriage.");
-            
+
             //partner.announce(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
             partner.announce(Wedding.OnNotifyWeddingPartnerTransfer(0, 0));
             resetRingId(partner);
@@ -197,9 +201,9 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             partner.setMarriageItemId(-1);
             partner.addMarriageRing(null);
         }
-        
+
         chr.dropMessage(5, "You have successfully break the marriage with " + MapleCharacter.getNameById(partnerid) + ".");
-        
+
         //chr.announce(Wedding.OnMarriageResult((byte) 0));
         chr.announce(Wedding.OnNotifyWeddingPartnerTransfer(0, 0));
         resetRingId(chr);
@@ -207,10 +211,10 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
         chr.setMarriageItemId(-1);
         chr.addMarriageRing(null);
     }
-    
+
     private static void resetRingId(MapleCharacter player) {
         int ringitemid = player.getMarriageRing().getItemId();
-        
+
         Item it = player.getInventory(MapleInventoryType.EQUIP).findById(ringitemid);
         if(it == null) {
             it = player.getInventory(MapleInventoryType.EQUIPPED).findById(ringitemid);
@@ -221,24 +225,24 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             eqp.setRingId(-1);
         }
     }
-    
+
     private synchronized static void breakEngagement(MapleCharacter chr) {
         int partnerid = chr.getPartnerId();
         int marriageitemid = chr.getMarriageItemId();
-        
+
         chr.getClient().getWorldServer().deleteRelationship(chr.getId(), partnerid);
-        
+
         MapleCharacter partner = chr.getClient().getWorldServer().getPlayerStorage().getCharacterById(partnerid);
         if(partner == null) {
             breakEngagementOffline(partnerid);
         } else {
             partner.dropMessage(5, chr.getName() + " has decided to break up the engagement.");
-            
+
             int partnerMarriageitemid = marriageitemid + ((chr.getGender() == 0) ? 1 : -1);
             if(partner.haveItem(partnerMarriageitemid)) {
                 MapleInventoryManipulator.removeById(partner.getClient(), MapleInventoryType.ETC, partnerMarriageitemid, (short) 1, false, false);
             }
-            
+
             //partner.announce(Wedding.OnMarriageResult((byte) 0)); ok, how to gracefully unengage someone without the need to cc?
             partner.announce(Wedding.OnNotifyWeddingPartnerTransfer(0, 0));
             partner.setPartnerId(-1);
@@ -249,13 +253,13 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             MapleInventoryManipulator.removeById(chr.getClient(), MapleInventoryType.ETC, marriageitemid, (short) 1, false, false);
         }
         chr.dropMessage(5, "You have successfully break the engagement with " + MapleCharacter.getNameById(partnerid) + ".");
-        
+
         //chr.announce(Wedding.OnMarriageResult((byte) 0));
         chr.announce(Wedding.OnNotifyWeddingPartnerTransfer(0, 0));
         chr.setPartnerId(-1);
         chr.setMarriageItemId(-1);
     }
-    
+
     public static void breakMarriageRing(MapleCharacter chr, final int wItemId) {
         final MapleInventoryType type = MapleInventoryType.getByType((byte) (wItemId / 1000000));
         final Item wItem = chr.getInventory(type).findById(wItemId);
@@ -276,7 +280,7 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             chr.getMap().disappearingItemDrop(chr, chr, wItem, chr.getPosition());
         }
     }
-    
+
     public static void giveMarriageRings(MapleCharacter player, MapleCharacter partner, int marriageRingId) {
         Pair<Integer, Integer> rings = MapleRing.createRing(marriageRingId, player, partner);
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
@@ -295,7 +299,7 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
         MapleInventoryManipulator.addFromDrop(partner.getClient(), ringEqp, false, -1);
         partner.broadcastMarriageMessage();
     }
-    
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         byte mode = slea.readByte();
@@ -305,77 +309,77 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
             case 0: // Send Proposal
                 sendEngageProposal(c, slea.readMapleAsciiString(), slea.readInt());
                 break;
-                
+
             case 1: // Cancel Proposal
                 if(c.getPlayer().getMarriageItemId() / 1000000 != 4) {
                     c.getPlayer().setMarriageItemId(-1);
                 }
                 break;
-                
+
             case 2: // Accept/Deny Proposal
                 final boolean accepted = slea.readByte() > 0;
                 name = slea.readMapleAsciiString();
                 final int id = slea.readInt();
-                
+
                 final MapleCharacter source = c.getWorldServer().getPlayerStorage().getCharacterByName(name);
                 final MapleCharacter target = c.getPlayer();
-                
+
                 if (source == null) {
                     target.announce(MaplePacketCreator.enableActions());
                     return;
                 }
-                
+
                 final int itemid = source.getMarriageItemId();
                 if (target.getPartnerId() > 0 || source.getId() != id || itemid <= 0 || !source.haveItem(itemid) || source.getPartnerId() > 0 || !source.isAlive() || !target.isAlive()) {
                     target.announce(MaplePacketCreator.enableActions());
                     return;
                 }
-                
+
                 if (accepted) {
                     final int newItemId = getBoxId(itemid);
                     if (!MapleInventoryManipulator.checkSpace(c, newItemId, 1, "") || !MapleInventoryManipulator.checkSpace(source.getClient(), newItemId, 1, "")) {
                         target.announce(MaplePacketCreator.enableActions());
                         return;
                     }
-                    
+
                     try {
                         MapleInventoryManipulator.removeById(source.getClient(), MapleInventoryType.USE, itemid, 1, false, false);
-                        
+
                         int marriageId = c.getWorldServer().createRelationship(source.getId(), target.getId());
                         source.setPartnerId(target.getId()); // engage them (new marriageitemid, partnerid for both)
                         target.setPartnerId(source.getId());
-                        
+
                         source.setMarriageItemId(newItemId);
                         target.setMarriageItemId(newItemId + 1);
-                        
+
                         MapleInventoryManipulator.addById(source.getClient(), newItemId, (short) 1);
                         MapleInventoryManipulator.addById(c, (newItemId + 1), (short) 1);
-                        
+
                         source.announce(Wedding.OnMarriageResult(marriageId, source, false));
                         target.announce(Wedding.OnMarriageResult(marriageId, source, false));
-                        
+
                         source.announce(Wedding.OnNotifyWeddingPartnerTransfer(target.getId(), target.getMapId()));
                         target.announce(Wedding.OnNotifyWeddingPartnerTransfer(source.getId(), source.getMapId()));
                     } catch (Exception e) {
-                        System.out.println("Error with engagement " + e.getMessage());
+                        logger.error("Error with engagement.", e);
                     }
                 } else {
                     source.dropMessage(1, "She has politely declined your engagement request.");
                     source.announce(Wedding.OnMarriageResult((byte) 0));
-                    
+
                     source.setMarriageItemId(-1);
                 }
                 break;
-                
+
             case 3: // Break Engagement
                 breakMarriageRing(c.getPlayer(), slea.readInt());
                 break;
-                
+
             case 5: // Invite %s to Wedding
                 name = slea.readMapleAsciiString();
                 int marriageId = slea.readInt();
                 slot = slea.readByte(); // this is an int
-                
+
                 int itemId;
                 try {
                     itemId = c.getPlayer().getInventory(MapleInventoryType.ETC).getItem(slot).getItemId();
@@ -383,28 +387,28 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
                     c.announce(MaplePacketCreator.enableActions());
                     return;
                 }
-                
+
                 if((itemId != 4031377 && itemId != 4031395) || !c.getPlayer().haveItem(itemId)) {
                     c.announce(MaplePacketCreator.enableActions());
                     return;
                 }
-                
+
                 String groom = c.getPlayer().getName(), bride = MapleCharacter.getNameById(c.getPlayer().getPartnerId());
                 int guest = MapleCharacter.getIdByName(name);
                 if (groom == null || bride == null || groom.equals("") || bride.equals("") || guest <= 0) {
                     c.getPlayer().dropMessage(5, "Unable to find " + name + "!");
                     return;
                 }
-                
+
                 try {
                     World wserv = c.getWorldServer();
                     Pair<Boolean, Boolean> registration = wserv.getMarriageQueuedLocation(marriageId);
-                    
+
                     if(registration != null) {
                         if(wserv.addMarriageGuest(marriageId, guest)) {
                             boolean cathedral = registration.getLeft();
                             int newItemId = cathedral ? 4031407 : 4031406;
-                            
+
                             Channel cserv = c.getChannelServer();
                             int resStatus = cserv.getWeddingReservationStatus(marriageId, cathedral);
                             if(resStatus > 0) {
@@ -419,10 +423,10 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
                                     } else {
                                         c.getPlayer().sendNote(name, "You've been invited to " + groom + " and " + bride + "'s Wedding! Receive your invitation from Duey!", (byte) 0);
                                     }
-                                    
+
                                     Item weddingTicket = new Item(newItemId, (short) 0, (short) 1);
                                     weddingTicket.setExpiration(expiration);
-                                    
+
                                     DueyProcessor.dueyCreatePackage(weddingTicket, 0, groom, guest);
                                 }
                             } else {
@@ -434,19 +438,19 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
                     } else {
                         c.getPlayer().dropMessage(5, "Invitation was not sent to '" + name + "'. Either the time for your marriage reservation already came or it was not found.");
                     }
-                    
+
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                     return;
                 }
-                
+
                 c.getAbstractPlayerInteraction().gainItem(itemId, (short) -1);
                 break;
-                
+
             case 6: // Open Wedding Invitation
                 slot = (byte) slea.readInt();
                 int invitationid = slea.readInt();
-                
+
                 if(invitationid == 4031406 || invitationid == 4031407) {
                     Item item = c.getPlayer().getInventory(MapleInventoryType.ETC).getItem(slot);
                     if(item == null || item.getItemId() != invitationid) {
@@ -461,10 +465,10 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
                         c.announce(Wedding.sendWeddingInvitation(MapleCharacter.getNameById(groomId), MapleCharacter.getNameById(brideId)));
                     }
                 }
-                
+
                 break;
-                
-            case 9: 
+
+            case 9:
                 try {
                     // By Drago/Dragohe4rt
                     // Groom and Bride's Wishlist
@@ -500,14 +504,14 @@ public final class RingActionHandler extends AbstractMaplePacketHandler {
                         }
                     }
                 } catch (NumberFormatException nfe) {}
-                
+
                 break;
-                
+
             default:
-                System.out.println("Unhandled RING_ACTION Mode: " + slea.toString());
+                logger.warn("Unhandled RING_ACTION Mode: " + slea.toString());
                 break;
         }
-        
+
         c.announce(MaplePacketCreator.enableActions());
     }
 }

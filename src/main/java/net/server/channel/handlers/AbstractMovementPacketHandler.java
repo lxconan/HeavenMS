@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.AbstractMaplePacketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.maps.AnimatedMapleMapObject;
 import server.movement.AbsoluteLifeMovement;
 import server.movement.ChangeEquip;
@@ -37,6 +39,7 @@ import tools.data.input.LittleEndianAccessor;
 import tools.exceptions.EmptyMovementException;
 
 public abstract class AbstractMovementPacketHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMovementPacketHandler.class);
 
     protected List<LifeMovementFragment> parseMovement(LittleEndianAccessor lea) throws EmptyMovementException {
         List<LifeMovementFragment> res = new ArrayList<>();
@@ -139,19 +142,19 @@ public abstract class AbstractMovementPacketHandler extends AbstractMaplePacketH
                     break;
                 }
                 default:
-                    System.out.println("Unhandled Case:" + command);
+                    logger.error("Unhandled Case:" + command);
                     throw new EmptyMovementException(lea);
             }
         }
-        
+
         if (res.isEmpty()) {
             throw new EmptyMovementException(lea);
         }
         return res;
     }
-    
+
     protected void updatePosition(LittleEndianAccessor lea, AnimatedMapleMapObject target, int yOffset) throws EmptyMovementException {
-    	
+
         byte numCommands = lea.readByte();
         if (numCommands < 1) throw new EmptyMovementException(lea);
         for (byte i = 0; i < numCommands; i++) {
@@ -236,7 +239,7 @@ public abstract class AbstractMovementPacketHandler extends AbstractMaplePacketH
                     break;
                 }
                 default:
-                    System.out.println("Unhandled Case:" + command);
+                    logger.error("Unhandled Case:" + command);
                     throw new EmptyMovementException(lea);
             }
         }

@@ -32,6 +32,8 @@ import java.util.List;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
 import net.server.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.MTSItemInfo;
 import client.inventory.manipulator.MapleInventoryManipulator;
 import server.MapleItemInformationProvider;
@@ -47,11 +49,12 @@ import client.inventory.MapleInventoryType;
 import constants.inventory.ItemConstants;
 
 public final class MTSHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(MTSHandler.class);
 
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         // TODO add karma-to-untradeable flag on sold items here
-        
+
         if (!c.getPlayer().getCashShop().isOpened()) {
             return;
         }
@@ -107,7 +110,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                     Connection con = null;
                     try {
                         con = DatabaseConnection.getConnection();
-                        
+
                         PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM mts_items WHERE seller = ?");
                         ps.setInt(1, c.getPlayer().getId());
                         ResultSet rs = ps.executeQuery();
@@ -213,7 +216,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                         ps.executeUpdate();
                         ps.close();
                         MapleInventoryManipulator.removeFromSlot(c, invType, slot, quantity, false);
-                        
+
                         con.close();
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -353,8 +356,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                     ps.close();
                     con.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
-                    System.out.println("MTS Transfer error: " + e);
+                    logger.error("MTS Transfer error: ", e);
                 }
             } else if (op == 9) { //add to cart
                 int id = slea.readInt(); //id of the item
@@ -536,7 +538,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                     c.announce(MaplePacketCreator.MTSFailBuy());
                 }
             } else {
-                System.out.println("Unhandled OP(MTS): " + op + " Packet: " + slea.toString());
+                logger.warn("Unhandled OP(MTS): " + op + " Packet: " + slea.toString());
             }
         } else {
             c.announce(MaplePacketCreator.showMTSCash(c.getPlayer()));

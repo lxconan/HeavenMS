@@ -28,11 +28,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import net.AbstractMaplePacketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.DatabaseConnection;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public final class BBSOperationHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(BBSOperationHandler.class);
 
     private String correctLength(String in, int maxSize) {
         return in.length() > maxSize ? in.substring(0, maxSize) : in;
@@ -91,7 +94,7 @@ public final class BBSOperationHandler extends AbstractMaplePacketHandler {
                 deleteBBSReply(c, replyid);
                 break;
             default:
-                //System.out.println("Unhandled BBS mode: " + slea.toString());
+                logger.warn("Unhandled BBS mode: " + slea.toString());
         }
     }
 
@@ -104,7 +107,7 @@ public final class BBSOperationHandler extends AbstractMaplePacketHandler {
                     c.announce(MaplePacketCreator.BBSThreadList(rs, start));
                 }
             }
-            
+
             con.close();
         } catch (SQLException se) {
             se.printStackTrace();
@@ -323,13 +326,12 @@ public final class BBSOperationHandler extends AbstractMaplePacketHandler {
             if (ps2 != null) {
                 ps2.close();
             }
-            
+
             con.close();
         } catch (SQLException se) {
-            se.printStackTrace();
+            logger.warn("Database related exception: ", se);
         } catch (RuntimeException re) {//btw we get this everytime for some reason, but replies work!
-            re.printStackTrace();
-            System.out.println("The number of reply rows does not match the replycount in thread.");
+            logger.warn("The number of reply rows does not match the replycount in thread.", re);
         }
     }
 }

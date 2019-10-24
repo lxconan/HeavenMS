@@ -17,6 +17,8 @@ import client.inventory.manipulator.MapleKarmaManipulator;
 import config.YamlConfig;
 import constants.inventory.ItemConstants;
 import net.AbstractMaplePacketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.MapleMarriage;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -29,10 +31,11 @@ import java.util.List;
  * @author By Drago/Dragohe4rt
  */
 public final class WeddingHandler extends AbstractMaplePacketHandler {
-    
+    private static final Logger logger = LoggerFactory.getLogger(WeddingHandler.class);
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
-        
+
         if (c.tryacquireClient()) {
             try {
                 MapleCharacter chr = c.getPlayer();
@@ -69,7 +72,7 @@ public final class WeddingHandler extends AbstractMaplePacketHandler {
                                                         marriage.addGiftItem(groomWishlist, newItem);
                                                         MapleInventoryManipulator.removeFromSlot(c, type, slot, quantity, false, false);
 
-                                                        if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE) chr.saveCharToDB(false); 
+                                                        if (YamlConfig.config.server.USE_ENFORCE_MERCHANT_SAVE) chr.saveCharToDB(false);
                                                         marriage.saveGiftItemsToDb(c, groomWishlist, cid);
 
                                                         MapleKarmaManipulator.toggleKarmaFlagToUntradeable(newItem);
@@ -145,7 +148,7 @@ public final class WeddingHandler extends AbstractMaplePacketHandler {
                 } else if (mode == 8) { // out of Wedding Registry
                     c.announce(MaplePacketCreator.enableActions());
                 } else {
-                    System.out.println(mode);
+                    logger.warn("Unknown wedding mode: " + mode);
                 }
             } finally {
                 c.releaseClient();

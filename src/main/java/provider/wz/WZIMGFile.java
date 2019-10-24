@@ -27,11 +27,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.data.input.GenericSeekableLittleEndianAccessor;
 import tools.data.input.RandomAccessByteStream;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public class WZIMGFile {
+    private static final Logger logger = LoggerFactory.getLogger(WZIMGFile.class);
+
     private WZFileEntry file;
     private WZIMGEntry root;
     private boolean provideImages;
@@ -81,7 +86,7 @@ public class WZIMGFile {
                 break;
             }
             default:
-                System.out.println("Unknown Image identifier: " + marker + " at offset " + (slea.getPosition() - file.getOffset()));
+                logger.warn("Unknown Image identifier: " + marker + " at offset " + (slea.getPosition() - file.getOffset()));
         }
         marker = slea.readByte();
         switch (marker) {
@@ -113,7 +118,7 @@ public class WZIMGFile {
                 } else if (iMarker == 1) {
                     entry.setData(WZTool.readDecodedStringAtOffsetAndReset(slea, slea.readInt() + file.getOffset()));
                 } else {
-                    System.out.println("Unknown String type " + iMarker);
+                    logger.warn("Unknown String type " + iMarker);
                 }
                 break;
             case 9:
@@ -123,7 +128,7 @@ public class WZIMGFile {
                 parseExtended(entry, slea, endOfExtendedBlock);
                 break;
             default:
-                System.out.println("Unknown Image type " + marker);
+                logger.warn("Unknown Image type " + marker);
         }
     }
 
@@ -169,7 +174,7 @@ public class WZIMGFile {
                     entry.addChild(child);
                 }
             } else {
-                System.out.println("Canvas marker != 1 (" + marker + ")");
+                logger.info("Canvas marker != 1 (" + marker + ")");
             }
             int width = WZTool.readValue(slea);
             int height = WZTool.readValue(slea);
@@ -218,7 +223,7 @@ public class WZIMGFile {
                     entry.setData(WZTool.readDecodedStringAtOffsetAndReset(slea, file.getOffset() + slea.readInt()));
                     break;
                 default:
-                    System.out.println("Unknown UOL marker: " + uolmarker + " " + entry.getName());
+                    logger.warn("Unknown UOL marker: " + uolmarker + " " + entry.getName());
             }
         } else {
             throw new RuntimeException("Unhandled extended type: " + type);

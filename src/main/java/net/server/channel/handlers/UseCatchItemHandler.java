@@ -48,7 +48,7 @@ public final class UseCatchItemHandler extends AbstractMaplePacketHandler {
         slea.readShort();
         int itemId = slea.readInt();
         int monsterid = slea.readInt();
-        
+
         MapleMonster mob = chr.getMap().getMonsterByOid(monsterid);
         if (chr.getInventory(ItemConstants.getInventoryType(itemId)).countById(itemId) <= 0) {
            return;
@@ -98,7 +98,7 @@ public final class UseCatchItemHandler extends AbstractMaplePacketHandler {
                             } else {
                                 chr.dropMessage(5, "Make a ETC slot available before using this item.");
                             }
-                            
+
                             abm.spam(10);
                         } else {
                             c.announce(MaplePacketCreator.catchMessage(0));
@@ -188,15 +188,15 @@ public final class UseCatchItemHandler extends AbstractMaplePacketHandler {
                 break;
             default:
                 // proper Fish catch, thanks to Dragohe4rt
-                
+
                 MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
                 int itemGanho = ii.getCreateItem(itemId);
                 int mobItem = ii.getMobItem(itemId);
-                
+
                 if (itemGanho != 0 && mobItem == mob.getId()) {
                     int timeCatch = ii.getUseDelay(itemId);
                     int mobHp = ii.getMobHP(itemId);
-                    
+
                     if (timeCatch != 0 && (abm.getLastSpam(10) + timeCatch) < currentServerTime()) {
                         if (mobHp != 0 && mob.getHp() < ((mob.getMaxHp() / 100) * mobHp)) {
                             chr.getMap().broadcastMessage(MaplePacketCreator.catchMonster(monsterid, itemId, (byte) 1));
@@ -214,8 +214,6 @@ public final class UseCatchItemHandler extends AbstractMaplePacketHandler {
                     }
                 }
                 c.announce(MaplePacketCreator.enableActions());
-                
-                // System.out.println("UseCatchItemHandler: \r\n" + slea.toString());
         }
     }
 }

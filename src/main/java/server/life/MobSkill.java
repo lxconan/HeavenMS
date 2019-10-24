@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import net.server.channel.services.ServiceType;
 import net.server.channel.services.task.OverallService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.Randomizer;
 import server.maps.MapleMap;
 import server.maps.MapleMapObject;
@@ -46,7 +48,7 @@ import tools.ArrayMap;
  * @author Danny (Leifde)
  */
 public class MobSkill {
-
+    private static final Logger logger = LoggerFactory.getLogger(MobSkill.class);
     private int skillId, skillLevel, mpCon;
     private List<Integer> toSummon = new ArrayList<Integer>();
     private int spawnEffect, hp, x, y;
@@ -257,7 +259,7 @@ public class MobSkill {
                     int summonLimit = monster.countAvailableMobSummons(summons.size(), skillLimit);
                     if (summonLimit >= 1) {
                         boolean bossRushMap = GameConstants.isBossRush(map.getId());
-                        
+
                         Collections.shuffle(summons);
                         for (Integer mobId : summons.subList(0, summonLimit)) {
                             MapleMonster toSpawn = MapleLifeFactory.getMonster(mobId);
@@ -318,7 +320,7 @@ public class MobSkill {
                 }
                 break;
             default:
-                System.out.println("Unhandled Mob skill: " + skillId);
+                logger.warn("Unhandled Mob skill: " + skillId);
                 break;
         }
         if (stats.size() > 0) {

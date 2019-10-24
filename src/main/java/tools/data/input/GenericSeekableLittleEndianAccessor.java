@@ -21,18 +21,22 @@
 */
 package tools.data.input;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 /**
  * Provides an abstract accessor to a generic Little Endian byte stream. This
  * accessor is seekable.
- * 
+ *
  * @author Frz
  * @version 1.0
  * @since Revision 323
  * @see tools.data.input.GenericLittleEndianAccessor
  */
 public class GenericSeekableLittleEndianAccessor extends GenericLittleEndianAccessor implements SeekableLittleEndianAccessor {
+    private static final Logger logger = LoggerFactory.getLogger(GenericSeekableLittleEndianAccessor.class);
     private SeekableInputStreamBytestream bs;
 
     /**
@@ -57,8 +61,7 @@ public class GenericSeekableLittleEndianAccessor extends GenericLittleEndianAcce
         try {
             bs.seek(offset);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Seek failed " + e);
+            logger.error("Seek failed ", e);
         }
     }
 
@@ -73,8 +76,7 @@ public class GenericSeekableLittleEndianAccessor extends GenericLittleEndianAcce
         try {
             return bs.getPosition();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("getPosition failed" + e);
+            logger.error("getPosition failed", e);
             return -1;
         }
     }

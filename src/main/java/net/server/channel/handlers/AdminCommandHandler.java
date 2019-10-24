@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.AbstractMaplePacketHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.MapleItemInformationProvider;
 import server.life.MapleLifeFactory;
 import server.life.MapleMonster;
@@ -41,6 +43,7 @@ import client.inventory.MapleInventoryType;
 import client.inventory.manipulator.MapleInventoryManipulator;
 
 public final class AdminCommandHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(AdminCommandHandler.class);
 
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
@@ -171,13 +174,13 @@ public final class AdminCommandHandler extends AbstractMaplePacketHandler {
                 break;
             case 0x77: //Testing purpose
                 if (slea.available() == 4) {
-                    System.out.println(slea.readInt());
+                    logger.debug("Next 4 bytes int: " + slea.readInt());
                 } else if (slea.available() == 2) {
-                    System.out.println(slea.readShort());
+                    logger.debug("Next 2 bytes short: " + slea.readShort());
                 }
                 break;
             default:
-                System.out.println("New GM packet encountered (MODE : " + mode + ": " + slea.toString());
+                logger.warn("New GM packet encountered (MODE : " + mode + ": " + slea.toString());
                 break;
         }
     }

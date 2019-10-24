@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.CashShop;
 import server.CashShop.CashItem;
 import server.CashShop.CashItemFactory;
@@ -48,17 +50,18 @@ import tools.Pair;
 import tools.data.input.SeekableLittleEndianAccessor;
 
 public final class CashOperationHandler extends AbstractMaplePacketHandler {
+    private static final Logger logger = LoggerFactory.getLogger(CashOperationHandler.class);
 
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         MapleCharacter chr = c.getPlayer();
         CashShop cs = chr.getCashShop();
-        
+
         if (!cs.isOpened()) {
             c.announce(MaplePacketCreator.enableActions());
             return;
         }
-        
+
         if (c.tryacquireClient()) {     // thanks Thora for finding out an exploit within cash operations
             try {
                 final int action = slea.readByte();
@@ -200,7 +203,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                         }
                     }
                 } else if (action == 0x08) { // Increase Character Slots
-                    slea.skip(1); 
+                    slea.skip(1);
                     int cash = slea.readInt();
                     CashItem cItem = CashItemFactory.getItem(slea.readInt());
 
@@ -280,7 +283,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                                 chr.dropMessage(5, "You and your partner are the same gender, please buy a friendship ring.");
                                 c.enableCSActions();
                                 return;
-                            }*/ //Gotta let them faggots marry too, hence why this is commented out <3 
+                            }*/ //Gotta let them faggots marry too, hence why this is commented out <3
 
                             if(itemRing.toItem() instanceof Equip) {
                                 Equip eqp = (Equip) itemRing.toItem();
@@ -297,7 +300,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                                     ex.printStackTrace();
                                 }
                                 partner.showNote();
-                            }   
+                            }
                         }
                     } else {
                         c.announce(MaplePacketCreator.showCashShopMessage((byte) 0xC4));
@@ -408,7 +411,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                     }
                     if(cItem.getSN() == 50600001 && YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER) {
                         int newWorldSelection = slea.readInt();
-                        
+
                         int worldTransferError = chr.checkWorldTransferEligibility();
                         if(worldTransferError != 0 || newWorldSelection >= Server.getInstance().getWorldsSize() || Server.getInstance().getWorldsSize() <= 1) {
                             c.announce(MaplePacketCreator.showCashShopMessage((byte)0));
@@ -430,7 +433,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                     }
                     c.enableCSActions();
                 } else {
-                    System.out.println("Unhandled action: " + action + "\n" + slea);
+                    logger.warn("Unhandled action: " + action + "\n" + slea);
                 }
             } finally {
                 c.releaseClient();
@@ -449,7 +452,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
         cal.set(year, month - 1, day);
         return c.checkBirthDate(cal);
     }
-    
+
     private static boolean canBuy(MapleCharacter chr, CashItem item, int cash) {
         if (item != null && item.isOnSale() && item.getPrice() <= cash) {
             FilePrinter.print(FilePrinter.CASHITEM_BOUGHT, chr + " bought " + MapleItemInformationProvider.getInstance().getName(item.getItemId()) + " (SN " + item.getSN() + ") for " + item.getPrice());

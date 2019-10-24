@@ -1,16 +1,14 @@
 package tools;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class FilePrinter {
-
-    public static final String 
+    private static final Logger logger = LoggerFactory.getLogger(FilePrinter.class);
+    public static final String
             AUTOBAN_WARNING = "game/AutoBanWarning.txt",    // log naming version by Vcoc
             AUTOBAN_DC = "game/AutoBanDC.txt",
             ACCOUNT_STUCK = "players/AccountStuck.txt",
@@ -70,98 +68,26 @@ public class FilePrinter {
             DEADLOCK_LOCKS = "deadlocks/Locks.txt",
             DEADLOCK_STATE = "deadlocks/State.txt",
             DISPOSED_LOCKS = "deadlocks/Disposed.txt";
-    
+
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); //for file system purposes, it's nice to use yyyy-MM-dd
     private static final String FILE_PATH = "logs/" + sdf.format(Calendar.getInstance().getTime()) + "/"; // + sdf.format(Calendar.getInstance().getTime()) + "/"
     private static final String ERROR = "error/";
 
     public static void printError(final String name, final Throwable t) {
-        String stringT = getString(t);
-        
-    	System.out.println("Error thrown: " + name);
-    	System.out.println(stringT);
-        System.out.println();
-        FileOutputStream out = null;
-        final String file = FILE_PATH + ERROR + name;
-        try {
-            File outputFile = new File(file);
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
-            }
-            out = new FileOutputStream(file, true);
-            out.write(stringT.getBytes());
-            out.write("\r\n---------------------------------\r\n".getBytes());
-            out.write("\r\n".getBytes()); // thanks Vcoc for suggesting review body log structure
-        } catch (IOException ess) {
-            ess.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
-            }
-        }
+        final String target = FILE_PATH + ERROR + name;
+        logger.error("Error thrown: " + target, t);
     }
 
     public static void printError(final String name, final Throwable t, final String info) {
-        String stringT = getString(t);
-        
-    	System.out.println("Error thrown: " + name);
-    	System.out.println(stringT);
-        System.out.println();
-        FileOutputStream out = null;
-        final String file = FILE_PATH + ERROR + name;
-        try {
-            File outputFile = new File(file);
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
-            }
-            out = new FileOutputStream(file, true);
-            out.write((info + "\r\n").getBytes());
-            out.write(stringT.getBytes());
-            out.write("\r\n---------------------------------\r\n".getBytes());
-            out.write("\r\n".getBytes());
-        } catch (IOException ess) {
-            ess.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
-            }
-        }
+        final String target = FILE_PATH + ERROR + name;
+        logger.error("Error thrown: " + target, t);
+        logger.error("Additional info: " + info);
     }
 
     public static void printError(final String name, final String s) {
-    	System.out.println("Error thrown: " + name);
-    	System.out.println(s);
-        System.out.println();
-        FileOutputStream out = null;
-        final String file = FILE_PATH + ERROR + name;
-        try {
-            File outputFile = new File(file);
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
-            }
-            out = new FileOutputStream(file, true);
-            out.write(s.getBytes());
-            //out.write("\r\n---------------------------------\r\n".getBytes());
-            out.write("\r\n".getBytes());
-        } catch (IOException ess) {
-            ess.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
-            }
-        }
+        final String target = FILE_PATH + ERROR + name;
+        logger.error("Error thrown: " + target);
+        logger.error("Additional info: " + s);
     }
 
     public static void print(final String name, final String s) {
@@ -169,56 +95,6 @@ public class FilePrinter {
     }
 
     public static void print(final String name, final String s, boolean line) {
-    	System.out.println("Log: " + name);
-    	System.out.println(s);
-        System.out.println();
-        FileOutputStream out = null;
-        String file = FILE_PATH + name;
-        try {
-            File outputFile = new File(file);
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
-            }
-            out = new FileOutputStream(file, true);
-            out.write(s.getBytes());
-            if (line) {
-                out.write("\r\n---------------------------------\r\n".getBytes());
-            }
-            out.write("\r\n".getBytes());
-        } catch (IOException ess) {
-            ess.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
-            }
-        }
-    }
-
-    private static String getString(final Throwable e) {
-        String retValue = null;
-        StringWriter sw = null;
-        PrintWriter pw = null;
-        try {
-            sw = new StringWriter();
-            pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            retValue = sw.toString();
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-                if (sw != null) {
-                    sw.close();
-                }
-            } catch (IOException ignore) {
-                ignore.printStackTrace();
-            }
-        }
-        return retValue;
+        logger.info(name + ": " + s);
     }
 }

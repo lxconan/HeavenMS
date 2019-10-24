@@ -21,6 +21,9 @@
 */
 package tools;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.BadPaddingException;
@@ -30,6 +33,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 public class MapleAESOFB {
+    private static final Logger logger = LoggerFactory.getLogger(MapleAESOFB.class);
+
     private byte iv[];
     private Cipher cipher;
     private short mapleVersion;
@@ -58,12 +63,12 @@ public class MapleAESOFB {
         try {
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, skey);
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("ERROR " + e);
-        } catch (NoSuchPaddingException e) {
-            System.out.println("ERROR " + e);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            logger.error("Error", e);
         } catch (InvalidKeyException e) {
-            System.out.println("Error initializing the encryption cipher.  Make sure you're using the Unlimited Strength cryptography jar files.");
+            logger.error(
+                "Error initializing the encryption cipher.  Make sure you're using the Unlimited Strength cryptography jar files.",
+                e);
         }
         this.setIv(iv);
         this.mapleVersion = (short) (((mapleVersion >> 8) & 0xFF) | ((mapleVersion << 8) & 0xFF00));

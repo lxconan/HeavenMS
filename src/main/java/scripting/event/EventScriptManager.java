@@ -24,12 +24,12 @@ package scripting.event;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 
 import net.server.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scripting.AbstractScriptManager;
 
 /**
@@ -37,9 +37,9 @@ import scripting.AbstractScriptManager;
  * @author Matze
  */
 public class EventScriptManager extends AbstractScriptManager {
+    private static final Logger logger = LoggerFactory.getLogger(EventScriptManager.class);
 
     private class EventEntry {
-
         public EventEntry(NashornScriptEngine iv, EventManager em) {
             this.iv = iv;
             this.em = em;
@@ -47,7 +47,7 @@ public class EventScriptManager extends AbstractScriptManager {
         public NashornScriptEngine iv;
         public EventManager em;
     }
-    
+
     private Map<String, EventEntry> events = new LinkedHashMap<>();
     private boolean active = false;
 
@@ -68,7 +68,7 @@ public class EventScriptManager extends AbstractScriptManager {
         }
         return entry.em;
     }
-    
+
     public boolean isActive() {
         return active;
     }
@@ -79,11 +79,10 @@ public class EventScriptManager extends AbstractScriptManager {
                 entry.iv.put("em", entry.em);
                 entry.iv.invokeFunction("init", (Object) null);
             } catch (Exception ex) {
-                Logger.getLogger(EventScriptManager.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("Error on script: " + entry.em.getName());
+                logger.error("Error on script: " + entry.em.getName(), ex);
             }
         }
-        
+
         active = true;
     }
 
@@ -100,6 +99,7 @@ public class EventScriptManager extends AbstractScriptManager {
         }
     }
 
+    @SuppressWarnings("unused")
     public void reload() {
         cancel();
         reloadScripts();
