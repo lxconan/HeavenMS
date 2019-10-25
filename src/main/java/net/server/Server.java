@@ -139,42 +139,14 @@ public class Server {
     private final ReadLock lgnRLock = lgnLock.readLock();
     private final WriteLock lgnWLock = lgnLock.writeLock();
 
-    private final AtomicLong currentTime = new AtomicLong(0);
-    private long serverCurrentTime = 0;
-
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
-    private long uptime = System.currentTimeMillis();
     private final PlayerNpcFieldGateway playerNpcFieldGateway;
     private final DataConnectionFactory dataConnectionFactory;
 
     public Server(PlayerNpcFieldGateway playerNpcFieldGateway, DataConnectionFactory dataConnectionFactory) {
         this.playerNpcFieldGateway = playerNpcFieldGateway;
         this.dataConnectionFactory = dataConnectionFactory;
-    }
-
-    public long getUptime() {
-        return uptime;
-    }
-
-    public int getCurrentTimestamp() {
-        return (int) (Server.getInstance().getCurrentTime() - uptime);
-    }
-
-    public long getCurrentTime() {  // returns a slightly delayed time value, under frequency of UPDATE_INTERVAL
-        return serverCurrentTime;
-    }
-
-    public void updateCurrentTime() {
-        serverCurrentTime = currentTime.addAndGet(YamlConfig.config.server.UPDATE_INTERVAL);
-    }
-
-    public long forceUpdateCurrentTime() {
-        long timeNow = System.currentTimeMillis();
-        serverCurrentTime = timeNow;
-        currentTime.set(timeNow);
-
-        return timeNow;
     }
 
     public boolean isOnline() {
@@ -317,7 +289,7 @@ public class Server {
 
             channelid++;
             World world = this.getWorld(worldid);
-            Channel channel = new Channel(worldid, channelid, getCurrentTime());
+            Channel channel = new Channel(worldid, channelid, ServerTimer.getInstance().getCurrentTime());
 
             channel.setServerMessage(YamlConfig.config.worlds.get(worldid).why_am_i_recommended);
 
@@ -383,7 +355,7 @@ public class Server {
             worlds.add(world);
 
             Map<Integer, String> channelInfo = new HashMap<>();
-            long bootTime = getCurrentTime();
+            long bootTime = ServerTimer.getInstance().getCurrentTime();
             for (int j = 1; j <= YamlConfig.config.worlds.get(i).channels; j++) {
                 int channelid = j;
                 Channel channel = new Channel(i, channelid, bootTime);
@@ -472,25 +444,6 @@ public class Server {
         } finally {
             wldWLock.unlock();
         }
-    }
-
-    private static long getTimeLeftForNextHour() {
-        Calendar nextHour = Calendar.getInstance();
-        nextHour.add(Calendar.HOUR, 1);
-        nextHour.set(Calendar.MINUTE, 0);
-        nextHour.set(Calendar.SECOND, 0);
-
-        return Math.max(0, nextHour.getTimeInMillis() - System.currentTimeMillis());
-    }
-
-    public static long getTimeLeftForNextDay() {
-        Calendar nextDay = Calendar.getInstance();
-        nextDay.add(Calendar.DAY_OF_MONTH, 1);
-        nextDay.set(Calendar.HOUR_OF_DAY, 0);
-        nextDay.set(Calendar.MINUTE, 0);
-        nextDay.set(Calendar.SECOND, 0);
-
-        return Math.max(0, nextDay.getTimeInMillis() - System.currentTimeMillis());
     }
 
     public Map<Integer, Integer> getCouponRates() {
@@ -848,7 +801,7 @@ public class Server {
         tMan.register(tMan.purge(), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
         disconnectIdlesOnLoginTask();
 
-        long timeLeft = getTimeLeftForNextHour();
+        long timeLeft = ServerTimer.getTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
         tMan.register(new ReleaseLockTask(), 2 * 60 * 1000, 2 * 60 * 1000);
         tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, timeLeft);
@@ -861,7 +814,7 @@ public class Server {
         tMan.register(new InvitationTask(), 30 * 1000, 30 * 1000);
         tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
 
-        timeLeft = getTimeLeftForNextDay();
+        timeLeft = ServerTimer.getTimeLeftForNextDay();
         MapleExpeditionBossLog.resetBossLogTable();
         tMan.register(new BossLogTask(), 24 * 60 * 60 * 1000, timeLeft);
 

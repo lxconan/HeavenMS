@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ScheduledFuture;
 
 import net.server.Server;
+import net.server.ServerTimer;
 import net.server.audit.LockCollector;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantLock;
@@ -45,7 +46,7 @@ public abstract class BaseScheduler {
     private List<SchedulerListener> listeners = new LinkedList<>();
     private final List<MonitoredReentrantLock> externalLocks = new LinkedList<>();
     private Map<Object, Pair<Runnable, Long>> registeredEntries = new HashMap<>();
-    
+
     private ScheduledFuture<?> schedulerTask = null;
     private MonitoredReentrantLock schedulerLock;
     private Runnable monitorTask = new Runnable() {
@@ -54,70 +55,70 @@ public abstract class BaseScheduler {
                                             runBaseSchedule();
                                         }
                                     };
-    
+
     protected BaseScheduler(MonitoredLockType lockType) {
         schedulerLock = MonitoredReentrantLockFactory.createLock(lockType, true);
     }
-    
+
     // NOTE: practice EXTREME caution when adding external locks to the scheduler system, if you don't know what you're doing DON'T USE THIS.
     protected BaseScheduler(MonitoredLockType lockType, List<MonitoredReentrantLock> extLocks) {
         schedulerLock = MonitoredReentrantLockFactory.createLock(lockType, true);
-        
+
         for(MonitoredReentrantLock lock : extLocks) {
             externalLocks.add(lock);
         }
     }
-    
+
     protected void addListener(SchedulerListener listener) {
         listeners.add(listener);
     }
-    
+
     private void lockScheduler() {
         if(!externalLocks.isEmpty()) {
             for(MonitoredReentrantLock l : externalLocks) {
                 l.lock();
             }
         }
-        
+
         schedulerLock.lock();
     }
-    
+
     private void unlockScheduler() {
         if(!externalLocks.isEmpty()) {
             for(MonitoredReentrantLock l : externalLocks) {
                 l.unlock();
             }
         }
-        
+
         schedulerLock.unlock();
     }
-    
+
     private void runBaseSchedule() {
         List<Object> toRemove;
         Map<Object, Pair<Runnable, Long>> registeredEntriesCopy;
-        
+
         lockScheduler();
         try {
             if(registeredEntries.isEmpty()) {
                 idleProcs++;
-                
+
                 if(idleProcs >= YamlConfig.config.server.MOB_STATUS_MONITOR_LIFE) {
                     if(schedulerTask != null) {
                         schedulerTask.cancel(false);
                         schedulerTask = null;
                     }
                 }
-                
+
                 return;
             }
-            
+
             idleProcs = 0;
             registeredEntriesCopy = new HashMap<>(registeredEntries);
         } finally {
             unlockScheduler();
         }
-        
-        long timeNow = Server.getInstance().getCurrentTime();
+
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         toRemove = new LinkedList<>();
         for(Entry<Object, Pair<Runnable, Long>> rmd : registeredEntriesCopy.entrySet()) {
             Pair<Runnable, Long> r = rmd.getValue();
@@ -127,7 +128,7 @@ public abstract class BaseScheduler {
                 toRemove.add(rmd.getKey());
             }
         }
-        
+
         if(!toRemove.isEmpty()) {
             lockScheduler();
             try {
@@ -138,10 +139,10 @@ public abstract class BaseScheduler {
                 unlockScheduler();
             }
         }
-        
+
         dispatchRemovedEntries(toRemove, true);
     }
-    
+
     protected void registerEntry(Object key, Runnable removalAction, long duration) {
         lockScheduler();
         try {
@@ -149,16 +150,16 @@ public abstract class BaseScheduler {
             if(schedulerTask == null) {
                 schedulerTask = TimerManager.getInstance().register(monitorTask, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
             }
-            
-            registeredEntries.put(key, new Pair<>(removalAction, Server.getInstance().getCurrentTime() + duration));
+
+            registeredEntries.put(key, new Pair<>(removalAction, ServerTimer.getInstance().getCurrentTime() + duration));
         } finally {
             unlockScheduler();
         }
     }
-    
+
     protected void interruptEntry(Object key) {
         Runnable toRun = null;
-        
+
         lockScheduler();
         try {
             Pair<Runnable, Long> rm = registeredEntries.remove(key);
@@ -168,20 +169,20 @@ public abstract class BaseScheduler {
         } finally {
             unlockScheduler();
         }
-        
+
         if(toRun != null) {
             toRun.run();
         }
-        
+
         dispatchRemovedEntries(Collections.singletonList(key), false);
     }
-    
+
     private void dispatchRemovedEntries(List<Object> toRemove, boolean fromUpdate) {
         for (SchedulerListener listener : listeners.toArray(new SchedulerListener[listeners.size()])) {
             listener.removedScheduledEntries(toRemove, fromUpdate);
         }
     }
-    
+
     public void dispose() {
         lockScheduler();
         try {
@@ -189,17 +190,17 @@ public abstract class BaseScheduler {
                 schedulerTask.cancel(false);
                 schedulerTask = null;
             }
-            
+
             listeners.clear();
             registeredEntries.clear();
         } finally {
             unlockScheduler();
             externalLocks.clear();
         }
-        
+
         disposeLocks();
     }
-    
+
     private void disposeLocks() {
         LockCollector.getInstance().registerDisposeAction(new Runnable() {
             @Override
@@ -208,7 +209,7 @@ public abstract class BaseScheduler {
             }
         });
     }
-    
+
     private void emptyLocks() {
         schedulerLock = schedulerLock.dispose();
     }

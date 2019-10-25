@@ -25,6 +25,7 @@ import client.MapleCharacter;
 import java.awt.Point;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.server.Server;
+import net.server.ServerTimer;
 
 public class SpawnPoint {
     private int monster, mobTime, team, fh, f;
@@ -43,17 +44,17 @@ public class SpawnPoint {
         this.f = monster.getF();
         this.immobile = immobile;
         this.mobInterval = mobInterval;
-        this.nextPossibleSpawn = Server.getInstance().getCurrentTime();
+        this.nextPossibleSpawn = ServerTimer.getInstance().getCurrentTime();
     }
-    
+
     public int getSpawned() {
         return spawnedMonsters.intValue();
     }
-    
+
     public void setDenySpawn(boolean val) {
         denySpawn = val;
     }
-    
+
     public boolean getDenySpawn() {
         return denySpawn;
     }
@@ -62,17 +63,17 @@ public class SpawnPoint {
     	if (denySpawn || mobTime < 0 || spawnedMonsters.get() > 0) {
             return false;
         }
-        return nextPossibleSpawn <= Server.getInstance().getCurrentTime();
+        return nextPossibleSpawn <= ServerTimer.getInstance().getCurrentTime();
     }
 
     public boolean shouldForceSpawn() {
     	if (mobTime < 0 || spawnedMonsters.get() > 0) {
             return false;
         }
-       
+
         return true;
     }
-    
+
     public MapleMonster getMonster() {
         MapleMonster mob = new MapleMonster(MapleLifeFactory.getMonster(monster));
         mob.setPosition(new Point(pos));
@@ -83,7 +84,7 @@ public class SpawnPoint {
         mob.addListener(new MonsterListener() {
             @Override
             public void monsterKilled(int aniTime) {
-                nextPossibleSpawn = Server.getInstance().getCurrentTime();
+                nextPossibleSpawn = ServerTimer.getInstance().getCurrentTime();
                 if (mobTime > 0) {
                     nextPossibleSpawn += mobTime * 1000;
                 } else {
@@ -91,19 +92,19 @@ public class SpawnPoint {
                 }
                 spawnedMonsters.decrementAndGet();
             }
-            
+
             @Override
             public void monsterDamaged(MapleCharacter from, int trueDmg) {}
-            
+
             @Override
             public void monsterHealed(int trueHeal) {}
         });
         if (mobTime == 0) {
-            nextPossibleSpawn = Server.getInstance().getCurrentTime() + mobInterval;
+            nextPossibleSpawn = ServerTimer.getInstance().getCurrentTime() + mobInterval;
         }
         return mob;
     }
-    
+
     public int getMonsterId() {
         return monster;
     }
@@ -119,11 +120,11 @@ public class SpawnPoint {
     public final int getFh() {
         return fh;
     }
-    
+
     public int getMobTime() {
         return mobTime;
     }
-    
+
     public int getTeam() {
         return team;
     }

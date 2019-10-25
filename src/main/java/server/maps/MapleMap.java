@@ -58,6 +58,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import net.server.ServerTimer;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
@@ -934,7 +936,7 @@ public class MapleMap {
     }
 
     private void registerItemDrop(MapleMapItem mdrop) {
-        droppedItems.put(mdrop, !everlast ? Server.getInstance().getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : Long.MAX_VALUE);
+        droppedItems.put(mdrop, !everlast ? ServerTimer.getInstance().getCurrentTime() + YamlConfig.config.server.ITEM_EXPIRE_TIME : Long.MAX_VALUE);
     }
 
     private void unregisterItemDrop(MapleMapItem mdrop) {
@@ -951,7 +953,7 @@ public class MapleMap {
 
         objectRLock.lock();
         try {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ServerTimer.getInstance().getCurrentTime();
 
             for(Entry<MapleMapItem, Long> it : droppedItems.entrySet()) {
                 if(it.getValue() < timeNow) {
@@ -984,7 +986,7 @@ public class MapleMap {
 
             lootLock.lock();
             try {
-                long timeNow = Server.getInstance().getCurrentTime();
+                long timeNow = ServerTimer.getInstance().getCurrentTime();
                 mobLootEntries.put(mle, timeNow + ((long)(0.42 * animationTime)));
             } finally {
                 lootLock.unlock();
@@ -1004,7 +1006,7 @@ public class MapleMap {
             lootLock.unlock();
         }
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         List<MobLootEntry> toRemove = new LinkedList<>();
         for(Entry<MobLootEntry, Long> mlee : mleList) {
             if(mlee.getValue() < timeNow) {
@@ -1136,7 +1138,7 @@ public class MapleMap {
 
     private void spawnDrop(final Item idrop, final Point dropPos, final MapleMapObject dropper, final MapleCharacter chr, final byte droptype, final short questid) {
         final MapleMapItem mdrop = new MapleMapItem(idrop, dropPos, dropper, chr, chr.getClient(), droptype, false, questid);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ServerTimer.getInstance().getCurrentTime());
         spawnAndAddRangedMapObject(mdrop, new DelayedPacketCreation() {
             @Override
             public void sendPackets(MapleClient c) {
@@ -1160,7 +1162,7 @@ public class MapleMap {
     public final void spawnMesoDrop(final int meso, final Point position, final MapleMapObject dropper, final MapleCharacter owner, final boolean playerDrop, final byte droptype) {
         final Point droppos = calcDropPos(position, position);
         final MapleMapItem mdrop = new MapleMapItem(meso, droppos, dropper, owner, owner.getClient(), droptype, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ServerTimer.getInstance().getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, new DelayedPacketCreation() {
             @Override
@@ -2239,7 +2241,7 @@ public class MapleMap {
 
         final Point droppos = calcDropPos(pos, pos);
         final MapleMapItem mdrop = new MapleMapItem(item, droppos, dropper, owner, owner.getClient(), dropType, playerDrop);
-        mdrop.setDropTime(Server.getInstance().getCurrentTime());
+        mdrop.setDropTime(ServerTimer.getInstance().getCurrentTime());
 
         spawnAndAddRangedMapObject(mdrop, new DelayedPacketCreation() {
             @Override
@@ -4201,7 +4203,7 @@ public class MapleMap {
             this.mapOwner = chr;
             chr.setOwnedMap(this);
 
-            mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+            mapOwnerLastActivityTime = ServerTimer.getInstance().getCurrentTime();
 
             getChannelServer().registerOwnedMap(this);
             return true;
@@ -4225,7 +4227,7 @@ public class MapleMap {
     }
 
     private void refreshOwnership() {
-        mapOwnerLastActivityTime = Server.getInstance().getCurrentTime();
+        mapOwnerLastActivityTime = ServerTimer.getInstance().getCurrentTime();
     }
 
     public boolean isOwnershipRestricted(MapleCharacter chr) {
@@ -4244,7 +4246,7 @@ public class MapleMap {
     }
 
     public void checkMapOwnerActivity() {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         if (timeNow - mapOwnerLastActivityTime > 60000) {
             if (unclaimOwnership(mapOwner)) {
                 this.dropMessage(5, "This lawn is now free real estate.");

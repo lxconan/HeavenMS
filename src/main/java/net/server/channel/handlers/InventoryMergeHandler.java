@@ -24,6 +24,7 @@ package net.server.channel.handlers;
 import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
 import client.inventory.manipulator.MapleInventoryManipulator;
+import net.server.ServerTimer;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 import client.MapleCharacter;
@@ -40,25 +41,25 @@ public final class InventoryMergeHandler extends AbstractMaplePacketHandler {
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         MapleCharacter chr = c.getPlayer();
         slea.readInt();
-        chr.getAutobanManager().setTimestamp(2, Server.getInstance().getCurrentTimestamp(), 4);
-        
+        chr.getAutobanManager().setTimestamp(2, ServerTimer.getInstance().getCurrentTimestamp(), 4);
+
         if(!YamlConfig.config.server.USE_ITEM_SORT) {
             c.announce(MaplePacketCreator.enableActions());
             return;
 	}
-        
+
         byte invType = slea.readByte();
         if (invType < 1 || invType > 5) {
             c.disconnect(false, false);
             return;
         }
-        
-        MapleInventoryType inventoryType = MapleInventoryType.getByType(invType);	
+
+        MapleInventoryType inventoryType = MapleInventoryType.getByType(invType);
 	MapleInventory inventory = c.getPlayer().getInventory(inventoryType);
         inventory.lockInventory();
         try {
             //------------------- RonanLana's SLOT MERGER -----------------
-        
+
             MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
             Item srcItem, dstItem;
 
@@ -105,7 +106,7 @@ public final class InventoryMergeHandler extends AbstractMaplePacketHandler {
         } finally {
             inventory.unlockInventory();
         }
-        
+
         c.announce(MaplePacketCreator.finishedSort(inventoryType.getType()));
         c.announce(MaplePacketCreator.enableActions());
     }

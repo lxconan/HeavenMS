@@ -31,6 +31,7 @@ import client.autoban.AutobanManager;
 import client.inventory.Item;
 import client.inventory.manipulator.MapleInventoryManipulator;
 import net.server.Server;
+import net.server.ServerTimer;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
 
@@ -46,7 +47,7 @@ public final class PetFoodHandler extends AbstractMaplePacketHandler {
         }
         abm.spam(2);
         slea.readInt(); // timestamp issue detected thanks to Masterrulax
-        abm.setTimestamp(1, Server.getInstance().getCurrentTimestamp(), 3);
+        abm.setTimestamp(1, ServerTimer.getInstance().getCurrentTimestamp(), 3);
         if (chr.getNoPets() == 0) {
             c.announce(MaplePacketCreator.enableActions());
             return;
@@ -62,13 +63,13 @@ public final class PetFoodHandler extends AbstractMaplePacketHandler {
                 }
             }
         }
-        
+
         MaplePet pet = chr.getPet(slot);
         if(pet == null) return;
-        
+
         short pos = slea.readShort();
         int itemId = slea.readInt();
-        
+
         if (c.tryacquireClient()) {
             try {
                 MapleInventory useInv = chr.getInventory(MapleInventoryType.USE);

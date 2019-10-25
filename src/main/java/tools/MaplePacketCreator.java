@@ -73,6 +73,7 @@ import constants.skills.ThunderBreaker;
 import net.opcodes.SendOpcode;
 import net.server.PlayerCoolDownValueHolder;
 import net.server.Server;
+import net.server.ServerTimer;
 import net.server.channel.Channel;
 import net.server.channel.handlers.PlayerInteractionHandler;
 import net.server.channel.handlers.SummonDamageHandler.SummonAttackEntry;
@@ -1117,7 +1118,7 @@ public class MaplePacketCreator {
         mplew.write(spawnPoint);
         mplew.writeShort(chr.getHp());
         mplew.writeBool(false);
-        mplew.writeLong(getTime(Server.getInstance().getCurrentTime()));
+        mplew.writeLong(getTime(ServerTimer.getInstance().getCurrentTime()));
         mplew.skip(18);
         return mplew.getPacket();
     }
@@ -1135,7 +1136,7 @@ public class MaplePacketCreator {
         mplew.writeBool(true);
         mplew.writeInt(spawnPosition.x);    // spawn position placement thanks to Arnah (Vertisy)
         mplew.writeInt(spawnPosition.y);
-        mplew.writeLong(getTime(Server.getInstance().getCurrentTime()));
+        mplew.writeLong(getTime(ServerTimer.getInstance().getCurrentTime()));
         mplew.skip(18);
         return mplew.getPacket();
     }

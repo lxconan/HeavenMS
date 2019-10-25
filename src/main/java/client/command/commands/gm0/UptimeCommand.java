@@ -26,6 +26,7 @@ package client.command.commands.gm0;
 import client.command.Command;
 import client.MapleClient;
 import net.server.Server;
+import net.server.ServerTimer;
 
 public class UptimeCommand extends Command {
     {
@@ -34,7 +35,7 @@ public class UptimeCommand extends Command {
 
     @Override
     public void execute(MapleClient c, String[] params) {
-        long milliseconds = System.currentTimeMillis() - Server.getInstance().getUptime();
+        long milliseconds = System.currentTimeMillis() - ServerTimer.getInstance().getUptime();
         int seconds = (int) (milliseconds / 1000) % 60 ;
         int minutes = (int) ((milliseconds / (1000*60)) % 60);
         int hours   = (int) ((milliseconds / (1000*60*60)) % 24);

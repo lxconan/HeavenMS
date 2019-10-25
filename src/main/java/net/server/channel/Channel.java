@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import config.YamlConfig;
+import net.server.ServerTimer;
 import net.server.audit.LockCollector;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantLock;
@@ -627,7 +628,7 @@ public final class Channel {
             }
         }, clockTime + 3000);   // let the TIMES UP display for 3 seconds, then warp
 
-        dojoFinishTime[slot] = Server.getInstance().getCurrentTime() + clockTime;
+        dojoFinishTime[slot] = ServerTimer.getInstance().getCurrentTime() + clockTime;
     }
 
     public void dismissDojoSchedule(int dojoMapId, MapleParty party) {

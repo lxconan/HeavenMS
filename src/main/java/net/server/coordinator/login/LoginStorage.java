@@ -27,44 +27,45 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.server.Server;
+import net.server.ServerTimer;
 
 /**
  *
  * @author Ronan
  */
 public class LoginStorage {
-    
+
     private ConcurrentHashMap<Integer, List<Long>> loginHistory = new ConcurrentHashMap<>();
-    
+
     public boolean registerLogin(int accountId) {
         List<Long> accHist = loginHistory.putIfAbsent(accountId, new LinkedList<Long>());
         if (accHist != null) {
             synchronized (accHist) {
                 if (accHist.size() > YamlConfig.config.server.MAX_ACCOUNT_LOGIN_ATTEMPT) {
-                    long blockExpiration = Server.getInstance().getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION;
+                    long blockExpiration = ServerTimer.getInstance().getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION;
                     Collections.fill(accHist, blockExpiration);
-                    
+
                     return false;
                 }
             }
         } else {
             accHist = loginHistory.get(accountId);
         }
-        
+
         synchronized (accHist) {
-            accHist.add(Server.getInstance().getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION);
+            accHist.add(ServerTimer.getInstance().getCurrentTime() + YamlConfig.config.server.LOGIN_ATTEMPT_DURATION);
             return true;
         }
     }
-    
+
     public void updateLoginHistory() {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         List<Integer> toRemove = new LinkedList<>();
         List<Long> toRemoveAttempt = new LinkedList<>();
-        
+
         for (Entry<Integer, List<Long>> loginEntries : loginHistory.entrySet()) {
             toRemoveAttempt.clear();
-            
+
             List<Long> accAttempts = loginEntries.getValue();
             synchronized (accAttempts) {
                 for (Long loginAttempt : accAttempts) {
@@ -84,7 +85,7 @@ public class LoginStorage {
                 }
             }
         }
-        
+
         for (Integer tr : toRemove) {
             loginHistory.remove(tr);
         }

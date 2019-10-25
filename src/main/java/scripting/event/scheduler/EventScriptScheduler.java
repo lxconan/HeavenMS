@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledFuture;
+
+import net.server.ServerTimer;
 import server.TimerManager;
 import net.server.Server;
 import net.server.audit.LockCollector;
@@ -82,7 +84,7 @@ public class EventScriptScheduler {
             schedulerLock.unlock();
         }
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         toRemove = new LinkedList<>();
         for (Entry<Runnable, Long> rmd : registeredEntriesCopy.entrySet()) {
             if (rmd.getValue() < timeNow) {
@@ -121,7 +123,7 @@ public class EventScriptScheduler {
                         schedulerTask = TimerManager.getInstance().register(monitorTask, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC, YamlConfig.config.server.MOB_STATUS_MONITOR_PROC);
                     }
 
-                    registeredEntries.put(scheduledAction, Server.getInstance().getCurrentTime() + duration);
+                    registeredEntries.put(scheduledAction, ServerTimer.getInstance().getCurrentTime() + duration);
                 } finally {
                     schedulerLock.unlock();
                 }

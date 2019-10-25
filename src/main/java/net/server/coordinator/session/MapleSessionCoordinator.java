@@ -19,6 +19,7 @@
 */
 package net.server.coordinator.session;
 
+import net.server.ServerTimer;
 import net.server.coordinator.login.LoginStorage;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -124,7 +125,7 @@ public class MapleSessionCoordinator {
     }
 
     private static void updateAccessAccount(Connection con, String remoteHwid, int accountId, int loginRelevance) throws SQLException {
-        java.sql.Timestamp nextTimestamp = new java.sql.Timestamp(Server.getInstance().getCurrentTime() + hwidExpirationUpdate(loginRelevance));
+        java.sql.Timestamp nextTimestamp = new java.sql.Timestamp(ServerTimer.getInstance().getCurrentTime() + hwidExpirationUpdate(loginRelevance));
         if(loginRelevance < Byte.MAX_VALUE) {
             loginRelevance++;
         }
@@ -143,7 +144,7 @@ public class MapleSessionCoordinator {
         try (PreparedStatement ps = con.prepareStatement("INSERT INTO hwidaccounts (accountid, hwid, expiresat) VALUES (?, ?, ?)")) {
             ps.setInt(1, accountId);
             ps.setString(2, remoteHwid);
-            ps.setTimestamp(3, new java.sql.Timestamp(Server.getInstance().getCurrentTime() + hwidExpirationUpdate(0)));
+            ps.setTimestamp(3, new java.sql.Timestamp(ServerTimer.getInstance().getCurrentTime() + hwidExpirationUpdate(0)));
 
             ps.executeUpdate();
         }
@@ -543,7 +544,7 @@ public class MapleSessionCoordinator {
 
     private void associateRemoteHostHwid(String remoteHost, String remoteHwid) {
         cachedHostHwids.put(remoteHost, remoteHwid);
-        cachedHostTimeout.put(remoteHost, Server.getInstance().getCurrentTime() + 604800000);   // 1 week-time entry
+        cachedHostTimeout.put(remoteHost, ServerTimer.getInstance().getCurrentTime() + 604800000);   // 1 week-time entry
     }
 
     public void runUpdateHwidHistory() {
@@ -558,7 +559,7 @@ public class MapleSessionCoordinator {
             ex.printStackTrace();
         }
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         List<String> toRemove = new LinkedList<>();
         for (Entry<String, Long> cht : cachedHostTimeout.entrySet()) {
             if (cht.getValue() < timeNow) {

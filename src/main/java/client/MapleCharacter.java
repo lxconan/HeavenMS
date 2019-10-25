@@ -56,6 +56,7 @@ import config.YamlConfig;
 import net.server.PlayerBuffValueHolder;
 import net.server.PlayerCoolDownValueHolder;
 import net.server.Server;
+import net.server.ServerTimer;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 import net.server.coordinator.world.MapleInviteCoordinator;
@@ -382,8 +383,8 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             }
         });
 
-        useCS = false;
 
+        useCS = false;
         setStance(0);
         inventory = new MapleInventory[MapleInventoryType.values().length];
         savedLocations = new SavedLocation[SavedLocationType.values().length];
@@ -2185,7 +2186,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             Skill battleship = SkillFactory.getSkill(Corsair.BATTLE_SHIP);
             int cooldown = battleship.getEffect(getSkillLevel(battleship)).getCooldown();
             announce(MaplePacketCreator.skillCooldown(Corsair.BATTLE_SHIP, cooldown));
-            addCooldown(Corsair.BATTLE_SHIP, Server.getInstance().getCurrentTime(), (long)(cooldown * 1000));
+            addCooldown(Corsair.BATTLE_SHIP, ServerTimer.getInstance().getCurrentTime(), (long)(cooldown * 1000));
             removeCooldown(5221999);
             cancelEffectFromBuffStat(MapleBuffStat.MONSTER_RIDING);
         } else {
@@ -2663,7 +2664,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     public Map<MapleDisease, Pair<Long, MobSkill>> getAllDiseases() {
         chrLock.lock();
         try {
-            long curtime = Server.getInstance().getCurrentTime();
+            long curtime = ServerTimer.getInstance().getCurrentTime();
             Map<MapleDisease, Pair<Long, MobSkill>> ret = new LinkedHashMap<>();
 
             for(Entry<MapleDisease, Long> de : diseaseExpires.entrySet()) {
@@ -2682,7 +2683,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     public void silentApplyDiseases(Map<MapleDisease, Pair<Long, MobSkill>> diseaseMap) {
         chrLock.lock();
         try {
-            long curTime = Server.getInstance().getCurrentTime();
+            long curTime = ServerTimer.getInstance().getCurrentTime();
 
             for(Entry<MapleDisease, Pair<Long, MobSkill>> di : diseaseMap.entrySet()) {
                 long expTime = curTime + di.getValue().getLeft();
@@ -2751,7 +2752,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
 
             chrLock.lock();
             try {
-                long curTime = Server.getInstance().getCurrentTime();
+                long curTime = ServerTimer.getInstance().getCurrentTime();
                 diseaseExpires.put(disease, curTime + skill.getDuration());
                 diseases.put(disease, new Pair<>(new MapleDiseaseValueHolder(curTime, skill.getDuration()), skill));
             } finally {
@@ -2845,7 +2846,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     public void changeFaceExpression(int emote) {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         if(timeNow - lastExpression > 2000) {
             lastExpression = timeNow;
 
@@ -2857,7 +2858,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     private void doHurtHp() {
         if (!(this.getInventory(MapleInventoryType.EQUIPPED).findById(getMap().getHPDecProtect()) != null || buffMapProtection())) {
             addHP(-getMap().getHPDec());
-            lastHpDec = Server.getInstance().getCurrentTime();
+            lastHpDec = ServerTimer.getInstance().getCurrentTime();
         }
     }
 
@@ -2875,7 +2876,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             hpDecreaseTask.cancel(false);
         }
 
-        long lastHpTask = Server.getInstance().getCurrentTime() - lastHpDec;
+        long lastHpTask = ServerTimer.getInstance().getCurrentTime() - lastHpDec;
         startHpDecreaseTask((lastHpTask > YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL) ? YamlConfig.config.server.MAP_DAMAGE_OVERTIME_INTERVAL : lastHpTask);
     }
 
@@ -2918,7 +2919,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
 
                     chrLock.lock();
                     try {
-                        long curTime = Server.getInstance().getCurrentTime();
+                        long curTime = ServerTimer.getInstance().getCurrentTime();
 
                         for(Entry<MapleDisease, Long> de : diseaseExpires.entrySet()) {
                             if(de.getValue() < curTime) {
@@ -2957,7 +2958,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                     try {
                         es = new LinkedHashSet<>(buffExpires.entrySet());
 
-                        long curTime = Server.getInstance().getCurrentTime();
+                        long curTime = ServerTimer.getInstance().getCurrentTime();
                         for(Entry<Integer, Long> bel : es) {
                             if(curTime >= bel.getValue()) {
                                 toCancel.add(buffEffects.get(bel.getKey()).entrySet().iterator().next().getValue());    //rofl
@@ -2999,7 +3000,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                         effLock.unlock();
                     }
 
-                    long curTime = Server.getInstance().getCurrentTime();
+                    long curTime = ServerTimer.getInstance().getCurrentTime();
                     for(Entry<Integer, MapleCoolDownValueHolder> bel : es) {
                         MapleCoolDownValueHolder mcdvh = bel.getValue();
                         if(curTime >= mcdvh.startTime + mcdvh.length) {
@@ -3485,7 +3486,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
         effLock.lock();
         chrLock.lock();
         try {
-            long curtime = Server.getInstance().getCurrentTime();
+            long curtime = ServerTimer.getInstance().getCurrentTime();
 
             Map<Integer, PlayerBuffValueHolder> ret = new LinkedHashMap<>();
             for(Map<MapleBuffStat, MapleBuffStatValueHolder> bel : buffEffects.values()) {
@@ -6020,7 +6021,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             this.battleshipHp = (int) length;
             addCooldown(skillid, 0, length);
         } else {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ServerTimer.getInstance().getCurrentTime();
             int time = (int) ((length + starttime) - timeNow);
             addCooldown(skillid, timeNow, time);
         }
@@ -6175,7 +6176,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     private boolean isBuybackInvincible() {
-        return Server.getInstance().getCurrentTime() - lastBuyback < 4200;
+        return ServerTimer.getInstance().getCurrentTime() - lastBuyback < 4200;
     }
 
     private int getBuybackFee() {
@@ -6193,7 +6194,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     public void showBuybackInfo() {
         String s = "#eBUYBACK STATUS#n\r\n\r\nCurrent buyback fee: #b" + getBuybackFee() + " " + (YamlConfig.config.server.USE_BUYBACK_WITH_MESOS ? "mesos" : "NX") + "#k\r\n\r\n";
 
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         boolean avail = true;
         if (!isAlive()) {
             long timeLapsed = timeNow - lastDeathtime;
@@ -6223,7 +6224,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     public boolean couldBuyback() {  // Ronan's buyback system
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
 
         if (timeNow - lastDeathtime > YamlConfig.config.server.BUYBACK_RETURN_MINUTES * 60 * 1000) {
             this.dropMessage(5, "The period of time to decide has expired, therefore you are unable to buyback.");
@@ -7385,7 +7386,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                 ps = con.prepareStatement("SELECT SkillID,StartTime,length FROM cooldowns WHERE charid = ?");
                 ps.setInt(1, ret.getId());
                 rs = ps.executeQuery();
-                long curTime = Server.getInstance().getCurrentTime();
+                long curTime = ServerTimer.getInstance().getCurrentTime();
                 while (rs.next()) {
                     final int skillid = rs.getInt("SkillID");
                     final long length = rs.getLong("length"), startTime = rs.getLong("StartTime");
@@ -7602,7 +7603,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
 
         cancelAllBuffs(false);
         dispelDebuffs();
-        lastDeathtime = Server.getInstance().getCurrentTime();
+        lastDeathtime = ServerTimer.getInstance().getCurrentTime();
 
         EventInstanceManager eim = getEventInstance();
         if (eim != null) {
@@ -8832,7 +8833,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             ps.setString(1, to);
             ps.setString(2, from);
             ps.setString(3, msg);
-            ps.setLong(4, Server.getInstance().getCurrentTime());
+            ps.setLong(4, ServerTimer.getInstance().getCurrentTime());
             ps.setByte(5, fame);
             ps.executeUpdate();
         } finally {
@@ -9615,7 +9616,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     private long getDojoTimeLeft() {
-        return client.getChannelServer().getDojoFinishTime(map.getId()) - Server.getInstance().getCurrentTime();
+        return client.getChannelServer().getDojoFinishTime(map.getId()) - ServerTimer.getInstance().getCurrentTime();
     }
 
     public void showDojoClock() {
@@ -9631,7 +9632,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     public void showUnderleveledInfo(MapleMonster mob) {
-        long curTime = Server.getInstance().getCurrentTime();
+        long curTime = ServerTimer.getInstance().getCurrentTime();
         if(nextWarningTime < curTime) {
             nextWarningTime = curTime + (60 * 1000);   // show underlevel info again after 1 minute
 
@@ -9640,7 +9641,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     public void showMapOwnershipInfo(MapleCharacter mapOwner) {
-        long curTime = Server.getInstance().getCurrentTime();
+        long curTime = ServerTimer.getInstance().getCurrentTime();
         if(nextWarningTime < curTime) {
             nextWarningTime = curTime + (60 * 1000);   // show underlevel info again after 1 minute
 
@@ -10019,7 +10020,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     private void runQuestExpireTask() {
         evtLock.lock();
         try {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ServerTimer.getInstance().getCurrentTime();
             List<MapleQuest> expireList = new LinkedList<>();
 
             for(Entry<MapleQuest, Long> qe : questExpirations.entrySet()) {
@@ -10056,7 +10057,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                 }, 10 * 1000);
             }
 
-            questExpirations.put(quest, Server.getInstance().getCurrentTime() + time);
+            questExpirations.put(quest, ServerTimer.getInstance().getCurrentTime() + time);
         } finally {
             evtLock.unlock();
         }

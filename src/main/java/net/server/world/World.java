@@ -60,6 +60,7 @@ import java.util.PriorityQueue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledFuture;
 
+import net.server.ServerTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scripting.event.EventInstanceManager;
@@ -201,7 +202,7 @@ public class World {
         runningPartyId.set(1000000001); // partyid must not clash with charid to solve update item looting issues, found thanks to Vcoc
         runningMessengerId.set(1);
 
-        petUpdate = Server.getInstance().getCurrentTime();
+        petUpdate = ServerTimer.getInstance().getCurrentTime();
         mountUpdate = petUpdate;
 
         for (int i = 0; i < 9; i++) {
@@ -222,7 +223,7 @@ public class World {
         timeoutSchedule = tman.register(new TimeoutTask(this), 10 * 1000, 10 * 1000);
 
         if(YamlConfig.config.server.USE_FAMILY_SYSTEM) {
-            long timeLeft = Server.getTimeLeftForNextDay();
+            long timeLeft = ServerTimer.getTimeLeftForNextDay();
             FamilyDailyResetTask.resetEntitlementUsage(this);
             tman.register(new FamilyDailyResetTask(this), 24 * 60 * 60 * 1000, timeLeft);
         }
@@ -1458,7 +1459,7 @@ public class World {
         activePetsLock.lock();
         try {
             int initProc;
-            if(Server.getInstance().getCurrentTime() - petUpdate > 55000) initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
+            if(ServerTimer.getInstance().getCurrentTime() - petUpdate > 55000) initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 2;
             else initProc = YamlConfig.config.server.PET_EXHAUST_COUNT - 1;
 
             activePets.put(key, initProc);
@@ -1483,7 +1484,7 @@ public class World {
 
         activePetsLock.lock();
         try {
-            petUpdate = Server.getInstance().getCurrentTime();
+            petUpdate = ServerTimer.getInstance().getCurrentTime();
             deployedPets = new HashMap<>(activePets);   // exception here found thanks to MedicOP
         } finally {
             activePetsLock.unlock();
@@ -1517,7 +1518,7 @@ public class World {
         activeMountsLock.lock();
         try {
             int initProc;
-            if(Server.getInstance().getCurrentTime() - mountUpdate > 45000) initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 2;
+            if(ServerTimer.getInstance().getCurrentTime() - mountUpdate > 45000) initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 2;
             else initProc = YamlConfig.config.server.MOUNT_EXHAUST_COUNT - 1;
 
             activeMounts.put(key, initProc);
@@ -1541,7 +1542,7 @@ public class World {
         Map<Integer, Integer> deployedMounts;
         activeMountsLock.lock();
         try {
-            mountUpdate = Server.getInstance().getCurrentTime();
+            mountUpdate = ServerTimer.getInstance().getCurrentTime();
             deployedMounts = new HashMap<>(activeMounts);
         } finally {
             activeMountsLock.unlock();
@@ -1613,7 +1614,7 @@ public class World {
         activeMerchantsLock.lock();
         try {
             int initProc;
-            if(Server.getInstance().getCurrentTime() - merchantUpdate > 5 * 60 * 1000) initProc = 1;
+            if(ServerTimer.getInstance().getCurrentTime() - merchantUpdate > 5 * 60 * 1000) initProc = 1;
             else initProc = 0;
 
             activeMerchants.put(hm.getOwnerId(), new Pair<>(hm, initProc));
@@ -1635,7 +1636,7 @@ public class World {
         Map<Integer, Pair<MapleHiredMerchant, Integer>> deployedMerchants;
         activeMerchantsLock.lock();
         try {
-            merchantUpdate = Server.getInstance().getCurrentTime();
+            merchantUpdate = ServerTimer.getInstance().getCurrentTime();
             deployedMerchants = new LinkedHashMap<>(activeMerchants);
 
             for(Map.Entry<Integer, Pair<MapleHiredMerchant, Integer>> dm: deployedMerchants.entrySet()) {
@@ -1689,7 +1690,7 @@ public class World {
     public void registerTimedMapObject(Runnable r, long duration) {
         timedMapObjectLock.lock();
         try {
-            long expirationTime = Server.getInstance().getCurrentTime() + duration;
+            long expirationTime = ServerTimer.getInstance().getCurrentTime() + duration;
             registeredTimedMapObjects.put(r, expirationTime);
         } finally {
             timedMapObjectLock.unlock();
@@ -1701,7 +1702,7 @@ public class World {
 
         timedMapObjectLock.lock();
         try {
-            long timeNow = Server.getInstance().getCurrentTime();
+            long timeNow = ServerTimer.getInstance().getCurrentTime();
 
             for(Entry<Runnable, Long> rtmo : registeredTimedMapObjects.entrySet()) {
                 if(rtmo.getValue() <= timeNow) {

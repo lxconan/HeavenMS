@@ -10,6 +10,7 @@ import config.YamlConfig;
 import java.util.HashMap;
 import java.util.Map;
 import net.server.Server;
+import net.server.ServerTimer;
 import tools.FilePrinter;
 
 /**
@@ -37,14 +38,14 @@ public class AutobanManager {
             if (chr.isGM() || chr.isBanned()){
                     return;
             }
-            
+
             if (lastTime.containsKey(fac)) {
-                if (lastTime.get(fac) < (Server.getInstance().getCurrentTime() - fac.getExpire())) {
+                if (lastTime.get(fac) < (ServerTimer.getInstance().getCurrentTime() - fac.getExpire())) {
                     points.put(fac, points.get(fac) / 2); //So the points are not completely gone.
                 }
             }
             if (fac.getExpire() != -1)
-                lastTime.put(fac, Server.getInstance().getCurrentTime());
+                lastTime.put(fac, ServerTimer.getInstance().getCurrentTime());
 
             if (points.containsKey(fac)) {
                 points.put(fac, points.get(fac) + 1);
@@ -79,12 +80,12 @@ public class AutobanManager {
         this.lastmisses = misses;
         this.misses = 0;
     }
-    
+
     //Don't use the same type for more than 1 thing
     public void spam(int type) {
-        this.spam[type] = Server.getInstance().getCurrentTime();
+        this.spam[type] = ServerTimer.getInstance().getCurrentTime();
     }
-    
+
     public void spam(int type, int timestamp) {
         this.spam[type] = timestamp;
     }
@@ -111,13 +112,13 @@ public class AutobanManager {
      * @return Timestamp checker
      */
     public void setTimestamp(int type, int time, int times) {
-        if (this.timestamp[type] == time) {  
+        if (this.timestamp[type] == time) {
             this.timestampcounter[type]++;
             if (this.timestampcounter[type] >= times) {
                 if (YamlConfig.config.server.USE_AUTOBAN) {
                     chr.getClient().disconnect(false, false);
                 }
-                
+
                 FilePrinter.print(FilePrinter.EXPLOITS, "Player " + chr + " was caught spamming TYPE " + type + " and has been disconnected.");
             }
         } else {

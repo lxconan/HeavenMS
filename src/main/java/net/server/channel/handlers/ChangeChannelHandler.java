@@ -22,6 +22,7 @@
 package net.server.channel.handlers;
 
 import net.AbstractMaplePacketHandler;
+import net.server.ServerTimer;
 import tools.data.input.SeekableLittleEndianAccessor;
 import client.MapleClient;
 import client.autoban.AutobanFactory;
@@ -37,7 +38,7 @@ public final class ChangeChannelHandler extends AbstractMaplePacketHandler {
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         int channel = slea.readByte() + 1;
         slea.readInt();
-        c.getPlayer().getAutobanManager().setTimestamp(6, Server.getInstance().getCurrentTimestamp(), 3);
+        c.getPlayer().getAutobanManager().setTimestamp(6, ServerTimer.getInstance().getCurrentTimestamp(), 3);
         if(c.getChannel() == channel) {
                 AutobanFactory.GENERAL.alert(c.getPlayer(), "CCing to same channel.");
                 c.disconnect(false, false);
@@ -45,7 +46,7 @@ public final class ChangeChannelHandler extends AbstractMaplePacketHandler {
         } else if (c.getPlayer().getCashShop().isOpened() || c.getPlayer().getMiniGame() != null || c.getPlayer().getPlayerShop() != null) {
     		return;
     	}
-        
+
         c.changeChannel(channel);
     }
 }

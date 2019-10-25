@@ -25,6 +25,7 @@ import java.awt.Point;
 
 import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
+import net.server.ServerTimer;
 import server.MapleStatEffect;
 import server.life.MapleMonster;
 import tools.MaplePacketCreator;
@@ -44,14 +45,14 @@ import constants.skills.SuperGM;
 import net.server.Server;
 
 public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
-    
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
     	MapleCharacter chr = c.getPlayer();
         slea.readInt();
-        chr.getAutobanManager().setTimestamp(4, Server.getInstance().getCurrentTimestamp(), 28);
+        chr.getAutobanManager().setTimestamp(4, ServerTimer.getInstance().getCurrentTimestamp(), 28);
         int skillid = slea.readInt();
-        
+
         /*
         if ((!GameConstants.isPqSkillMap(chr.getMapId()) && GameConstants.isPqSkill(skillid)) || (!chr.isGM() && GameConstants.isGMSkills(skillid)) || (!GameConstants.isInJobTree(skillid, chr.getJob().getId()) && !chr.isGM())) {
         	AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to packet edit skills.");
@@ -60,7 +61,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
             return;
         }
         */
-        
+
         Point pos = null;
         int __skillLevel = slea.readByte();
         Skill skill = SkillFactory.getSkill(skillid);
@@ -75,7 +76,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
             c.announce(MaplePacketCreator.serverNotice(5, "As you used the secret skill, your energy bar has been reset."));
         }
         if (skillLevel == 0 || skillLevel != __skillLevel) return;
-        
+
         MapleStatEffect effect = skill.getEffect(skillLevel);
         if (effect.getCooldown() > 0) {
             if (chr.skillIsCooling(skillid)) {
@@ -85,7 +86,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
                 if(MapleStatEffect.isHerosWill(skillid) && YamlConfig.config.server.USE_FAST_REUSE_HERO_WILL) {
                     cooldownTime /= 60;
                 }
-                
+
                 c.announce(MaplePacketCreator.skillCooldown(skillid, cooldownTime));
                 chr.addCooldown(skillid, currentServerTime(), cooldownTime * 1000);
             }
@@ -101,7 +102,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
                     if (!monster.isBoss()) {
                         monster.aggroClearDamages();
                         monster.aggroMonsterDamage(chr, 1);
-                        
+
                         // thanks onechord for pointing out Magnet crashing the caster (issue would actually happen upon failing to catch mob)
                         // thanks Conrad for noticing Magnet crashing when trying to pull bosses and fixed mobs
                         monster.aggroSwitchController(chr, true);
@@ -115,7 +116,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
         } else if (skillid == Brawler.MP_RECOVERY) {// MP Recovery
             Skill s = SkillFactory.getSkill(skillid);
             MapleStatEffect ef = s.getEffect(chr.getSkillLevel(s));
-            
+
             int lose = chr.safeAddHP(-1 * (chr.getCurrentMaxHp() / ef.getX()));
             int gain = -lose * (ef.getY() / 100);
             chr.addMP(gain);
@@ -125,7 +126,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
         } else if (skillid % 10000000 == 1004) {
             slea.readShort();
         }
-        
+
         if (slea.available() == 5) {
             pos = new Point(slea.readShort(), slea.readShort());
         }
@@ -149,7 +150,7 @@ public final class SpecialMoveHandler extends AbstractMaplePacketHandler {
                         c.releaseClient();
                     }
                 }
-                
+
                 c.announce(MaplePacketCreator.enableActions());
             }
         } else {

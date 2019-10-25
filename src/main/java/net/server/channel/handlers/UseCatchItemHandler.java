@@ -29,6 +29,7 @@ import constants.inventory.ItemConstants;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
 import client.inventory.manipulator.MapleInventoryManipulator;
+import net.server.ServerTimer;
 import server.MapleItemInformationProvider;
 import server.life.MapleMonster;
 import tools.MaplePacketCreator;
@@ -44,7 +45,7 @@ public final class UseCatchItemHandler extends AbstractMaplePacketHandler {
         MapleCharacter chr = c.getPlayer();
         AutobanManager abm = chr.getAutobanManager();
         slea.readInt();
-        abm.setTimestamp(5, Server.getInstance().getCurrentTimestamp(), 4);
+        abm.setTimestamp(5, ServerTimer.getInstance().getCurrentTimestamp(), 4);
         slea.readShort();
         int itemId = slea.readInt();
         int monsterid = slea.readInt();

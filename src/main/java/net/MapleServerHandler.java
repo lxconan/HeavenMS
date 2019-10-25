@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import config.ServerConfig;
 import config.YamlConfig;
+import net.server.ServerTimer;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -228,7 +229,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
     private void registerIdleSession(MapleClient c) {
         if(idleLock.tryLock()) {
             try {
-                idleSessions.put(c, Server.getInstance().getCurrentTime());
+                idleSessions.put(c, ServerTimer.getInstance().getCurrentTime());
                 c.announce(MaplePacketCreator.getPing());
             } finally {
                 idleLock.unlock();
@@ -236,7 +237,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
         } else {
             tempLock.lock();
             try {
-                tempIdleSessions.put(c, Server.getInstance().getCurrentTime());
+                tempIdleSessions.put(c, ServerTimer.getInstance().getCurrentTime());
                 c.announce(MaplePacketCreator.getPing());
             } finally {
                 tempLock.unlock();
@@ -245,7 +246,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
     }
 
     private void manageIdleSessions() {
-        long timeNow = Server.getInstance().getCurrentTime();
+        long timeNow = ServerTimer.getInstance().getCurrentTime();
         long timeThen = timeNow - 15000;
 
         idleLock.lock();

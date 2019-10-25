@@ -22,15 +22,15 @@
 package net;
 
 import client.MapleClient;
-import net.server.Server;
+import net.server.ServerTimer;
 
 public abstract class AbstractMaplePacketHandler implements MaplePacketHandler {
     @Override
     public boolean validateState(MapleClient c) {
         return c.isLoggedIn();
     }
-    
+
     protected static long currentServerTime() {
-        return Server.getInstance().getCurrentTime();
+        return ServerTimer.getInstance().getCurrentTime();
     }
 }
