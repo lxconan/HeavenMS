@@ -104,9 +104,9 @@ public class Server {
         return instance;
     }
 
-    private static final Set<Integer> activeFly = new HashSet<>();
-    private static final Map<Integer, Integer> couponRates = new HashMap<>(30);
-    private static final List<Integer> activeCoupons = new LinkedList<>();
+    private final Set<Integer> activeFly = new HashSet<>();
+    private final Map<Integer, Integer> couponRates = new HashMap<>(30);
+    private final List<Integer> activeCoupons = new LinkedList<>();
 
     private IoAcceptor acceptor;
     private List<Map<Integer, String>> channels = new LinkedList<>();
@@ -144,7 +144,7 @@ public class Server {
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
-    public static long uptime = System.currentTimeMillis();
+    private long uptime = System.currentTimeMillis();
     private final PlayerNpcFieldGateway playerNpcFieldGateway;
     private final DataConnectionFactory dataConnectionFactory;
 
@@ -153,8 +153,12 @@ public class Server {
         this.dataConnectionFactory = dataConnectionFactory;
     }
 
+    public long getUptime() {
+        return uptime;
+    }
+
     public int getCurrentTimestamp() {
-        return (int) (Server.getInstance().getCurrentTime() - Server.uptime);
+        return (int) (Server.getInstance().getCurrentTime() - uptime);
     }
 
     public long getCurrentTime() {  // returns a slightly delayed time value, under frequency of UPDATE_INTERVAL
@@ -493,7 +497,7 @@ public class Server {
         return couponRates;
     }
 
-    public static void cleanNxcodeCoupons(Connection con) throws SQLException {
+    private void cleanNxcodeCoupons(Connection con) throws SQLException {
         if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS) return;
 
         long timeClear = System.currentTimeMillis() - 14 * 24 * 60 * 60 * 1000;
@@ -1707,7 +1711,7 @@ public class Server {
         }
     }
 
-    private static String getRemoteIp(IoSession session) {
+    private String getRemoteIp(IoSession session) {
         return MapleSessionCoordinator.getSessionRemoteAddress(session);
     }
 

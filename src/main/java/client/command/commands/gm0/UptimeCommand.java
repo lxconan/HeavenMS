@@ -34,7 +34,7 @@ public class UptimeCommand extends Command {
 
     @Override
     public void execute(MapleClient c, String[] params) {
-        long milliseconds = System.currentTimeMillis() - Server.uptime;
+        long milliseconds = System.currentTimeMillis() - Server.getInstance().getUptime();
         int seconds = (int) (milliseconds / 1000) % 60 ;
         int minutes = (int) ((milliseconds / (1000*60)) % 60);
         int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
