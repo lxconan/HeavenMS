@@ -1,14 +1,17 @@
 package abstraction;
 
 import abstraction.dao.PlayerNpcFieldGateway;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 
 public class ApplicationContextFactory {
-    private static ApplicationContext instance;
+    private static GenericApplicationContext instance;
 
     static {
-        instance = new ApplicationContext();
-        instance.register(DataConnectionFactory.class, new DataConnectionFactoryImpl());
-        instance.register(PlayerNpcFieldGateway.class, new PlayerNpcFieldGateway(instance));
+        instance = new GenericApplicationContext();
+        instance.registerBean(DataConnectionFactoryImpl.class);
+        instance.registerBean(PlayerNpcFieldGateway.class);
+        instance.refresh();
     }
 
     public static ApplicationContext getInstance() {

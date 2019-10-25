@@ -1,21 +1,18 @@
 package abstraction.dao;
 
-import abstraction.ApplicationContext;
 import abstraction.DataConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class PlayerNpcFieldGateway {
     private final DataConnectionFactory dataConnectionFactory;
 
-    public PlayerNpcFieldGateway(ApplicationContext applicationContext) {
-        this.dataConnectionFactory = applicationContext.getBean(DataConnectionFactory.class);
+    public PlayerNpcFieldGateway(DataConnectionFactory dataConnectionFactory) {
+        this.dataConnectionFactory = dataConnectionFactory;
     }
 
     public void forEach(Consumer<PlayerNpcField> consumer) throws SQLException {

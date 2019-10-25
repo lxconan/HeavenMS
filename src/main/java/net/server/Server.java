@@ -21,7 +21,6 @@
  */
 package net.server;
 
-import abstraction.ApplicationContext;
 import abstraction.ApplicationContextFactory;
 import abstraction.DataConnectionFactory;
 import abstraction.dao.PlayerNpcFieldGateway;
@@ -62,6 +61,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import server.CashShop.CashItemFactory;
 import server.MapleSkillbookInformationProvider;
 import server.ThreadManager;
@@ -96,7 +96,10 @@ public class Server {
 
     public static Server getInstance() {
         if (instance == null) {
-            instance = new Server(ApplicationContextFactory.getInstance());
+            final ApplicationContext context = ApplicationContextFactory.getInstance();
+            Server.instance = new Server(
+                context.getBean(PlayerNpcFieldGateway.class),
+                context.getBean(DataConnectionFactory.class));
         }
         return instance;
     }
@@ -142,13 +145,12 @@ public class Server {
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
     public static long uptime = System.currentTimeMillis();
-
-    private final ApplicationContext applicationContext;
     private final PlayerNpcFieldGateway playerNpcFieldGateway;
+    private final DataConnectionFactory dataConnectionFactory;
 
-    public Server(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-        playerNpcFieldGateway = new PlayerNpcFieldGateway(this.applicationContext);
+    public Server(PlayerNpcFieldGateway playerNpcFieldGateway, DataConnectionFactory dataConnectionFactory) {
+        this.playerNpcFieldGateway = playerNpcFieldGateway;
+        this.dataConnectionFactory = dataConnectionFactory;
     }
 
     public int getCurrentTimestamp() {
@@ -1883,8 +1885,6 @@ public class Server {
     }
 
     private Connection createConnection() throws SQLException {
-        final DataConnectionFactory dataConnectionFactory = applicationContext.getBean(
-            DataConnectionFactory.class);
         return dataConnectionFactory.getConnection();
     }
 }
