@@ -297,24 +297,7 @@ public class Server {
     }
 
     public boolean removeChannel(int worldid) {   //lol don't!
-        worldServer.getWldWLock().lock();
-        try {
-            if (worldid >= worldServer.getWorlds().size()) return false;
-
-            World world = worldServer.getWorlds().get(worldid);
-            if (world != null) {
-                int channel = world.removeChannel();
-
-                Map<Integer, String> m = worldServer.getChannels().get(worldid);
-                if (m != null) m.remove(channel);
-
-                return channel > -1;
-            }
-        } finally {
-            worldServer.getWldWLock().unlock();
-        }
-
-        return false;
+        return worldServer.removeChannel(worldid);
     }
 
     public boolean removeWorld() {   //lol don't!
