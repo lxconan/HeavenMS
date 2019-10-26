@@ -109,7 +109,6 @@ public class Server {
     private final List<Integer> activeCoupons = new LinkedList<>();
 
     private IoAcceptor acceptor;
-    private List<Map<Integer, String>> channels = new LinkedList<>();
     private final WorldServer worldServer = new WorldServer();
     private final Properties subnetInfo = new Properties();
     private final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
@@ -253,7 +252,7 @@ public class Server {
     public Set<Integer> getOpenChannels(int world) {
         wldRLock.lock();
         try {
-            return new HashSet<>(channels.get(world).keySet());
+            return new HashSet<>(worldServer.getChannels().get(world).keySet());
         } finally {
             wldRLock.unlock();
         }
@@ -262,7 +261,7 @@ public class Server {
     private String getIP(int world, int channel) {
         wldRLock.lock();
         try {
-            return channels.get(world).get(channel);
+            return worldServer.getChannels().get(world).get(channel);
         } finally {
             wldRLock.unlock();
         }
@@ -281,7 +280,7 @@ public class Server {
         try {
             if (worldid >= worldServer.getWorlds().size()) return -3;
 
-            Map<Integer, String> worldChannels = channels.get(worldid);
+            Map<Integer, String> worldChannels = worldServer.getChannels().get(worldid);
             if (worldChannels == null) return -3;
 
             int channelid = worldChannels.size();
@@ -364,7 +363,7 @@ public class Server {
                 channelInfo.put(channelid, channel.getIP());
             }
 
-            channels.add(i, channelInfo);
+            worldServer.getChannels().add(i, channelInfo);
 
             world.setServerMessage(YamlConfig.config.worlds.get(i).server_message);
 
@@ -384,7 +383,7 @@ public class Server {
             if (world != null) {
                 int channel = world.removeChannel();
 
-                Map<Integer, String> m = channels.get(worldid);
+                Map<Integer, String> m = worldServer.getChannels().get(worldid);
                 if (m != null) m.remove(channel);
 
                 return channel > -1;
@@ -423,7 +422,7 @@ public class Server {
                 w.shutdown();
 
                 worldServer.getWorlds().remove(worldid);
-                channels.remove(worldid);
+                worldServer.getChannels().remove(worldid);
                 worldRecommendedList.remove(worldid);
             } else {
                 return false;
@@ -439,7 +438,7 @@ public class Server {
         wldWLock.lock();
         try {
             worldServer.getWorlds().clear();
-            channels.clear();
+            worldServer.getChannels().clear();
             worldRecommendedList.clear();
         } finally {
             wldWLock.unlock();
