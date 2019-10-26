@@ -130,10 +130,6 @@ public class Server {
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
     private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
-    private final ReentrantReadWriteLock wldLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_WORLDS, true);
-    private final ReadLock wldRLock = wldLock.readLock();
-    private final WriteLock wldWLock = wldLock.writeLock();
-
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
     private final ReadLock lgnRLock = lgnLock.readLock();
     private final WriteLock lgnWLock = lgnLock.writeLock();
@@ -193,29 +189,19 @@ public class Server {
     }
 
     public World getWorld(int id) {
-        wldRLock.lock();
-        try {
-            return id >= 0 && id < worldServer.getWorlds().size() ? worldServer.getWorlds().get(id) : null;
-        } finally {
-            wldRLock.unlock();
-        }
+        return worldServer.getWorld(id);
     }
 
     public List<World> getWorlds() {
-        wldRLock.lock();
-        try {
-            return Collections.unmodifiableList(worldServer.getWorlds());
-        } finally {
-            wldRLock.unlock();
-        }
+        return worldServer.getWorldsSync();
     }
 
     public int getWorldsSize() {
-        wldRLock.lock();
+        worldServer.getWldRLock().lock();
         try {
             return worldServer.getWorlds().size();
         } finally {
-            wldRLock.unlock();
+            worldServer.getWldRLock().unlock();
         }
     }
 
@@ -250,20 +236,20 @@ public class Server {
     }
 
     public Set<Integer> getOpenChannels(int world) {
-        wldRLock.lock();
+        worldServer.getWldRLock().lock();
         try {
             return new HashSet<>(worldServer.getChannels().get(world).keySet());
         } finally {
-            wldRLock.unlock();
+            worldServer.getWldRLock().unlock();
         }
     }
 
     private String getIP(int world, int channel) {
-        wldRLock.lock();
+        worldServer.getWldRLock().lock();
         try {
             return worldServer.getChannels().get(world).get(channel);
         } finally {
-            wldRLock.unlock();
+            worldServer.getWldRLock().unlock();
         }
     }
 
@@ -276,7 +262,7 @@ public class Server {
     }
 
     public int addChannel(int worldid) {
-        wldWLock.lock();
+        worldServer.getWldWLock().lock();
         try {
             if (worldid >= worldServer.getWorlds().size()) return -3;
 
@@ -297,7 +283,7 @@ public class Server {
 
             return channelid;
         } finally {
-            wldWLock.unlock();
+            worldServer.getWldWLock().unlock();
         }
     }
 
@@ -323,7 +309,7 @@ public class Server {
     }
 
     private int initWorld() {
-        wldWLock.lock();
+        worldServer.getWldWLock().lock();
         try {
             int i = worldServer.getWorlds().size();
 
@@ -370,12 +356,12 @@ public class Server {
             logger.info("Finished loading world " + i);
             return i;
         } finally {
-            wldWLock.unlock();
+            worldServer.getWldWLock().unlock();
         }
     }
 
     public boolean removeChannel(int worldid) {   //lol don't!
-        wldWLock.lock();
+        worldServer.getWldWLock().lock();
         try {
             if (worldid >= worldServer.getWorlds().size()) return false;
 
@@ -389,7 +375,7 @@ public class Server {
                 return channel > -1;
             }
         } finally {
-            wldWLock.unlock();
+            worldServer.getWldWLock().unlock();
         }
 
         return false;
@@ -399,7 +385,7 @@ public class Server {
         World w;
         int worldid;
 
-        wldRLock.lock();
+        worldServer.getWldRLock().lock();
         try {
             worldid = worldServer.getWorlds().size() - 1;
             if (worldid < 0) {
@@ -408,14 +394,14 @@ public class Server {
 
             w = worldServer.getWorlds().get(worldid);
         } finally {
-            wldRLock.unlock();
+            worldServer.getWldRLock().unlock();
         }
 
         if (w == null || !w.canUninstall()) {
             return false;
         }
 
-        wldWLock.lock();
+        worldServer.getWldWLock().lock();
         try {
             if (worldid == worldServer.getWorlds().size() - 1) {
                 removeWorldPlayerRanking();
@@ -428,20 +414,20 @@ public class Server {
                 return false;
             }
         } finally {
-            wldWLock.unlock();
+            worldServer.getWldWLock().unlock();
         }
 
         return true;
     }
 
     private void resetServerWorlds() {  // thanks maple006 for noticing proprietary lists assigned to null
-        wldWLock.lock();
+        worldServer.getWldWLock().lock();
         try {
             worldServer.getWorlds().clear();
             worldServer.getChannels().clear();
             worldRecommendedList.clear();
         } finally {
-            wldWLock.unlock();
+            worldServer.getWldWLock().unlock();
         }
     }
 
@@ -606,18 +592,18 @@ public class Server {
     }
 
     public List<Pair<String, Integer>> getWorldPlayerRanking(int worldid) {
-        wldRLock.lock();
+        worldServer.getWldRLock().lock();
         try {
             return new ArrayList<>(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldid : 0));
         } finally {
-            wldRLock.unlock();
+            worldServer.getWldRLock().unlock();
         }
     }
 
     private void installWorldPlayerRanking(int worldid) {
         List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(worldid);
         if (!ranking.isEmpty()) {
-            wldWLock.lock();
+            worldServer.getWldWLock().lock();
             try {
                 if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
                     for (int i = playerRanking.size(); i <= worldid; i++) {
@@ -629,14 +615,14 @@ public class Server {
                     playerRanking.add(0, ranking.get(0).getRight());
                 }
             } finally {
-                wldWLock.unlock();
+                worldServer.getWldWLock().unlock();
             }
         }
     }
 
     private void removeWorldPlayerRanking() {
         if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-            wldWLock.lock();
+            worldServer.getWldWLock().lock();
             try {
                 if (playerRanking.size() < this.getWorldsSize()) {
                     return;
@@ -644,17 +630,17 @@ public class Server {
 
                 playerRanking.remove(playerRanking.size() - 1);
             } finally {
-                wldWLock.unlock();
+                worldServer.getWldWLock().unlock();
             }
         } else {
             List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 2));  // update
             // ranking list
 
-            wldWLock.lock();
+            worldServer.getWldWLock().lock();
             try {
                 playerRanking.add(0, ranking.get(0).getRight());
             } finally {
-                wldWLock.unlock();
+                worldServer.getWldWLock().unlock();
             }
         }
     }
@@ -662,7 +648,7 @@ public class Server {
     public void updateWorldPlayerRanking() {
         List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 1));
         if (!rankUpdates.isEmpty()) {
-            wldWLock.lock();
+            worldServer.getWldWLock().lock();
             try {
                 if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
                     for (int i = playerRanking.size(); i <= rankUpdates.get(rankUpdates.size() - 1).getLeft(); i++) {
@@ -676,7 +662,7 @@ public class Server {
                     playerRanking.set(0, rankUpdates.get(0).getRight());
                 }
             } finally {
-                wldWLock.unlock();
+                worldServer.getWldWLock().unlock();
             }
         }
     }
