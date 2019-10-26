@@ -83,7 +83,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -221,29 +220,7 @@ public class Server {
     }
 
     public int addChannel(int worldid) {
-        worldServer.getWldWLock().lock();
-        try {
-            if (worldid >= worldServer.getWorlds().size()) return -3;
-
-            Map<Integer, String> worldChannels = worldServer.getChannels().get(worldid);
-            if (worldChannels == null) return -3;
-
-            int channelid = worldChannels.size();
-            if (channelid >= YamlConfig.config.server.CHANNEL_SIZE) return -2;
-
-            channelid++;
-            World world = this.getWorld(worldid);
-            Channel channel = new Channel(worldid, channelid, ServerTimer.getInstance().getCurrentTime());
-
-            channel.setServerMessage(YamlConfig.config.worlds.get(worldid).why_am_i_recommended);
-
-            world.addChannel(channel);
-            worldChannels.put(channelid, channel.getIP());
-
-            return channelid;
-        } finally {
-            worldServer.getWldWLock().unlock();
-        }
+        return worldServer.addChannel(worldid);
     }
 
     public int addWorld() {

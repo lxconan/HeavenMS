@@ -1,5 +1,6 @@
 package net.server;
 
+import config.YamlConfig;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 import net.server.channel.Channel;
@@ -37,6 +38,32 @@ class WorldServer {
             return id >= 0 && id < worlds.size() ? worlds.get(id) : null;
         } finally {
             wldRLock.unlock();
+        }
+    }
+
+    public int addChannel(int worldid) {
+        wldWLock.lock();
+        try {
+            if (worldid >= worlds.size()) return -3;
+
+            Map<Integer, String> worldChannels = channels.get(worldid);
+            if (worldChannels == null) return -3;
+
+            int channelid = worldChannels.size();
+            if (channelid >= YamlConfig.config.server.CHANNEL_SIZE) return -2;
+
+            channelid++;
+            World world = getWorld(worldid);
+            Channel channel = new Channel(worldid, channelid, ServerTimer.getInstance().getCurrentTime());
+
+            channel.setServerMessage(YamlConfig.config.worlds.get(worldid).why_am_i_recommended);
+
+            world.addChannel(channel);
+            worldChannels.put(channelid, channel.getIP());
+
+            return channelid;
+        } finally {
+            wldWLock.unlock();
         }
     }
 
