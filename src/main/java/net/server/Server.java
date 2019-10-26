@@ -213,12 +213,7 @@ public class Server {
     }
 
     public Set<Integer> getOpenChannels(int world) {
-        worldServer.getWldRLock().lock();
-        try {
-            return new HashSet<>(worldServer.getChannels().get(world).keySet());
-        } finally {
-            worldServer.getWldRLock().unlock();
-        }
+        return worldServer.getOpenChannels(world);
     }
 
     private String getIP(int world, int channel) {

@@ -59,11 +59,11 @@ class WorldServer {
 
     public List<Channel> getAllChannels() {
         try {
-            List<Channel> channelz = new ArrayList<>();
+            List<Channel> allChannels = new ArrayList<>();
             for (World world : getWorldsSync()) {
-                channelz.addAll(world.getChannels());
+                allChannels.addAll(world.getChannels());
             }
-            return channelz;
+            return allChannels;
         } catch (NullPointerException npe) {
             return new ArrayList<>(0);
         }
@@ -82,6 +82,15 @@ class WorldServer {
         wldRLock.lock();
         try {
             return worlds.size();
+        } finally {
+            wldRLock.unlock();
+        }
+    }
+
+    public Set<Integer> getOpenChannels(int world) {
+        wldRLock.lock();
+        try {
+            return new HashSet<>(channels.get(world).keySet());
         } finally {
             wldRLock.unlock();
         }
