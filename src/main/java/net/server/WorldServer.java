@@ -47,4 +47,13 @@ class WorldServer {
             wldRLock.unlock();
         }
     }
+
+    public int getWorldsSize() {
+        wldRLock.lock();
+        try {
+            return worlds.size();
+        } finally {
+            wldRLock.unlock();
+        }
+    }
 }

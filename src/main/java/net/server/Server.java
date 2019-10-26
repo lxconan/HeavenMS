@@ -197,12 +197,7 @@ public class Server {
     }
 
     public int getWorldsSize() {
-        worldServer.getWldRLock().lock();
-        try {
-            return worldServer.getWorlds().size();
-        } finally {
-            worldServer.getWldRLock().unlock();
-        }
+        return worldServer.getWorldsSize();
     }
 
     public Channel getChannel(int world, int channel) {
