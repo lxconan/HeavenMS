@@ -110,7 +110,7 @@ public class Server {
 
     private IoAcceptor acceptor;
     private List<Map<Integer, String>> channels = new LinkedList<>();
-    private List<World> worlds = new ArrayList<>();
+    private final WorldServer worldServer = new WorldServer();
     private final Properties subnetInfo = new Properties();
     private final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
     private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
@@ -196,7 +196,7 @@ public class Server {
     public World getWorld(int id) {
         wldRLock.lock();
         try {
-            return id >= 0 && id < worlds.size() ? worlds.get(id) : null;
+            return id >= 0 && id < worldServer.getWorlds().size() ? worldServer.getWorlds().get(id) : null;
         } finally {
             wldRLock.unlock();
         }
@@ -205,7 +205,7 @@ public class Server {
     public List<World> getWorlds() {
         wldRLock.lock();
         try {
-            return Collections.unmodifiableList(worlds);
+            return Collections.unmodifiableList(worldServer.getWorlds());
         } finally {
             wldRLock.unlock();
         }
@@ -214,7 +214,7 @@ public class Server {
     public int getWorldsSize() {
         wldRLock.lock();
         try {
-            return worlds.size();
+            return worldServer.getWorlds().size();
         } finally {
             wldRLock.unlock();
         }
@@ -279,7 +279,7 @@ public class Server {
     public int addChannel(int worldid) {
         wldWLock.lock();
         try {
-            if (worldid >= worlds.size()) return -3;
+            if (worldid >= worldServer.getWorlds().size()) return -3;
 
             Map<Integer, String> worldChannels = channels.get(worldid);
             if (worldChannels == null) return -3;
@@ -326,7 +326,7 @@ public class Server {
     private int initWorld() {
         wldWLock.lock();
         try {
-            int i = worlds.size();
+            int i = worldServer.getWorlds().size();
 
             if (i >= YamlConfig.config.server.WLDLIST_SIZE) {
                 return -1;
@@ -352,7 +352,7 @@ public class Server {
                 exprate, droprate, bossdroprate, mesorate, questrate, travelrate, fishingrate);
 
             worldRecommendedList.add(new Pair<>(i, why_am_i_recommended));
-            worlds.add(world);
+            worldServer.getWorlds().add(world);
 
             Map<Integer, String> channelInfo = new HashMap<>();
             long bootTime = ServerTimer.getInstance().getCurrentTime();
@@ -378,9 +378,9 @@ public class Server {
     public boolean removeChannel(int worldid) {   //lol don't!
         wldWLock.lock();
         try {
-            if (worldid >= worlds.size()) return false;
+            if (worldid >= worldServer.getWorlds().size()) return false;
 
-            World world = worlds.get(worldid);
+            World world = worldServer.getWorlds().get(worldid);
             if (world != null) {
                 int channel = world.removeChannel();
 
@@ -402,12 +402,12 @@ public class Server {
 
         wldRLock.lock();
         try {
-            worldid = worlds.size() - 1;
+            worldid = worldServer.getWorlds().size() - 1;
             if (worldid < 0) {
                 return false;
             }
 
-            w = worlds.get(worldid);
+            w = worldServer.getWorlds().get(worldid);
         } finally {
             wldRLock.unlock();
         }
@@ -418,11 +418,11 @@ public class Server {
 
         wldWLock.lock();
         try {
-            if (worldid == worlds.size() - 1) {
+            if (worldid == worldServer.getWorlds().size() - 1) {
                 removeWorldPlayerRanking();
                 w.shutdown();
 
-                worlds.remove(worldid);
+                worldServer.getWorlds().remove(worldid);
                 channels.remove(worldid);
                 worldRecommendedList.remove(worldid);
             } else {
@@ -438,7 +438,7 @@ public class Server {
     private void resetServerWorlds() {  // thanks maple006 for noticing proprietary lists assigned to null
         wldWLock.lock();
         try {
-            worlds.clear();
+            worldServer.getWorlds().clear();
             channels.clear();
             worldRecommendedList.clear();
         } finally {
