@@ -57,6 +57,18 @@ class WorldServer {
         }
     }
 
+    public List<Channel> getAllChannels() {
+        try {
+            List<Channel> channelz = new ArrayList<>();
+            for (World world : getWorldsSync()) {
+                channelz.addAll(world.getChannels());
+            }
+            return channelz;
+        } catch (NullPointerException npe) {
+            return new ArrayList<>(0);
+        }
+    }
+
     public List<World> getWorldsSync() {
         wldRLock.lock();
         try {
