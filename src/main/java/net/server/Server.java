@@ -201,19 +201,11 @@ public class Server {
     }
 
     public Channel getChannel(int world, int channel) {
-        try {
-            return this.getWorld(world).getChannel(channel);
-        } catch (NullPointerException npe) {
-            return null;
-        }
+        return worldServer.getChannel(world, channel);
     }
 
     public List<Channel> getChannelsFromWorld(int world) {
-        try {
-            return this.getWorld(world).getChannels();
-        } catch (NullPointerException npe) {
-            return new ArrayList<>(0);
-        }
+        return worldServer.getChannelsFromWorld(world);
     }
 
     public List<Channel> getAllChannels() {

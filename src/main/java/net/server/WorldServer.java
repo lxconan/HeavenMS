@@ -2,6 +2,7 @@ package net.server;
 
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
+import net.server.channel.Channel;
 import net.server.world.World;
 
 import java.util.*;
@@ -36,6 +37,23 @@ class WorldServer {
             return id >= 0 && id < worlds.size() ? worlds.get(id) : null;
         } finally {
             wldRLock.unlock();
+        }
+    }
+
+    public Channel getChannel(int world, int channel) {
+        // TODO: This method is unsafe. Because the channel is not synchronized.
+        try {
+            return getWorld(world).getChannel(channel);
+        } catch (NullPointerException npe) {
+            return null;
+        }
+    }
+
+    public List<Channel> getChannelsFromWorld(int world) {
+        try {
+            return getWorld(world).getChannels();
+        } catch (NullPointerException npe) {
+            return new ArrayList<>(0);
         }
     }
 
