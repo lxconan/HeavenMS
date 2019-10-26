@@ -216,21 +216,8 @@ public class Server {
         return worldServer.getOpenChannels(world);
     }
 
-    private String getIP(int world, int channel) {
-        worldServer.getWldRLock().lock();
-        try {
-            return worldServer.getChannels().get(world).get(channel);
-        } finally {
-            worldServer.getWldRLock().unlock();
-        }
-    }
-
     public String[] getInetSocket(int world, int channel) {
-        try {
-            return getIP(world, channel).split(":");
-        } catch (Exception e) {
-            return null;
-        }
+        return worldServer.getInetSocket(world, channel);
     }
 
     public int addChannel(int worldid) {

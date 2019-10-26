@@ -95,4 +95,21 @@ class WorldServer {
             wldRLock.unlock();
         }
     }
+
+    private String getIP(int world, int channel) {
+        wldRLock.lock();
+        try {
+            return channels.get(world).get(channel);
+        } finally {
+            wldRLock.unlock();
+        }
+    }
+
+    public String[] getInetSocket(int world, int channel) {
+        try {
+            return getIP(world, channel).split(":");
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
