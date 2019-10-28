@@ -27,6 +27,7 @@ import client.MapleCharacter;
 import client.command.Command;
 import client.MapleClient;
 import net.server.Server;
+import net.server.WorldServer;
 import server.ThreadManager;
 
 public class ServerRemoveWorldCommand extends Command {
@@ -37,8 +38,8 @@ public class ServerRemoveWorldCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         final MapleCharacter player = c.getPlayer();
-        
-        final int rwid = Server.getInstance().getWorldsSize() - 1;
+
+        final int rwid = WorldServer.getInstance().getWorldsSize() - 1;
         if(rwid <= 0) {
             player.dropMessage(5, "Unable to remove world 0.");
             return;
@@ -49,7 +50,7 @@ public class ServerRemoveWorldCommand extends Command {
             public void run() {
                 if(Server.getInstance().removeWorld()) {
                     if(player.isLoggedinWorld()) {
-                        player.dropMessage(5, "Successfully removed a world. Current world count: " + Server.getInstance().getWorldsSize() + ".");
+                        player.dropMessage(5, "Successfully removed a world. Current world count: " + WorldServer.getInstance().getWorldsSize() + ".");
                     }
                 } else {
                     if(player.isLoggedinWorld()) {

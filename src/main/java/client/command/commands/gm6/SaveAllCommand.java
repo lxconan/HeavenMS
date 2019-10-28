@@ -39,7 +39,6 @@ public class SaveAllCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
-        Server.getInstance();
         for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 chr.saveCharToDB();

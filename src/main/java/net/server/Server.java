@@ -174,10 +174,6 @@ public class Server {
         }
     }
 
-    public int getWorldsSize() {
-        return worldServer.getWorldsSize();
-    }
-
     public Channel getChannel(int world, int channel) {
         return worldServer.getChannel(world, channel);
     }

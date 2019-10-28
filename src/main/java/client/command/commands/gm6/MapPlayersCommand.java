@@ -40,7 +40,6 @@ public class MapPlayersCommand extends Command {
         MapleCharacter player = c.getPlayer();
         String names = "";
         int map = player.getMapId();
-        Server.getInstance();
         for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 int curMap = chr.getMapId();

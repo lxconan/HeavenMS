@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.MaplePacketCreator;
 
 import java.net.InetAddress;
@@ -47,7 +48,7 @@ public class WarpWorldCommand extends Command {
 
         Server server = Server.getInstance();
         byte worldb = Byte.parseByte(params[0]);
-        if (worldb <= (server.getWorldsSize() - 1)) {
+        if (worldb <= (WorldServer.getInstance().getWorldsSize() - 1)) {
             try {
                 String[] socket = server.getInetSocket(worldb, c.getChannel());
                 c.getWorldServer().removePlayer(player);
@@ -63,7 +64,7 @@ public class WarpWorldCommand extends Command {
             }
 
         } else {
-            player.message("Invalid world; highest number available: " + (server.getWorldsSize() - 1));
+            player.message("Invalid world; highest number available: " + (WorldServer.getInstance().getWorldsSize() - 1));
         }
     }
 }

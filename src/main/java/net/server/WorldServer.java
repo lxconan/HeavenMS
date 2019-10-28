@@ -191,7 +191,7 @@ public class WorldServer {
         }
     }
 
-    int getWorldsSize() {
+    public int getWorldsSize() {
         wldRLock.lock();
         try {
             return worlds.size();

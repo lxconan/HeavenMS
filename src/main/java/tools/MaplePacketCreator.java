@@ -6271,7 +6271,6 @@ public class MaplePacketCreator {
         mplew.writeInt(0);
         mplew.writeBool(error == 0); //0 = ?, otherwise list servers
         if (error == 0) {
-            Server.getInstance();
             List<World> worlds = WorldServer.getInstance().getWorlds();
             mplew.writeInt(worlds.size());
             for (World world : worlds) {

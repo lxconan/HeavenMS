@@ -63,7 +63,6 @@ public class ShutdownCommand extends Command {
             strTime += minutes + " minutes, ";
             strTime += seconds + " seconds";
 
-            Server.getInstance();
             for (World w : WorldServer.getInstance().getWorlds()) {
                 for (MapleCharacter chr : w.getPlayerStorage().getAllCharacters()) {
                     chr.dropMessage("Server is undergoing maintenance process, and will be shutdown in " + strTime + ". Prepare yourself to quit safely in the mean time.");

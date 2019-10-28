@@ -31,6 +31,7 @@ import client.MapleClient;
 import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.DatabaseConnection;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -41,7 +42,7 @@ import tools.data.input.SeekableLittleEndianAccessor;
  * @author Ubaware
  */
 public final class TransferWorldHandler extends AbstractMaplePacketHandler {
-    
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         slea.readInt(); //cid
@@ -52,7 +53,7 @@ public final class TransferWorldHandler extends AbstractMaplePacketHandler {
             return;
         }
         MapleCharacter chr = c.getPlayer();
-        if(!YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER || Server.getInstance().getWorldsSize() <= 1) {
+        if(!YamlConfig.config.server.ALLOW_CASHSHOP_WORLD_TRANSFER || WorldServer.getInstance().getWorldsSize() <= 1) {
             c.announce(MaplePacketCreator.sendWorldTransferRules(9, c));
             return;
         }

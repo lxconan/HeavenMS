@@ -48,7 +48,6 @@ public class GotoCommand extends Command {
     {
         setDescription("");
 
-        Server.getInstance();
         MapleMapManager mapManager = WorldServer.getInstance().getWorlds().get(0).getChannels().get(0).getMapFactory();
 
         List<Entry<String, Integer>> towns = new ArrayList<>(GameConstants.GOTO_TOWNS.entrySet());

@@ -24,6 +24,7 @@ package server.maps;
 import client.MapleCharacter;
 import java.util.List;
 import net.server.Server;
+import net.server.WorldServer;
 import server.TimerManager;
 import tools.MaplePacketCreator;
 
@@ -33,16 +34,16 @@ import tools.MaplePacketCreator;
  * @author Ronan - made MapleTV mechanics synchronous
  */
 public class MapleTVEffect {
-	
-	private final static boolean ACTIVE[] = new boolean[Server.getInstance().getWorldsSize()];
-	
-	public static synchronized boolean broadcastMapleTVIfNotActive(MapleCharacter player, MapleCharacter victim, List<String> messages, int tvType){
+
+	private final static boolean[] ACTIVE = new boolean[WorldServer.getInstance().getWorldsSize()];
+
+    public static synchronized boolean broadcastMapleTVIfNotActive(MapleCharacter player, MapleCharacter victim, List<String> messages, int tvType){
                 int w = player.getWorld();
                 if(!ACTIVE[w]) {
                         broadcastTV(true, w, messages, player, tvType, victim);
                         return true;
                 }
-            
+
 		return false;
 	}
 

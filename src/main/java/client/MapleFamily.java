@@ -68,7 +68,6 @@ public class MapleFamily {
     }
 
     private static boolean idInUse(int id) {
-        Server.getInstance();
         for(World world : WorldServer.getInstance().getWorlds()) {
             if(world.getFamily(id) != null) return true;
         }
@@ -273,7 +272,6 @@ public class MapleFamily {
             FilePrinter.printError(FilePrinter.FAMILY_ERROR, e, "Could not get DB connection.");
             e.printStackTrace();
         }
-        Server.getInstance();
         for(World world : WorldServer.getInstance().getWorlds()) {
             for(MapleFamily family : world.getFamilies()) {
                 family.getLeader().doFullCount();

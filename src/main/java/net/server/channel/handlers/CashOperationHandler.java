@@ -36,13 +36,13 @@ import java.util.List;
 import java.util.Map;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.CashShop;
 import server.CashShop.CashItem;
 import server.CashShop.CashItemFactory;
 import client.inventory.manipulator.MapleInventoryManipulator;
-import constants.net.ServerConstants;
 import server.MapleItemInformationProvider;
 import tools.FilePrinter;
 import tools.MaplePacketCreator;
@@ -413,7 +413,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                         int newWorldSelection = slea.readInt();
 
                         int worldTransferError = chr.checkWorldTransferEligibility();
-                        if(worldTransferError != 0 || newWorldSelection >= Server.getInstance().getWorldsSize() || Server.getInstance().getWorldsSize() <= 1) {
+                        if(worldTransferError != 0 || newWorldSelection >= WorldServer.getInstance().getWorldsSize() || WorldServer.getInstance().getWorldsSize() <= 1) {
                             c.announce(MaplePacketCreator.showCashShopMessage((byte)0));
                             return;
                         } else if(newWorldSelection == c.getWorld()) {

@@ -85,7 +85,6 @@ public class MapleLoginBypassCoordinator {
             Set<Integer> onlineAccounts = new HashSet<>();
             long timeNow = ServerTimer.getInstance().getCurrentTime();
 
-            Server.getInstance();
             for (World w : WorldServer.getInstance().getWorlds()) {
                 for (MapleCharacter chr : w.getPlayerStorage().getAllCharacters()) {
                     MapleClient c = chr.getClient();

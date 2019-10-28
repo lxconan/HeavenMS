@@ -44,7 +44,6 @@ public class IpListCommand extends Command {
     public void execute(MapleClient c, String[] params) {
         String str = "Player-IP relation:";
 
-        Server.getInstance();
         for (World w : WorldServer.getInstance().getWorlds()) {
             Collection<MapleCharacter> chars = w.getPlayerStorage().getAllCharacters();
 
