@@ -8789,8 +8789,8 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
 
     public void sendPolice(String text) {
         String message = getName() + " received this - " + text;
-        if (Server.getInstance().isGmOnline(this.getWorld())) { //Alert and log if a GM is online
-            Server.getInstance().broadcastGMMessage(this.getWorld(), MaplePacketCreator.sendYellowTip(message));
+        if (WorldServer.getInstance().isGmOnline(this.getWorld())) { //Alert and log if a GM is online
+            WorldServer.getInstance().broadcastGMMessage(this.getWorld(), MaplePacketCreator.sendYellowTip(message));
             FilePrinter.print(FilePrinter.AUTOBAN_WARNING, message);
         } else { //Auto DC and log if no GM is online
             client.disconnect(false, false);
@@ -10232,7 +10232,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             }
         }, 5000);
 
-        Server.getInstance().broadcastGMMessage(this.getWorld(), MaplePacketCreator.serverNotice(6, MapleCharacter.makeMapleReadable(this.name) + " was autobanned for " + reason));
+        WorldServer.getInstance().broadcastGMMessage(this.getWorld(), MaplePacketCreator.serverNotice(6, MapleCharacter.makeMapleReadable(this.name) + " was autobanned for " + reason));
     }
 
     public void block(int reason, int days, String desc) {

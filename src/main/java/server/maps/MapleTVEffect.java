@@ -51,8 +51,8 @@ public class MapleTVEffect {
 		Server server = Server.getInstance();
 		ACTIVE[userWorld] = activity;
 		if (activity) {
-			server.broadcastMessage(userWorld, MaplePacketCreator.enableTV());
-			server.broadcastMessage(userWorld, MaplePacketCreator.sendTV(user, message, type <= 2 ? type : type - 3, partner));
+			WorldServer.getInstance().broadcastMessage(userWorld, MaplePacketCreator.enableTV());
+			WorldServer.getInstance().broadcastMessage(userWorld, MaplePacketCreator.sendTV(user, message, type <= 2 ? type : type - 3, partner));
 			int delay = 15000;
 			if (type == 4) {
 				delay = 30000;
@@ -66,7 +66,7 @@ public class MapleTVEffect {
 				}
 			}, delay);
 		} else {
-			server.broadcastMessage(userWorld, MaplePacketCreator.removeTV());
+			WorldServer.getInstance().broadcastMessage(userWorld, MaplePacketCreator.removeTV());
 		}
 	}
 }

@@ -767,29 +767,6 @@ public class Server {
         worlda.reloadGuildSummary();
     }
 
-    public void broadcastMessage(int world, final byte[] packet) {
-        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
-            ch.broadcastPacket(packet);
-        }
-    }
-
-    public void broadcastGMMessage(int world, final byte[] packet) {
-        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
-            ch.broadcastGMPacket(packet);
-        }
-    }
-
-    public boolean isGmOnline(int world) {
-        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
-            for (MapleCharacter player : ch.getPlayerStorage().getAllCharacters()) {
-                if (player.isGM()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public void changeFly(Integer accountid, boolean canFly) {
         if (canFly) {
             activeFly.add(accountid);

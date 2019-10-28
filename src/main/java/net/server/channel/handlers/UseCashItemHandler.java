@@ -50,6 +50,7 @@ import java.util.List;
 
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.MapleItemInformationProvider;
@@ -279,7 +280,7 @@ public final class UseCashItemHandler extends AbstractMaplePacketHandler {
                     }
                     break;
                 case 2: // Super megaphone
-                    Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + slea.readMapleAsciiString(), (slea.readByte() != 0)));
+                    WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + slea.readMapleAsciiString(), (slea.readByte() != 0)));
                     break;
                 case 5: // Maple TV
                     int tvType = itemId % 10;
@@ -317,7 +318,7 @@ public final class UseCashItemHandler extends AbstractMaplePacketHandler {
                     }
 
                     if (megassenger) {
-                        Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + builder.toString(), ear));
+                        WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(3, c.getChannel(), medal + player.getName() + " : " + builder.toString(), ear));
                     }
 
                     break;
@@ -334,7 +335,7 @@ public final class UseCashItemHandler extends AbstractMaplePacketHandler {
 
                         // thanks Conrad for noticing that untradeable items should be allowed in megas
                     }
-                    Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
+                    WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.itemMegaphone(msg, whisper, c.getChannel(), item));
                     break;
                 case 7: //triple megaphone
                     int lines = slea.readByte();
@@ -347,7 +348,7 @@ public final class UseCashItemHandler extends AbstractMaplePacketHandler {
                         msg2[i] = medal + player.getName() + " : " + slea.readMapleAsciiString();
                     }
                     whisper = slea.readByte() == 1;
-                    Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.getMultiMegaphone(msg2, c.getChannel(), whisper));
+                    WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.getMultiMegaphone(msg2, c.getChannel(), whisper));
                     break;
             }
             remove(c, position, itemId);
@@ -451,11 +452,11 @@ public final class UseCashItemHandler extends AbstractMaplePacketHandler {
             }
 
             final int world = c.getWorld();
-            Server.getInstance().broadcastMessage(world, MaplePacketCreator.getAvatarMega(player, medal, c.getChannel(), itemId, strLines, (slea.readByte() != 0)));
+            WorldServer.getInstance().broadcastMessage(world, MaplePacketCreator.getAvatarMega(player, medal, c.getChannel(), itemId, strLines, (slea.readByte() != 0)));
             TimerManager.getInstance().schedule(new Runnable() {
             	@Override
             	public void run() {
-            		Server.getInstance().broadcastMessage(world, MaplePacketCreator.byeAvatarMega());
+                    WorldServer.getInstance().broadcastMessage(world, MaplePacketCreator.byeAvatarMega());
             	}
             }, 1000 * 10);
             remove(c, position, itemId);

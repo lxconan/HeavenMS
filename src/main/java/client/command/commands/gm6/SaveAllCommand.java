@@ -45,7 +45,7 @@ public class SaveAllCommand extends Command {
             }
         }
         String message = player.getName() + " used !saveall.";
-        Server.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(5, message));
+        WorldServer.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(5, message));
         player.message("All players saved successfully.");
     }
 }

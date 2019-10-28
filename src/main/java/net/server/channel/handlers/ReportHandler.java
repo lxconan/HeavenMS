@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.DatabaseConnection;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -36,7 +37,7 @@ import client.MapleCharacter;
 import client.MapleClient;
 
 /*
- * 
+ *
  * @author BubblesDev
  */
 public final class ReportHandler extends AbstractMaplePacketHandler {
@@ -58,7 +59,7 @@ public final class ReportHandler extends AbstractMaplePacketHandler {
 				c.announce(MaplePacketCreator.reportResponse((byte) 2));
 				return;
 			}
-			Server.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, victim + " was reported for: " + description));
+			WorldServer.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, victim + " was reported for: " + description));
 			addReport(c.getPlayer().getId(), MapleCharacter.getIdByName(victim), 0, description, null);
 		} else if (type == 1) {
 			String chatlog = slea.readMapleAsciiString();
@@ -74,10 +75,10 @@ public final class ReportHandler extends AbstractMaplePacketHandler {
 					return;
 				}
 			}
-			Server.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, victim + " was reported for: " + description));
+			WorldServer.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, victim + " was reported for: " + description));
 			addReport(c.getPlayer().getId(), MapleCharacter.getIdByName(victim), reason, description, chatlog);
 		} else {
-			Server.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, c.getPlayer().getName() + " is probably packet editing. Got unknown report type, which is impossible."));
+			WorldServer.getInstance().broadcastGMMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, c.getPlayer().getName() + " is probably packet editing. Got unknown report type, which is impossible."));
 		}
 	}
 

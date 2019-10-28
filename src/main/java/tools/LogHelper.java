@@ -6,6 +6,7 @@ import java.util.Date;
 
 import client.MapleClient;
 import net.server.Server;
+import net.server.WorldServer;
 import server.MapleItemInformationProvider;
 import server.MapleTrade;
 import server.expeditions.MapleExpedition;
@@ -35,7 +36,7 @@ public class LogHelper {
 	}
 
 	public static void logExpedition(MapleExpedition expedition) {
-		Server.getInstance().broadcastGMMessage(expedition.getLeader().getWorld(), MaplePacketCreator.serverNotice(6, expedition.getType().toString() + " Expedition with leader " + expedition.getLeader().getName() + " finished after " + getTimeString(expedition.getStartTime())));
+		WorldServer.getInstance().broadcastGMMessage(expedition.getLeader().getWorld(), MaplePacketCreator.serverNotice(6, expedition.getType().toString() + " Expedition with leader " + expedition.getLeader().getName() + " finished after " + getTimeString(expedition.getStartTime())));
 
 		String log = expedition.getType().toString() + " EXPEDITION\r\n";
 		log += getTimeString(expedition.getStartTime()) + "\r\n";
@@ -50,7 +51,7 @@ public class LogHelper {
 		log += "\r\n";
 		FilePrinter.print(FilePrinter.LOG_EXPEDITION, log);
 	}
-	
+
 	public static String getTimeString(long then){
 		long duration = System.currentTimeMillis() - then;
 		int seconds = (int) (duration / 1000) % 60 ;
@@ -63,7 +64,7 @@ public class LogHelper {
 		String log = player.getName() + (gotPrize ? " used a maple leaf to buy " + operation : " redeemed " + operation + " VP for a leaf") + " - " + timeStamp;
 		FilePrinter.print(FilePrinter.LOG_LEAF, log);
 	}
-	
+
 	public static void logGacha(MapleCharacter player, int itemid, String map) {
 		String itemName = MapleItemInformationProvider.getInstance().getName(itemid);
 		String timeStamp = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").format(new Date());

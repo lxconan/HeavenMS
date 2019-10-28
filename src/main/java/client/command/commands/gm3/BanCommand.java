@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import server.TimerManager;
 import tools.DatabaseConnection;
 import tools.MaplePacketCreator;
@@ -85,10 +86,10 @@ public class BanCommand extends Command {
                     rip.getClient().disconnect(false, false);
                 }
             }, 5000); //5 Seconds
-            Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         } else if (MapleCharacter.ban(ign, reason, false)) {
             c.announce(MaplePacketCreator.getGMEffect(4, (byte) 0));
-            Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
+            WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, "[RIP]: " + ign + " has been banned."));
         } else {
             c.announce(MaplePacketCreator.getGMEffect(6, (byte) 1));
         }

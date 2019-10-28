@@ -1,5 +1,6 @@
 package net.server;
 
+import client.MapleCharacter;
 import config.YamlConfig;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
@@ -398,5 +399,28 @@ public class WorldServer {
         }
 
         return true;
+    }
+
+    public void broadcastMessage(int world, final byte[] packet) {
+        for (Channel ch : getChannelsFromWorld(world)) {
+            ch.broadcastPacket(packet);
+        }
+    }
+
+    public void broadcastGMMessage(int world, final byte[] packet) {
+        for (Channel ch : getChannelsFromWorld(world)) {
+            ch.broadcastGMPacket(packet);
+        }
+    }
+
+    public boolean isGmOnline(int world) {
+        for (Channel ch : getChannelsFromWorld(world)) {
+            for (MapleCharacter player : ch.getPlayerStorage().getAllCharacters()) {
+                if (player.isGM()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

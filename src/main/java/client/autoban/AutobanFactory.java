@@ -25,6 +25,7 @@ package client.autoban;
 import client.MapleCharacter;
 import config.YamlConfig;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.FilePrinter;
 import tools.MapleLogger;
 import tools.MaplePacketCreator;
@@ -82,19 +83,19 @@ public enum AutobanFactory {
 	public void addPoint(AutobanManager ban, String reason) {
 		ban.addPoint(this, reason);
 	}
-	
+
 	public void alert(MapleCharacter chr, String reason) {
             if(YamlConfig.config.server.USE_AUTOBAN == true) {
 		if (chr != null && MapleLogger.ignored.contains(chr.getId())){
 			return;
 		}
-		Server.getInstance().broadcastGMMessage((chr != null ? chr.getWorld() : 0), MaplePacketCreator.sendYellowTip((chr != null ? MapleCharacter.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
+				WorldServer.getInstance().broadcastGMMessage((chr != null ? chr.getWorld() : 0), MaplePacketCreator.sendYellowTip((chr != null ? MapleCharacter.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason));
             }
         if (YamlConfig.config.server.USE_AUTOBAN_LOG) {
 			FilePrinter.print(FilePrinter.AUTOBAN_WARNING, (chr != null ? MapleCharacter.makeMapleReadable(chr.getName()) : "") + " caused " + this.name() + " " + reason);
 		}
 	}
-	
+
 	public void autoban(MapleCharacter chr, String value) {
             if(YamlConfig.config.server.USE_AUTOBAN == true) {
 		chr.autoban("Autobanned for (" + this.name() + ": " + value + ")");

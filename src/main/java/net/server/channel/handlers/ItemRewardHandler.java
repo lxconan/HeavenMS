@@ -29,6 +29,7 @@ import java.util.List;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
 import client.inventory.manipulator.MapleInventoryManipulator;
+import net.server.WorldServer;
 import server.MapleItemInformationProvider;
 import server.MapleItemInformationProvider.RewardItem;
 import tools.MaplePacketCreator;
@@ -45,10 +46,10 @@ public final class ItemRewardHandler extends AbstractMaplePacketHandler {
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         byte slot = (byte) slea.readShort();
         int itemId = slea.readInt(); // will load from xml I don't care.
-        
+
         Item it = c.getPlayer().getInventory(MapleInventoryType.USE).getItem(slot);   // null check here thanks to Thora
         if (it == null || it.getItemId() != itemId || c.getPlayer().getInventory(MapleInventoryType.USE).countById(itemId) < 1) return;
-        
+
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         Pair<Integer, List<RewardItem>> rewards = ii.getItemReward(itemId);
         for (RewardItem reward : rewards.getRight()) {
@@ -71,7 +72,7 @@ public final class ItemRewardHandler extends AbstractMaplePacketHandler {
                     String msg = reward.worldmsg;
                     msg.replaceAll("/name", c.getPlayer().getName());
                     msg.replaceAll("/item", ii.getName(reward.itemid));
-                    Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, msg));
+                    WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.serverNotice(6, msg));
                 }
                 break;
             }

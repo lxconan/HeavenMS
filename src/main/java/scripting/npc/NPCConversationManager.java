@@ -442,7 +442,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 		LogHelper.logGacha(getPlayer(), item.getId(), map);
 
 		if (item.getTier() > 0){ //Uncommon and Rare
-			Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.gachaponMessage(itemGained, map, getPlayer()));
+			WorldServer.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.gachaponMessage(itemGained, map, getPlayer()));
 		}
 	}
 

@@ -38,6 +38,7 @@ import java.util.HashSet;
 
 import config.YamlConfig;
 import net.server.Server;
+import net.server.WorldServer;
 import provider.MapleData;
 import provider.MapleDataDirectoryEntry;
 import provider.MapleDataFileEntry;
@@ -1232,7 +1233,7 @@ public class MapleItemInformationProvider {
         untradeableCache.put(itemId, bRestricted);
         return bRestricted;
     }
-    
+
     public boolean isAccountRestricted(int itemId) {
         if (accountItemRestrictionCache.containsKey(itemId)) {
             return accountItemRestrictionCache.get(itemId);
@@ -1605,7 +1606,7 @@ public class MapleItemInformationProvider {
                 eq.getWatk() > 0 || eq.getMatk() > 0 || eq.getWdef() > 0 || eq.getMdef() > 0 || eq.getAcc() > 0 ||
                 eq.getAvoid() > 0 || eq.getSpeed() > 0 || eq.getJump() > 0 || eq.getHp() > 0 || eq.getMp() > 0);
     }
-    
+
     public boolean isUnmerchable(int itemId) {
         if(YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_CASH && isCash(itemId)) {
             return true;
@@ -1614,7 +1615,7 @@ public class MapleItemInformationProvider {
         if (YamlConfig.config.server.USE_ENFORCE_UNMERCHABLE_PET && ItemConstants.isPet(itemId)) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -1706,7 +1707,7 @@ public class MapleItemInformationProvider {
         if (!EquipSlot.getFromTextSlot(islot).isAllowed(dst, isCash(id))) {
             equip.wear(false);
             String itemName = MapleItemInformationProvider.getInstance().getName(equip.getItemId());
-            Server.getInstance().broadcastGMMessage(chr.getWorld(), MaplePacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
+            WorldServer.getInstance().broadcastGMMessage(chr.getWorld(), MaplePacketCreator.sendYellowTip("[Warning]: " + chr.getName() + " tried to equip " + itemName + " into slot " + dst + "."));
             AutobanFactory.PACKET_EDIT.alert(chr, chr.getName() + " tried to forcibly equip an item.");
             FilePrinter.printError(FilePrinter.EXPLOITS + chr.getName() + ".txt", chr.getName() + " tried to equip " + itemName + " into " + dst + " slot.");
             return false;
@@ -2030,7 +2031,7 @@ public class MapleItemInformationProvider {
 
     public List<Pair<Integer, Integer>> getMakerDisassembledItems(Integer itemId) {
         List<Pair<Integer, Integer>> items = new LinkedList<>();
-        
+
         Connection con;
         try {
             con = DatabaseConnection.getConnection();
@@ -2150,14 +2151,14 @@ public class MapleItemInformationProvider {
 
         return skillbook;
     }
-    
+
     public final QuestConsItem getQuestConsumablesInfo(final int itemId) {
         if (questItemConsCache.containsKey(itemId)) {
             return questItemConsCache.get(itemId);
         }
         MapleData data = getItemData(itemId);
         QuestConsItem qcItem = null;
-        
+
         MapleData infoData = data.getChildByPath("info");
         if (infoData.getChildByPath("uiData") != null) {
             qcItem = new QuestConsItem();
@@ -2165,7 +2166,7 @@ public class MapleItemInformationProvider {
             qcItem.grade = MapleDataTool.getInt("grade", infoData);
             qcItem.questid = MapleDataTool.getInt("questId", infoData);
             qcItem.items = new HashMap<>(2);
-            
+
             Map<Integer, Integer> cItems = qcItem.items;
             MapleData ciData = infoData.getChildByPath("consumeItem");
             if (ciData != null) {
@@ -2177,7 +2178,7 @@ public class MapleItemInformationProvider {
                 }
             }
         }
-        
+
         questItemConsCache.put(itemId, qcItem);
         return qcItem;
     }
@@ -2213,15 +2214,15 @@ public class MapleItemInformationProvider {
         public short prob, quantity;
         public String effect, worldmsg;
     }
-    
+
     public static final class QuestConsItem {
 
         public int questid, exp, grade;
         public Map<Integer, Integer> items;
-        
+
         public Integer getItemRequirement(int itemid) {
             return items.get(itemid);
         }
-        
+
     }
 }

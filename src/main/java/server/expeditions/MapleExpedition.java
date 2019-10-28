@@ -35,6 +35,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import net.server.PlayerStorage;
 import net.server.Server;
+import net.server.WorldServer;
 import server.TimerManager;
 import server.life.MapleMonster;
 import server.maps.MapleMap;
@@ -85,7 +86,7 @@ public class MapleExpedition {
 			9420543,// - Angry Targa
 			9420544,// - Furious Targa
 	};
-	
+
 	private MapleCharacter leader;
 	private MapleExpeditionType type;
 	private boolean registering;
@@ -110,11 +111,11 @@ public class MapleExpedition {
                 maxSize = (maxPlayers != 0) ? maxPlayers : type.getMaxSize();
 		bossLogs = new CopyOnWriteArrayList<>();
 	}
-        
+
         public int getMinSize() {
                 return minSize;
         }
-        
+
         public int getMaxSize() {
                 return maxSize;
         }
@@ -132,14 +133,14 @@ public class MapleExpedition {
 	private void scheduleRegistrationEnd() {
 		final MapleExpedition exped = this;
                 startTime = System.currentTimeMillis() + type.getRegistrationTime() * 60 * 1000;
-                
-		schedule = TimerManager.getInstance().schedule(new Runnable() { 
+
+		schedule = TimerManager.getInstance().schedule(new Runnable() {
 			@Override
 			public void run() {
 				if (registering){
                                         exped.removeChannelExpedition(startMap.getChannelServer());
 					if (!silent) startMap.broadcastMessage(MaplePacketCreator.serverNotice(6, "[Expedition] The time limit has been reached. Expedition has been disbanded."));
-                                        
+
                                         dispose(false);
 				}
 			}
@@ -148,7 +149,7 @@ public class MapleExpedition {
 
 	public void dispose(boolean log){
                 broadcastExped(MaplePacketCreator.removeClock());
-            
+
                 if (schedule != null){
 			schedule.cancel(false);
 		}
@@ -156,7 +157,7 @@ public class MapleExpedition {
 			LogHelper.logExpedition(this);
 		}
 	}
-        
+
         public void finishRegistration() {
                 registering = false;
         }
@@ -167,7 +168,7 @@ public class MapleExpedition {
 		broadcastExped(MaplePacketCreator.removeClock());
 		if (!silent) broadcastExped(MaplePacketCreator.serverNotice(6, "[Expedition] The expedition has started! Good luck, brave heroes!"));
 		startTime = System.currentTimeMillis();
-		Server.getInstance().broadcastGMMessage(startMap.getWorld(), MaplePacketCreator.serverNotice(6, "[Expedition] " + type.toString() + " Expedition started with leader: " + leader.getName()));
+        WorldServer.getInstance().broadcastGMMessage(startMap.getWorld(), MaplePacketCreator.serverNotice(6, "[Expedition] " + type.toString() + " Expedition started with leader: " + leader.getName()));
 	}
 
 	public String addMember(MapleCharacter player) {
@@ -180,18 +181,18 @@ public class MapleExpedition {
 		if (members.size() >= this.getMaxSize()){ //Would be a miracle if anybody ever saw this
 			return "Sorry, this expedition is full!";
 		}
-                
+
                 int channel = this.getRecruitingMap().getChannelServer().getId();
                 if (!MapleExpeditionBossLog.attemptBoss(player.getId(), channel, this, false)) {    // thanks Conrad, Cato for noticing some expeditions have entry limit
                         return "Sorry, you've already reached the quota of attempts for this expedition! Try again another day...";
                 }
-                
+
                 members.put(player.getId(), player.getName());
                 player.announce(MaplePacketCreator.getClock((int)(startTime - System.currentTimeMillis()) / 1000));
                 if (!silent) broadcastExped(MaplePacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
                 return "You have registered for the expedition successfully!";
 	}
-        
+
         public int addMemberInt(MapleCharacter player) {
                 if (!registering) {
                         return 1; //"Sorry, this expedition is already underway. Registration is closed!";
@@ -208,7 +209,7 @@ public class MapleExpedition {
                 if (!silent) broadcastExped(MaplePacketCreator.serverNotice(6, "[Expedition] " + player.getName() + " has joined the expedition!"));
                 return 0; //"You have registered for the expedition successfully!";
         }
-        
+
         private void registerExpeditionAttempt(){
                 int channel = this.getRecruitingMap().getChannelServer().getId();
 
@@ -216,13 +217,13 @@ public class MapleExpedition {
                         MapleExpeditionBossLog.attemptBoss(chr.getId(), channel, this, true);
                 }
         }
-        
+
 	private void broadcastExped(byte[] packet){
 		for (MapleCharacter chr : getActiveMembers()){
                         chr.announce(packet);
 		}
 	}
-        
+
 	public boolean removeMember(MapleCharacter chr) {
 		if(members.remove(chr.getId()) != null) {
                     chr.announce(MaplePacketCreator.removeClock());
@@ -232,10 +233,10 @@ public class MapleExpedition {
                     }
                     return true;
                 }
-                
+
                 return false;
 	}
-        
+
         public void ban(Entry<Integer, String> chr) {
             int cid = chr.getKey();
             if (!banned.contains(cid)) {
@@ -286,10 +287,10 @@ public class MapleExpedition {
 	public MapleExpeditionType getType() {
 		return type;
 	}
-        
+
         public List<MapleCharacter> getActiveMembers() {    // thanks MedicOP for figuring out an issue with broadcasting packets to offline members
                 PlayerStorage ps = startMap.getWorldServer().getPlayerStorage();
-                
+
                 List<MapleCharacter> activeMembers = new LinkedList<>();
 		for (Integer chrid : getMembers().keySet()){
                         MapleCharacter chr = ps.getCharacterById(chrid);
@@ -297,18 +298,18 @@ public class MapleExpedition {
                                 activeMembers.add(chr);
                         }
 		}
-                
+
                 return activeMembers;
         }
-        
+
         public Map<Integer, String> getMembers() {
                 return new HashMap<>(members);
 	}
-        
+
         public List<Entry<Integer, String>> getMemberList() {
                 List<Entry<Integer, String>> memberList = new LinkedList<>();
                 Entry<Integer, String> leaderEntry = null;
-                
+
                 for (Entry<Integer, String> e : getMembers().entrySet()) {
                         if (!isLeader(e.getKey())) {
                                 memberList.add(e);
@@ -316,14 +317,14 @@ public class MapleExpedition {
                                 leaderEntry = e;
                         }
                 }
-                
+
                 if (leaderEntry != null) {
                         memberList.add(0, leaderEntry);
                 }
-            
+
                 return memberList;
 	}
-        
+
         public final boolean isExpeditionTeamTogether() {
                 List<MapleCharacter> chars = getActiveMembers();
                 if(chars.size() <= 1) return true;
@@ -339,45 +340,45 @@ public class MapleExpedition {
 
                 return true;
         }
-        
+
         public final void warpExpeditionTeam(int warpFrom, int warpTo) {
                 List<MapleCharacter> players = getActiveMembers();
-                
+
                 for (MapleCharacter chr : players) {
                         if(chr.getMapId() == warpFrom)
                                 chr.changeMap(warpTo);
                 }
         }
-        
+
         public final void warpExpeditionTeam(int warpTo) {
                 List<MapleCharacter> players = getActiveMembers();
-                
+
                 for (MapleCharacter chr : players) {
                         chr.changeMap(warpTo);
                 }
         }
-        
+
         public final void warpExpeditionTeamToMapSpawnPoint(int warpFrom, int warpTo, int toSp) {
                 List<MapleCharacter> players = getActiveMembers();
-                
+
                 for (MapleCharacter chr : players) {
                         if(chr.getMapId() == warpFrom)
                                 chr.changeMap(warpTo, toSp);
                 }
         }
-        
+
         public final void warpExpeditionTeamToMapSpawnPoint(int warpTo, int toSp) {
                 List<MapleCharacter> players = getActiveMembers();
-                
+
                 for (MapleCharacter chr : players) {
                         chr.changeMap(warpTo, toSp);
                 }
         }
-        
+
         public final boolean addChannelExpedition(Channel ch) {
                 return ch.addExpedition(this);
         }
-        
+
         public final void removeChannelExpedition(Channel ch) {
                 ch.removeExpedition(this);
         }
@@ -385,7 +386,7 @@ public class MapleExpedition {
 	public MapleCharacter getLeader(){
 		return leader;
 	}
-        
+
         public MapleMap getRecruitingMap() {
                 return startMap;
         }
@@ -397,7 +398,7 @@ public class MapleExpedition {
 	public boolean isLeader(MapleCharacter player) {
 		return isLeader(player.getId());
 	}
-        
+
         public boolean isLeader(int playerid) {
 		return leader.getId() == playerid;
 	}
@@ -409,11 +410,11 @@ public class MapleExpedition {
 	public boolean isInProgress(){
 		return !registering;
 	}
-        
+
 	public long getStartTime(){
 		return startTime;
 	}
-	
+
 	public List<String> getBossLogs(){
 		return bossLogs;
 	}
