@@ -26,6 +26,7 @@ import constants.game.GameConstants;
 import java.util.List;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -35,14 +36,15 @@ public final class ServerlistRequestHandler extends AbstractMaplePacketHandler {
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
     	Server server = Server.getInstance();
+    	WorldServer worldServer = WorldServer.getInstance();
         List<World> worlds = server.getWorlds();
         c.requestedServerlist(worlds.size());
-        
+
         for (World world : worlds) {
             c.announce(MaplePacketCreator.getServerList(world.getId(), GameConstants.WORLD_NAMES[world.getId()], world.getFlag(), world.getEventMessage(), world.getChannels()));
         }
         c.announce(MaplePacketCreator.getEndOfServerList());
         c.announce(MaplePacketCreator.selectWorld(0));//too lazy to make a check lol
-        c.announce(MaplePacketCreator.sendRecommended(server.worldRecommendedList()));
+        c.announce(MaplePacketCreator.sendRecommended(worldServer.getWorldRecommendedList()));
     }
 }

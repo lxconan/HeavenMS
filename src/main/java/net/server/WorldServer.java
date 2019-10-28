@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-class WorldServer {
+public class WorldServer {
     private static final Logger logger = LoggerFactory.getLogger(WorldServer.class);
     private static final WorldServer instance = new WorldServer();
     public static WorldServer getInstance() {
@@ -32,7 +32,7 @@ class WorldServer {
     private List<Pair<Integer, String>> worldRecommendedList = new LinkedList<>();
     private final List<List<Pair<String, Integer>>> playerRanking = new LinkedList<>();
 
-    List<Pair<Integer, String>> getWorldRecommendedList() {
+    public List<Pair<Integer, String>> getWorldRecommendedList() {
         return worldRecommendedList;
     }
 

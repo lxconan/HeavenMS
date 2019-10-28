@@ -111,7 +111,6 @@ public class Server {
     private final Map<Integer, Integer> worldChars = new HashMap<>();
     private final Map<String, Integer> transitioningChars = new HashMap<>();
 
-    // TODO: next, extract worldRecommendedList to WorldServer.
     private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
     private final Map<MapleClient, Long> inLoginState = new HashMap<>(100);
 
@@ -138,10 +137,6 @@ public class Server {
 
     public boolean isOnline() {
         return online;
-    }
-
-    public List<Pair<Integer, String>> worldRecommendedList() {
-        return worldServer.getWorldRecommendedList();
     }
 
     public void setNewYearCard(NewYearCardRecord nyc) {
