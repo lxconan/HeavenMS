@@ -174,10 +174,6 @@ public class Server {
         }
     }
 
-    public Set<Integer> getOpenChannels(int world) {
-        return worldServer.getOpenChannels(world);
-    }
-
     public String[] getInetSocket(int world, int channel) {
         return worldServer.getInetSocket(world, channel);
     }

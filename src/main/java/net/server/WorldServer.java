@@ -200,7 +200,7 @@ public class WorldServer {
         }
     }
 
-    Set<Integer> getOpenChannels(int world) {
+    public Set<Integer> getOpenChannels(int world) {
         wldRLock.lock();
         try {
             return new HashSet<>(channels.get(world).keySet());

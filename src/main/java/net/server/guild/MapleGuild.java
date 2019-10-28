@@ -128,7 +128,7 @@ public class MapleGuild {
         if (!bDirty) {
             return;
         }
-        Set<Integer> chs = Server.getInstance().getOpenChannels(world);
+        Set<Integer> chs = WorldServer.getInstance().getOpenChannels(world);
         synchronized (notifications) {
             if (notifications.keySet().size() != chs.size()) {
                 notifications.clear();
@@ -340,7 +340,7 @@ public class MapleGuild {
                     buildNotifications();
                 }
                 try {
-                    for (Integer b : Server.getInstance().getOpenChannels(world)) {
+                    for (Integer b : WorldServer.getInstance().getOpenChannels(world)) {
                         if (notifications.get(b).size() > 0) {
                             if (bcop == BCOp.DISBAND) {
                                 WorldServer.getInstance().getWorld(world).setGuildAndRank(notifications.get(b), 0, 5, exceptionId);
