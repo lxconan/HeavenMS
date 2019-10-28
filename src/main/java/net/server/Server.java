@@ -222,7 +222,7 @@ public class Server {
     public int addWorld() {
         int newWorld = worldServer.initWorld();
         if (newWorld > -1) {
-            installWorldPlayerRanking(newWorld);
+            worldServer.installWorldPlayerRanking(newWorld);
 
             Set<Integer> accounts;
             lgnRLock.lock();
@@ -245,42 +245,7 @@ public class Server {
     }
 
     public boolean removeWorld() {   //lol don't!
-        World w;
-        int worldid;
-
-        worldServer.getWldRLock().lock();
-        try {
-            worldid = worldServer.getWorlds().size() - 1;
-            if (worldid < 0) {
-                return false;
-            }
-
-            w = worldServer.getWorlds().get(worldid);
-        } finally {
-            worldServer.getWldRLock().unlock();
-        }
-
-        if (w == null || !w.canUninstall()) {
-            return false;
-        }
-
-        worldServer.getWldWLock().lock();
-        try {
-            if (worldid == worldServer.getWorlds().size() - 1) {
-                removeWorldPlayerRanking();
-                w.shutdown();
-
-                worldServer.getWorlds().remove(worldid);
-                worldServer.getChannels().remove(worldid);
-                worldServer.worldRecommendedList.remove(worldid);
-            } else {
-                return false;
-            }
-        } finally {
-            worldServer.getWldWLock().unlock();
-        }
-
-        return true;
+        return worldServer.removeWorld();
     }
 
     public Map<Integer, Integer> getCouponRates() {
@@ -447,51 +412,6 @@ public class Server {
         return worldServer.getWorldPlayerRanking(worldId);
     }
 
-    private void installWorldPlayerRanking(int worldid) {
-        List<Pair<Integer, List<Pair<String, Integer>>>> ranking = worldServer.updatePlayerRankingFromDB(worldid);
-        if (!ranking.isEmpty()) {
-            worldServer.getWldWLock().lock();
-            try {
-                if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                    for (int i = worldServer.playerRanking.size(); i <= worldid; i++) {
-                        worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
-                    }
-
-                    worldServer.playerRanking.add(worldid, ranking.get(0).getRight());
-                } else {
-                    worldServer.playerRanking.add(0, ranking.get(0).getRight());
-                }
-            } finally {
-                worldServer.getWldWLock().unlock();
-            }
-        }
-    }
-
-    private void removeWorldPlayerRanking() {
-        if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-            worldServer.getWldWLock().lock();
-            try {
-                if (worldServer.playerRanking.size() < this.getWorldsSize()) {
-                    return;
-                }
-
-                worldServer.playerRanking.remove(worldServer.playerRanking.size() - 1);
-            } finally {
-                worldServer.getWldWLock().unlock();
-            }
-        } else {
-            List<Pair<Integer, List<Pair<String, Integer>>>> ranking = worldServer.updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 2));  // update
-            // ranking list
-
-            worldServer.getWldWLock().lock();
-            try {
-                worldServer.playerRanking.add(0, ranking.get(0).getRight());
-            } finally {
-                worldServer.getWldWLock().unlock();
-            }
-        }
-    }
-
     public void updateWorldPlayerRanking() {
         worldServer.updateWorldPlayerRanking();
     }
@@ -588,7 +508,7 @@ public class Server {
             for (int i = 0; i < worldCount; i++) {
                 worldServer.initWorld();
             }
-            initWorldPlayerRanking();
+            worldServer.initWorldPlayerRanking();
 
             MaplePlayerNPCFactory.loadFactoryMetadata();
             loadPlayerNpcMapStepFromDb();

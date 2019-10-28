@@ -314,8 +314,8 @@ class WorldServer {
         return rankSystem;
     }
 
-    public void updateWorldPlayerRanking() {
-        List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 1));
+    void updateWorldPlayerRanking() {
+        List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (getWorldsSize() - 1));
         if (!rankUpdates.isEmpty()) {
             wldWLock.lock();
             try {
@@ -334,5 +334,96 @@ class WorldServer {
                 wldWLock.unlock();
             }
         }
+    }
+
+    void installWorldPlayerRanking(int worldid) {
+        List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(worldid);
+        if (!ranking.isEmpty()) {
+            wldWLock.lock();
+            try {
+                if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+                    for (int i = playerRanking.size(); i <= worldid; i++) {
+                        playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+                    }
+
+                    playerRanking.add(worldid, ranking.get(0).getRight());
+                } else {
+                    playerRanking.add(0, ranking.get(0).getRight());
+                }
+            } finally {
+                wldWLock.unlock();
+            }
+        }
+    }
+
+    void removeWorldPlayerRanking() {
+        if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+            wldWLock.lock();
+            try {
+                if (playerRanking.size() < getWorldsSize()) {
+                    return;
+                }
+
+                playerRanking.remove(playerRanking.size() - 1);
+            } finally {
+                wldWLock.unlock();
+            }
+        } else {
+            List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(-1 * (getWorldsSize() - 2));  // update
+            // ranking list
+
+            wldWLock.lock();
+            try {
+                playerRanking.add(0, ranking.get(0).getRight());
+            } finally {
+                wldWLock.unlock();
+            }
+        }
+    }
+
+    void initWorldPlayerRanking() {
+        if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+            playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+        }
+        updateWorldPlayerRanking();
+    }
+
+    public boolean removeWorld() {   //lol don't!
+        World w;
+        int worldid;
+
+        wldRLock.lock();
+        try {
+            worldid = worlds.size() - 1;
+            if (worldid < 0) {
+                return false;
+            }
+
+            w = worlds.get(worldid);
+        } finally {
+            wldRLock.unlock();
+        }
+
+        if (w == null || !w.canUninstall()) {
+            return false;
+        }
+
+        wldWLock.lock();
+        try {
+            if (worldid == worlds.size() - 1) {
+                removeWorldPlayerRanking();
+                w.shutdown();
+
+                worlds.remove(worldid);
+                channels.remove(worldid);
+                worldRecommendedList.remove(worldid);
+            } else {
+                return false;
+            }
+        } finally {
+            wldWLock.unlock();
+        }
+
+        return true;
     }
 }
