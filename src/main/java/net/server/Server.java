@@ -104,7 +104,7 @@ public class Server {
     private final List<Integer> activeCoupons = new LinkedList<>();
 
     private IoAcceptor acceptor;
-    private final WorldServer worldServer = new WorldServer();
+    private final WorldServer worldServer = WorldServer.getInstance();
     private final Properties subnetInfo = new Properties();
     private final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
     private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
@@ -141,7 +141,7 @@ public class Server {
     }
 
     public List<Pair<Integer, String>> worldRecommendedList() {
-        return worldServer.worldRecommendedList;
+        return worldServer.getWorldRecommendedList();
     }
 
     public void setNewYearCard(NewYearCardRecord nyc) {
