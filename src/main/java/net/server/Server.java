@@ -124,7 +124,7 @@ public class Server {
     private final Map<Integer, NewYearCardRecord> newyears = new HashMap<>();
     private final List<MapleClient> processDiseaseAnnouncePlayers = new LinkedList<>();
     private final List<MapleClient> registeredDiseaseAnnouncePlayers = new LinkedList<>();
-    
+
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
     private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
@@ -446,13 +446,8 @@ public class Server {
         }
     }
 
-    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldid) {
-        worldServer.getWldRLock().lock();
-        try {
-            return new ArrayList<>(worldServer.playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldid : 0));
-        } finally {
-            worldServer.getWldRLock().unlock();
-        }
+    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
+        return worldServer.getWorldPlayerRanking(worldId);
     }
 
     private void installWorldPlayerRanking(int worldid) {

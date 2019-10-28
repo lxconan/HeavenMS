@@ -48,6 +48,15 @@ class WorldServer {
         }
     }
 
+    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
+        wldRLock.lock();
+        try {
+            return new ArrayList<>(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldId : 0));
+        } finally {
+            wldRLock.unlock();
+        }
+    }
+
     int initWorld() {
         wldWLock.lock();
         try {
