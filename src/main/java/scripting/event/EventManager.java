@@ -25,6 +25,7 @@ import config.YamlConfig;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import tools.exceptions.EventInstanceInProgressException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -101,7 +102,7 @@ public class EventManager {
         this.server = Server.getInstance();
         this.iv = iv;
         this.cserv = cserv;
-        this.wserv = server.getWorld(cserv.getWorld());
+        this.wserv = WorldServer.getInstance().getWorld(cserv.getWorld());
         this.name = name;
 
         this.openedLobbys = new ArrayList<>();

@@ -27,6 +27,7 @@ import client.MapleCharacter;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.server.WorldServer;
 import tools.FilePrinter;
 import net.server.Server;
 import net.server.world.MapleParty;
@@ -49,7 +50,7 @@ public class PartyQuest {
         int mapid = leader.getMapId();
         for (MaplePartyCharacter pchr : party.getMembers()) {
             if (pchr.getChannel() == channel && pchr.getMapId() == mapid) {
-                MapleCharacter chr = Server.getInstance().getWorld(world).getChannel(channel).getPlayerStorage().getCharacterById(pchr.getId());
+                MapleCharacter chr = WorldServer.getInstance().getWorld(world).getChannel(channel).getPlayerStorage().getCharacterById(pchr.getId());
                 if (chr != null)
                     this.participants.add(chr);
             }

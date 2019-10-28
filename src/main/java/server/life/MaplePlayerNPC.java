@@ -22,6 +22,7 @@
 package server.life;
 
 import config.YamlConfig;
+import net.server.WorldServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.life.positioner.MaplePlayerNPCPositioner;
@@ -585,7 +586,7 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
     }
 
     private static MaplePlayerNPC getPlayerNPCFromWorldMap(String name, int world, int map) {
-        World wserv = Server.getInstance().getWorld(world);
+        World wserv = WorldServer.getInstance().getWorld(world);
         for(MapleMapObject pnpcObj : wserv.getChannel(1).getMapFactory().getMap(map).getMapObjectsInRange(new Point(0, 0), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.PLAYER_NPC))) {
             MaplePlayerNPC pn = (MaplePlayerNPC) pnpcObj;
 
@@ -619,7 +620,7 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
     }
 
     public static void multicastSpawnPlayerNPC(int mapid, int world) {
-        World wserv = Server.getInstance().getWorld(world);
+        World wserv = WorldServer.getInstance().getWorld(world);
         if (wserv == null) return;
 
         MapleClient c = new MapleClient(null, null, null);  // mock client

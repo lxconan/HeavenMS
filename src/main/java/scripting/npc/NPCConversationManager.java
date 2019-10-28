@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import config.YamlConfig;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.guild.MapleAlliance;
 import net.server.guild.MapleGuild;
 import net.server.world.MapleParty;
@@ -91,37 +92,37 @@ import tools.FilePrinter;
  * @author Matze
  */
 public class NPCConversationManager extends AbstractPlayerInteraction {
-        
+
 	private int npc;
         private int npcOid;
 	private String scriptName;
 	private String getText;
         private boolean itemScript;
         private List<MaplePartyCharacter> otherParty;
-        
+
         private Map<Integer, String> npcDefaultTalks = new HashMap<>();
-        
+
         private String getDefaultTalk(int npcid) {
             String talk = npcDefaultTalks.get(npcid);
             if (talk == null) {
                 talk = MapleLifeFactory.getNPCDefaultTalk(npcid);
                 npcDefaultTalks.put(npcid, talk);
             }
-            
+
             return talk;
         }
-        
+
         public NPCConversationManager(MapleClient c, int npc, String scriptName) {
                this(c, npc, -1, scriptName, false);
         }
-        
+
         public NPCConversationManager(MapleClient c, int npc, List<MaplePartyCharacter> otherParty, boolean test) {
                 super(c);
                 this.c = c;
                 this.npc = npc;
                 this.otherParty = otherParty;
         }
-        
+
 	public NPCConversationManager(MapleClient c, int npc, int oid, String scriptName, boolean itemScript) {
 		super(c);
 		this.npc = npc;
@@ -133,7 +134,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public int getNpc() {
 		return npc;
 	}
-        
+
         public int getNpcObjectId() {
 		return npcOid;
 	}
@@ -141,11 +142,11 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public String getScriptName() {
 		return scriptName;
 	}
-        
+
         public boolean isItemScript() {
                 return itemScript;
         }
-        
+
         public void resetItemScript() {
                 this.itemScript = false;
         }
@@ -170,7 +171,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public void sendOk(String text) {
 		getClient().announce(MaplePacketCreator.getNPCTalk(npc, (byte) 0, text, "00 00", (byte) 0));
 	}
-        
+
         public void sendDefault() {
                 sendOk(getDefaultTalk(npc));
         }
@@ -265,32 +266,32 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         public boolean forceStartQuest(int id) {
                 return forceStartQuest(id, npc);
         }
-        
+
         @Override
         public boolean forceCompleteQuest(int id) {
                 return forceCompleteQuest(id, npc);
         }
-        
+
         @Override
         public boolean startQuest(short id) {
                 return startQuest((int) id);
         }
-        
+
         @Override
         public boolean completeQuest(short id) {
                 return completeQuest((int) id);
         }
-        
+
         @Override
         public boolean startQuest(int id) {
                 return startQuest(id, npc);
         }
-        
+
         @Override
         public boolean completeQuest(int id) {
                 return completeQuest(id, npc);
         }
-        
+
 	public int getMeso() {
 		return getPlayer().getMeso();
 	}
@@ -337,12 +338,12 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public void displayGuildRanks() {
 		MapleGuild.displayGuildRanks(getClient(), npc);
 	}
-        
+
         public boolean canSpawnPlayerNpc(int mapid) {
                 MapleCharacter chr = getPlayer();
                 return !YamlConfig.config.server.PLAYERNPC_AUTODEPLOY && chr.getLevel() >= chr.getMaxClassLevel() && !chr.isGM() && MaplePlayerNPC.canSpawnPlayerNpc(chr.getName(), mapid);
         }
-        
+
         public MaplePlayerNPC getPlayerNPCByScriptid(int scriptId) {
                 for(MapleMapObject pnpcObj : getPlayer().getMap().getMapObjectsInRange(new Point(0, 0), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.PLAYER_NPC))) {
                         MaplePlayerNPC pn = (MaplePlayerNPC) pnpcObj;
@@ -351,7 +352,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                                 return pn;
                         }
                 }
-                
+
                 return null;
         }
 
@@ -400,10 +401,10 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public void resetStats() {
 		getPlayer().resetStats();
 	}
-        
+
         public void openShopNPC(int id) {
             MapleShop shop = MapleShopFactory.getInstance().getShop(id);
-            
+
             if (shop != null) {
                 shop.sendShop(c);
             } else {    // check for missing shopids thanks to resinate
@@ -435,23 +436,23 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 		Item itemGained = gainItem(item.getId(), (short) (item.getId() / 10000 == 200 ? 100 : 1), true, true); // For normal potions, make it give 100.
 
 		sendNext("You have obtained a #b#t" + item.getId() + "##k.");
-		
+
 		String map = c.getChannelServer().getMapFactory().getMap(maps[(getNpc() != 9100117 && getNpc() != 9100109) ? (getNpc() - 9100100) : getNpc() == 9100109 ? 8 : 9]).getMapName();
-		
+
 		LogHelper.logGacha(getPlayer(), item.getId(), map);
-		
+
 		if (item.getTier() > 0){ //Uncommon and Rare
 			Server.getInstance().broadcastMessage(c.getWorld(), MaplePacketCreator.gachaponMessage(itemGained, map, getPlayer()));
 		}
 	}
-        
+
         public void upgradeAlliance() {
                 MapleAlliance alliance = Server.getInstance().getAlliance(c.getPlayer().getGuild().getAllianceId());
                 alliance.increaseCapacity(1);
-                
+
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
-                
+
                 c.announce(MaplePacketCreator.updateAllianceInfo(alliance, c.getWorld()));  // thanks Vcoc for finding an alliance update to leader issue
         }
 
@@ -462,11 +463,11 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	public boolean canBeUsedAllianceName(String name) {
                 return MapleAlliance.canBeUsedAllianceName(name);
 	}
-        
+
         public MapleAlliance createAlliance(String name) {
             return MapleAlliance.createAlliance(getParty(), name);
         }
-        
+
         public int getAllianceCapacity() {
                 return Server.getInstance().getAlliance(getPlayer().getGuild().getAllianceId()).getCapacity();
         }
@@ -516,7 +517,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	}
 
 	public MapleCharacter getMapleCharacter(String player) {
-		MapleCharacter target =  Server.getInstance().getWorld(c.getWorld()).getChannel(c.getChannel()).getPlayerStorage().getCharacterByName(player);
+		MapleCharacter target =  WorldServer.getInstance().getWorld(c.getWorld()).getChannel(c.getChannel()).getPlayerStorage().getCharacterByName(player);
 		return target;
 	}
 
@@ -559,26 +560,26 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 		dispose();
 		return true;
 	}
-        
+
         public boolean itemExists(int itemid) {
                 return MapleItemInformationProvider.getInstance().getName(itemid) != null;
         }
-        
+
         public int getCosmeticItem(int itemid) {
                 if (itemExists(itemid)) {
                         return itemid;
                 }
-                
+
                 int baseid;
                 if (itemid < 30000) {
                         baseid = (itemid / 1000) * 1000 + (itemid % 100);
                 } else {
                         baseid = (itemid / 10) * 10;
                 }
-                
+
                 return itemid != baseid && itemExists(baseid) ? baseid : -1;
         }
-        
+
         private int getEquippedCosmeticid(int itemid) {
                 if (itemid < 30000) {
                         return getPlayer().getFace();
@@ -586,32 +587,32 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                         return getPlayer().getHair();
                 }
         }
-        
+
         public boolean isCosmeticEquipped(int itemid) {
                 return getEquippedCosmeticid(itemid) == itemid;
         }
-        
+
         public boolean isUsingOldPqNpcStyle() {
                 return YamlConfig.config.server.USE_OLD_GMS_STYLED_PQ_NPCS && this.getPlayer().getParty() != null;
         }
-        
+
         public Object[] getAvailableMasteryBooks() {
                 return MapleItemInformationProvider.getInstance().usableMasteryBooks(this.getPlayer()).toArray();
         }
-        
+
         public Object[] getAvailableSkillBooks() {
                 return MapleItemInformationProvider.getInstance().usableSkillBooks(this.getPlayer()).toArray();
         }
-        
+
         public Object[] getNamesWhoDropsItem(Integer itemId) {
                 return MapleItemInformationProvider.getInstance().getWhoDrops(itemId).toArray();
         }
-        
+
         public String getSkillBookInfo(int itemid) {
                 SkillBookEntry sbe = MapleSkillbookInformationProvider.getInstance().getSkillbookAvailability(itemid);
                 return sbe != SkillBookEntry.UNAVAILABLE ? "    Obtainable through #rquestline#k." : "";
         }
-        
+
         // By Drago/Dragohe4rt CPQ + WED
         public int cpqCalcAvgLvl(int map) {
             int num = 0;
@@ -643,7 +644,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                     }
                 }
             }
-            
+
             if (msg.length() > msgLen) {
                 sendSimple(msg);
                 return true;
@@ -679,7 +680,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
             try {
                 final MapleMap map, mapExit;
                 Channel cs = c.getChannelServer();
-                
+
                 map = cs.getMapFactory().getMap(980000100 + 100 * field);
                 mapExit = cs.getMapFactory().getMap(980000000);
                 for (MaplePartyCharacter mpc : c.getPlayer().getParty().getMembers()) {
@@ -695,7 +696,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                                 mapClock(3 * 60);
                             }
                         }, 1500);
-                        
+
                         mc.setCpqTimer(TimerManager.getInstance().schedule(new Runnable() {
                             @Override
                             public void run() {
@@ -721,7 +722,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 }
             }
         }
-        
+
         private void warpoutCPQLobby(MapleMap lobbyMap) {
             MapleMap out = lobbyMap.getChannelServer().getMapFactory().getMap((lobbyMap.getId() < 980030000) ? 980000000 : 980030000);
             for (MapleCharacter mc : lobbyMap.getAllPlayers()) {
@@ -735,13 +736,13 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         public void startCPQ(final MapleCharacter challenger, final int field) {
             try {
                 cancelCPQLobby();
-                
+
                 final MapleMap lobbyMap = getPlayer().getMap();
                 if (challenger != null) {
                     if (challenger.getParty() == null) {
                         throw new RuntimeException("No opponent found!");
                     }
-                    
+
                     for (MaplePartyCharacter mpc : challenger.getParty().getMembers()) {
                         MapleCharacter mc = mpc.getPlayer();
                         if (mc != null) {
@@ -790,7 +791,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                             warpoutCPQLobby(lobbyMap);
                             return;
                         }
-                        
+
                         new MonsterCarnival(getPlayer().getParty(), challenger.getParty(), mapid, true, (field / 100) % 10);
                     }
                 }, 11000);
@@ -802,13 +803,13 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         public void startCPQ2(final MapleCharacter challenger, final int field) {
             try {
                 cancelCPQLobby();
-                
+
                 final MapleMap lobbyMap = getPlayer().getMap();
                 if (challenger != null) {
                     if (challenger.getParty() == null) {
                         throw new RuntimeException("No opponent found!");
                     }
-                    
+
                     for (MaplePartyCharacter mpc : challenger.getParty().getMembers()) {
                         MapleCharacter mc = mpc.getPlayer();
                         if (mc != null) {
@@ -839,7 +840,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                             warpoutCPQLobby(lobbyMap);
                             return;
                         }
-                        
+
                         new MonsterCarnival(getPlayer().getParty(), challenger.getParty(), mapid, false, (field / 1000) % 10);
                     }
                 }, 10000);
@@ -867,7 +868,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                     }
                 }
             }
-            
+
             if (msg.length() > msgLen) {
                 sendSimple(msg);
                 return true;
@@ -903,7 +904,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
             try {
                 final MapleMap map, mapExit;
                 Channel cs = c.getChannelServer();
-                
+
                 mapExit = cs.getMapFactory().getMap(980030000);
                 map = cs.getMapFactory().getMap(980031000 + 1000 * field);
                 for (MaplePartyCharacter mpc : c.getPlayer().getParty().getMembers()) {
@@ -919,7 +920,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                                 mapClock(3 * 60);
                             }
                         }, 1500);
-                        
+
                         mc.setCpqTimer(TimerManager.getInstance().schedule(new Runnable() {
                             @Override
                             public void run() {
@@ -932,23 +933,23 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 ex.printStackTrace();
             }
         }
-        
+
         public void mapClock(int time) {
             getPlayer().getMap().broadcastMessage(MaplePacketCreator.getClock(time));
         }
-        
+
         private boolean sendCPQChallenge(String cpqType, int leaderid) {
             Set<Integer> cpqLeaders = new HashSet<>();
             cpqLeaders.add(leaderid);
             cpqLeaders.add(getPlayer().getId());
-            
+
             return c.getWorldServer().getMatchCheckerCoordinator().createMatchConfirmation(MatchCheckerType.CPQ_CHALLENGE, c.getWorld(), getPlayer().getId(), cpqLeaders, cpqType);
         }
-        
+
         public void answerCPQChallenge(boolean accept) {
             c.getWorldServer().getMatchCheckerCoordinator().answerMatchConfirmation(getPlayer().getId(), accept);
         }
-        
+
         public void challengeParty2(int field) {
             MapleCharacter leader = null;
             MapleMap map = c.getChannelServer().getMapFactory().getMap(980031000 + 1000 * field);
@@ -975,7 +976,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQLeaderNotFound));
             }
         }
-        
+
         public void challengeParty(int field) {
             MapleCharacter leader = null;
             MapleMap map = c.getChannelServer().getMapFactory().getMap(980000100 + 100 * field);
@@ -1006,57 +1007,57 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 sendOk(LanguageConstants.getMessage(leader, LanguageConstants.CPQLeaderNotFound));
             }
         }
-        
+
         private synchronized boolean setupAriantBattle(MapleExpedition exped, int mapid) {
             MapleMap arenaMap = this.getMap().getChannelServer().getMapFactory().getMap(mapid + 1);
             if (!arenaMap.getAllPlayers().isEmpty()) {
                 return false;
             }
-            
+
             new AriantColiseum(arenaMap, exped);
             return true;
         }
-        
+
         public String startAriantBattle(MapleExpeditionType expedType, int mapid) {
             if (!GameConstants.isAriantColiseumLobby(mapid)) {
                 return "You cannot start an Ariant tournament from outside the Battle Arena Entrance.";
             }
-            
+
             MapleExpedition exped = this.getMap().getChannelServer().getExpedition(expedType);
             if (exped == null) {
                 return "Please register on an expedition before attempting to start an Ariant tournament.";
             }
-            
+
             List<MapleCharacter> players = exped.getActiveMembers();
-            
+
             int playersSize = players.size();
             if (!(playersSize >= exped.getMinSize() && playersSize <= exped.getMaxSize())) {
                 return "Make sure there are between #r" + exped.getMinSize() + " ~ " + exped.getMaxSize() + " players#k in this room to start the battle.";
             }
-            
+
             MapleMap leaderMap = this.getMap();
             for (MapleCharacter mc : players) {
                 if (mc.getMap() != leaderMap) {
                     return "All competing players should be on this area to start the battle.";
                 }
-                
+
                 if (mc.getParty() != null) {
                     return "All competing players must not be on a party to start the battle.";
                 }
-                
+
                 int level = mc.getLevel();
                 if (!(level >= expedType.getMinLevel() && level <= expedType.getMaxLevel())) {
                     return "There are competing players outside of the acceptable level range in this room. All players must be on #blevel between 20~30#k to start the battle.";
                 }
             }
-            
+
             if (setupAriantBattle(exped, mapid)) {
                 return "";
             } else {
                 return "Other players are already competing on the Ariant tournament in this room. Please wait a while until the arena becomes available again.";
             }
         }
-        
+
         public void sendMarriageWishlist(boolean groom) {
             MapleCharacter player = this.getPlayer();
             MapleMarriage marriage = player.getMarriageInstance();
@@ -1073,7 +1074,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 }
             }
         }
-        
+
         public void sendMarriageGifts(List<Item> gifts) {
             this.getPlayer().announce(Wedding.OnWeddingGiftResult((byte) 0xA, Collections.singletonList(""), gifts));
         }
@@ -1089,14 +1090,14 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                     } else {
                         wlKey = "brideWishlist";
                     }
-                    
+
                     if (marriage.getProperty(wlKey).contentEquals("")) {
                         getClient().announce(Wedding.sendWishList());
                         return true;
                     }
                 }
             }
-            
+
             return false;
         }
 }

@@ -30,6 +30,7 @@ import client.MapleClient;
 import client.MapleFamily;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.DatabaseConnection;
 import tools.FilePrinter;
 import tools.MaplePacketCreator;
@@ -57,7 +58,7 @@ public final class DeleteCharHandler extends AbstractMaplePacketHandler {
         			c.announce(MaplePacketCreator.deleteCharResponse(cid, 0x16));
         			return;
         		} else if(familyId != -1) {
-        			MapleFamily family = Server.getInstance().getWorld(world).getFamily(familyId);
+        			MapleFamily family = WorldServer.getInstance().getWorld(world).getFamily(familyId);
         			if(family != null && family.getTotalMembers() > 1) {
             			c.announce(MaplePacketCreator.deleteCharResponse(cid, 0x1D));
             			return;

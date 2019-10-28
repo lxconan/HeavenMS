@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 import tools.DatabaseConnection;
 import tools.FilePrinter;
@@ -97,11 +98,11 @@ public class MapleFamily {
     public int getTotalMembers() {
         return members.size();
     }
-    
+
     public int getTotalGenerations() {
         return totalGenerations;
     }
-    
+
     public void setTotalGenerations(int generations) {
         this.totalGenerations = generations;
     }
@@ -139,7 +140,7 @@ public class MapleFamily {
             if(junior != null) removeEntryBranch(junior);
         }
     }
-    
+
     public void addEntryTree(MapleFamilyEntry root) {
         members.put(root.getChrId(), root);
         for(MapleFamilyEntry junior : root.getJuniors()) {
@@ -164,7 +165,7 @@ public class MapleFamily {
             }
         }
     }
-    
+
     public void broadcastFamilyInfoUpdate() {
         for(MapleFamilyEntry entry : members.values()) {
             MapleCharacter chr = entry.getChr();
@@ -173,7 +174,7 @@ public class MapleFamily {
             }
         }
     }
-    
+
     public void resetDailyReps() {
         for(MapleFamilyEntry entry : members.values()) {
             entry.setTodaysRep(0);
@@ -217,14 +218,14 @@ public class MapleFamily {
                     int repsToSenior = rsEntries.getInt("reptosenior");
                     String precepts = rsEntries.getString("precepts");
                     //Timestamp lastResetTime = rsEntries.getTimestamp("lastresettime"); //taken care of by FamilyDailyResetTask
-                    World wserv = Server.getInstance().getWorld(world);
+                    World wserv = WorldServer.getInstance().getWorld(world);
                     if (wserv == null) {
                         continue;
                     }
                     MapleFamily family = wserv.getFamily(familyid);
                     if(family == null) {
                         family = new MapleFamily(familyid, world);
-                        Server.getInstance().getWorld(world).addFamily(familyid, family);
+                        WorldServer.getInstance().getWorld(world).addFamily(familyid, family);
                     }
                     MapleFamilyEntry familyEntry = new MapleFamilyEntry(family, cid, name, level, MapleJob.getById(jobID));
                     family.addEntry(familyEntry);
@@ -260,7 +261,7 @@ public class MapleFamily {
                 int world = unmatchedJunior.getLeft().getLeft();
                 int seniorid = unmatchedJunior.getLeft().getRight();
                 MapleFamilyEntry junior = unmatchedJunior.getRight();
-                MapleFamilyEntry senior = Server.getInstance().getWorld(world).getFamily(junior.getFamily().getID()).getEntryByID(seniorid);
+                MapleFamilyEntry senior = WorldServer.getInstance().getWorld(world).getFamily(junior.getFamily().getID()).getEntryByID(seniorid);
                 if(senior != null) {
                     junior.setSenior(senior, false);
                 } else {

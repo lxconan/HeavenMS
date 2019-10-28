@@ -36,6 +36,7 @@ import java.util.concurrent.locks.Lock;
 import config.YamlConfig;
 import net.server.Server;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 
 import provider.MapleData;
@@ -360,7 +361,7 @@ public class CashShop {
 
     public void gainCash(int type, CashItem buyItem, int world) {
         gainCash(type, -buyItem.getPrice());
-        if(!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION) Server.getInstance().getWorld(world).addCashItemBought(buyItem.getSN());
+        if(!YamlConfig.config.server.USE_ENFORCE_ITEM_SUGGESTION) WorldServer.getInstance().getWorld(world).addCashItemBought(buyItem.getSN());
     }
 
     public boolean isOpened() {

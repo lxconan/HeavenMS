@@ -47,6 +47,7 @@ import java.util.concurrent.locks.Lock;
 import config.YamlConfig;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import tools.*;
 
 import net.server.Server;
@@ -1096,7 +1097,7 @@ public class MapleClient {
 	}
 
 	public World getWorldServer() {
-		return Server.getInstance().getWorld(world);
+		return WorldServer.getInstance().getWorld(world);
 	}
 
 	public Channel getChannelServer(byte channel) {

@@ -60,6 +60,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
@@ -282,11 +283,11 @@ public class MapleMap {
     }
 
     public Channel getChannelServer() {
-        return Server.getInstance().getWorld(world).getChannel(channel);
+        return WorldServer.getInstance().getWorld(world).getChannel(channel);
     }
 
     public World getWorldServer() {
-        return Server.getInstance().getWorld(world);
+        return WorldServer.getInstance().getWorld(world);
     }
 
     public MapleMap getReturnMap() {

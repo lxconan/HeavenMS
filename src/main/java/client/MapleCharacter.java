@@ -53,10 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import config.YamlConfig;
-import net.server.PlayerBuffValueHolder;
-import net.server.PlayerCoolDownValueHolder;
-import net.server.Server;
-import net.server.ServerTimer;
+import net.server.*;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 import net.server.coordinator.world.MapleInviteCoordinator;
@@ -2271,7 +2268,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                             try (ResultSet rs = ps.executeQuery()) {
                                     while(rs.next()) {
                                             int buddyid = rs.getInt("buddyid");
-                                            MapleCharacter buddy = Server.getInstance().getWorld(world).getPlayerStorage().getCharacterById(buddyid);
+                                            MapleCharacter buddy = WorldServer.getInstance().getWorld(world).getPlayerStorage().getCharacterById(buddyid);
 
                                             if(buddy != null) {
                                                     buddy.deleteBuddy(cid);
@@ -6013,7 +6010,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     }
 
     public World getWorldServer() {
-        return Server.getInstance().getWorld(world);
+        return WorldServer.getInstance().getWorld(world);
     }
 
     public void giveCoolDowns(final int skillid, long starttime, long length) {
@@ -7172,7 +7169,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                 ret.setHasSandboxItem();
             }
 
-            World wserv = Server.getInstance().getWorld(ret.world);
+            World wserv = WorldServer.getInstance().getWorld(ret.world);
 
             ret.partnerId = rs.getInt("partnerId");
             ret.marriageItemid = rs.getInt("marriageItemId");

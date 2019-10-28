@@ -39,11 +39,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.locks.Lock;
+
+import net.server.WorldServer;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 
 import net.server.PlayerStorage;
 import net.server.Server;
 import net.server.channel.Channel;
+import net.server.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.DatabaseConnection;
@@ -288,7 +291,7 @@ public class MapleGuild {
     }
 
     public void broadcastNameChanged() {
-        PlayerStorage ps = Server.getInstance().getWorld(world).getPlayerStorage();
+        PlayerStorage ps = WorldServer.getInstance().getWorld(world).getPlayerStorage();
 
         for (MapleGuildCharacter mgc : getMembers()) {
             MapleCharacter chr = ps.getCharacterById(mgc.getId());
@@ -300,7 +303,7 @@ public class MapleGuild {
     }
 
     public void broadcastEmblemChanged() {
-        PlayerStorage ps = Server.getInstance().getWorld(world).getPlayerStorage();
+        PlayerStorage ps = WorldServer.getInstance().getWorld(world).getPlayerStorage();
 
         for (MapleGuildCharacter mgc : getMembers()) {
             MapleCharacter chr = ps.getCharacterById(mgc.getId());
@@ -312,7 +315,7 @@ public class MapleGuild {
     }
 
     public void broadcastInfoChanged() {
-        PlayerStorage ps = Server.getInstance().getWorld(world).getPlayerStorage();
+        PlayerStorage ps = WorldServer.getInstance().getWorld(world).getPlayerStorage();
 
         for (MapleGuildCharacter mgc : getMembers()) {
             MapleCharacter chr = ps.getCharacterById(mgc.getId());
@@ -342,11 +345,11 @@ public class MapleGuild {
                     for (Integer b : Server.getInstance().getOpenChannels(world)) {
                         if (notifications.get(b).size() > 0) {
                             if (bcop == BCOp.DISBAND) {
-                                Server.getInstance().getWorld(world).setGuildAndRank(notifications.get(b), 0, 5, exceptionId);
+                                WorldServer.getInstance().getWorld(world).setGuildAndRank(notifications.get(b), 0, 5, exceptionId);
                             } else if (bcop == BCOp.EMBLEMCHANGE) {
-                                Server.getInstance().getWorld(world).changeEmblem(this.id, notifications.get(b), new MapleGuildSummary(this));
+                                WorldServer.getInstance().getWorld(world).changeEmblem(this.id, notifications.get(b), new MapleGuildSummary(this));
                             } else {
-                                Server.getInstance().getWorld(world).sendPacket(notifications.get(b), packet, exceptionId);
+                                WorldServer.getInstance().getWorld(world).sendPacket(notifications.get(b), packet, exceptionId);
                             }
                         }
                     }
@@ -521,7 +524,7 @@ public class MapleGuild {
                     bDirty = true;
                     try {
                         if (mgc.isOnline()) {
-                            Server.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(cid, 0, 5);
+                            WorldServer.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(cid, 0, 5);
                         } else {
                             try {
                                 Connection con = DatabaseConnection.getConnection();
@@ -537,7 +540,7 @@ public class MapleGuild {
                             } catch (SQLException e) {
                                 logger.error("expelMember - MapleGuild ", e);
                             }
-                            Server.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus((short) 0, (byte) 5, cid);
+                            WorldServer.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus((short) 0, (byte) 5, cid);
                         }
                     } catch (Exception re) {
                         re.printStackTrace();
@@ -569,10 +572,10 @@ public class MapleGuild {
     public void changeRank(MapleGuildCharacter mgc, int newRank) {
         try {
             if (mgc.isOnline()) {
-                Server.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(mgc.getId(), this.id, newRank);
+                WorldServer.getInstance().getWorld(mgc.getWorld()).setGuildAndRank(mgc.getId(), this.id, newRank);
                 mgc.setGuildRank(newRank);
             } else {
-                Server.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus((short) this.id, (byte) newRank, mgc.getId());
+                WorldServer.getInstance().getWorld(mgc.getWorld()).setOfflineGuildStatus((short) this.id, (byte) newRank, mgc.getId());
                 mgc.setOfflineGuildRank(newRank);
             }
         } catch (Exception re) {

@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import config.YamlConfig;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import net.server.audit.LockCollector;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantLock;
@@ -291,7 +292,7 @@ public final class Channel {
     }
 
     public World getWorldServer() {
-        return Server.getInstance().getWorld(world);
+        return WorldServer.getInstance().getWorld(world);
     }
 
     public void addPlayer(MapleCharacter chr) {

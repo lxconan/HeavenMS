@@ -22,6 +22,7 @@ package net.server.coordinator.matchchecker;
 import client.MapleCharacter;
 import net.server.PlayerStorage;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.coordinator.matchchecker.AbstractMatchCheckerListener;
 import net.server.coordinator.matchchecker.MatchCheckerListenerFactory.MatchCheckerType;
 import net.server.world.World;
@@ -39,21 +40,21 @@ import java.util.concurrent.Semaphore;
  * @author Ronan
  */
 public class MapleMatchCheckerCoordinator {
-    
+
     private final Map<Integer, MapleMatchCheckingElement> matchEntries = new HashMap<>();
-    
+
     private final Set<Integer> pooledCids = new HashSet<>();
     private final Semaphore semaphorePool = new Semaphore(7);
-    
+
     private class MapleMatchCheckingEntry {
         private boolean accepted;
         private int cid;
-        
+
         private MapleMatchCheckingEntry(int cid) {
             this.cid = cid;
             this.accepted = false;
         }
-        
+
         private boolean setAccept() {
             if (!this.accepted) {
                 this.accepted = true;
@@ -62,25 +63,25 @@ public class MapleMatchCheckerCoordinator {
                 return false;
             }
         }
-        
+
         private boolean getAccept() {
             return this.accepted;
         }
     }
-    
+
     private class MapleMatchCheckingElement {
         private int leaderCid;
         private int world;
-        
+
         private MatchCheckerType matchType;
         private AbstractMatchCheckerListener listener;
-        
+
         private Map<Integer, MapleMatchCheckingEntry> confirmingMembers = new HashMap<>();
         private int confirmCount;
         private boolean active = true;
-        
+
         private String message;
-        
+
         private MapleMatchCheckingElement(MatchCheckerType matchType, int leaderCid, int world, AbstractMatchCheckerListener leaderListener, Set<Integer> matchPlayers, String message) {
             this.leaderCid = leaderCid;
             this.world = world;
@@ -88,59 +89,59 @@ public class MapleMatchCheckerCoordinator {
             this.confirmCount = 0;
             this.message = message;
             this.matchType = matchType;
-            
+
             for (Integer cid : matchPlayers) {
                 MapleMatchCheckingEntry mmcEntry = new MapleMatchCheckingEntry(cid);
                 confirmingMembers.put(cid, mmcEntry);
             }
         }
-        
+
         private boolean acceptEntry(int cid) {
             MapleMatchCheckingEntry mmcEntry = confirmingMembers.get(cid);
             if (mmcEntry != null) {
                 if (mmcEntry.setAccept()) {
                     this.confirmCount++;
-                    
+
                     if (this.confirmCount == this.confirmingMembers.size()) {
                         return true;
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         private boolean isMatchActive() {
             return active;
         }
-        
+
         private void setMatchActive(boolean a) {
             active = a;
         }
-        
+
         private Set<Integer> getMatchPlayers() {
             return confirmingMembers.keySet();
         }
-        
+
         private Set<Integer> getAcceptedMatchPlayers() {
             Set<Integer> s = new HashSet<>();
-            
+
             for (Entry<Integer, MapleMatchCheckingEntry> e : confirmingMembers.entrySet()) {
                 if (e.getValue().getAccept()) {
                     s.add(e.getKey());
                 }
             }
-            
+
             return s;
         }
-        
+
         private Set<MapleCharacter> getMatchCharacters() {
             Set<MapleCharacter> players = new HashSet<>();
-            
-            World wserv = Server.getInstance().getWorld(world);
+
+            World wserv = WorldServer.getInstance().getWorld(world);
             if (wserv != null) {
                 PlayerStorage ps = wserv.getPlayerStorage();
-                
+
                 for (Integer cid : getMatchPlayers()) {
                     MapleCharacter chr = ps.getCharacterById(cid);
                     if (chr != null) {
@@ -148,25 +149,25 @@ public class MapleMatchCheckerCoordinator {
                     }
                 }
             }
-            
+
             return players;
         }
-        
+
         private void dispatchMatchCreated() {
             Set<MapleCharacter> nonLeaderMatchPlayers = getMatchCharacters();
             MapleCharacter leader = null;
-            
+
             for (MapleCharacter chr : nonLeaderMatchPlayers) {
                 if (chr.getId() == leaderCid) {
                     leader = chr;
                     break;
                 }
             }
-            
+
             nonLeaderMatchPlayers.remove(leader);
             listener.onMatchCreated(leader, nonLeaderMatchPlayers, message);
         }
-        
+
         private void dispatchMatchResult(boolean accept) {
             if (accept) {
                 listener.onMatchAccepted(leaderCid, getMatchCharacters(), message);
@@ -174,29 +175,29 @@ public class MapleMatchCheckerCoordinator {
                 listener.onMatchDeclined(leaderCid, getMatchCharacters(), message);
             }
         }
-        
+
         private void dispatchMatchDismissed() {
             listener.onMatchDismissed(leaderCid, getMatchCharacters(), message);
         }
     }
-    
+
     private void unpoolMatchPlayer(Integer cid) {
         unpoolMatchPlayers(Collections.singleton(cid));
     }
-    
+
     private void unpoolMatchPlayers(Set<Integer> matchPlayers) {
         for (Integer cid : matchPlayers) {
             pooledCids.remove(cid);
         }
     }
-    
+
     private boolean poolMatchPlayer(Integer cid) {
         return poolMatchPlayers(Collections.singleton(cid));
     }
-    
+
     private boolean poolMatchPlayers(Set<Integer> matchPlayers) {
         Set<Integer> pooledPlayers = new HashSet<>();
-        
+
         for (Integer cid : matchPlayers) {
             if (!pooledCids.add(cid)) {
                 unpoolMatchPlayers(pooledPlayers);
@@ -205,24 +206,24 @@ public class MapleMatchCheckerCoordinator {
                 pooledPlayers.add(cid);
             }
         }
-        
+
         return true;
     }
-    
+
     private boolean isMatchingAvailable(Set<Integer> matchPlayers) {
         for (Integer cid : matchPlayers) {
             if (matchEntries.containsKey(cid)) {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     private void reenablePlayerMatching(Set<Integer> matchPlayers) {
         for (Integer cid : matchPlayers) {
             MapleMatchCheckingElement mmce = matchEntries.get(cid);
-            
+
             if (mmce != null) {
                 synchronized (mmce) {
                     if (!mmce.isMatchActive()) {
@@ -232,7 +233,7 @@ public class MapleMatchCheckerCoordinator {
             }
         }
     }
-    
+
     public int getMatchConfirmationLeaderid(int cid) {
         MapleMatchCheckingElement mmce = matchEntries.get(cid);
         if (mmce != null) {
@@ -241,7 +242,7 @@ public class MapleMatchCheckerCoordinator {
             return -1;
         }
     }
-    
+
     public MatchCheckerType getMatchConfirmationType(int cid) {
         MapleMatchCheckingElement mmce = matchEntries.get(cid);
         if (mmce != null) {
@@ -250,7 +251,7 @@ public class MapleMatchCheckerCoordinator {
             return null;
         }
     }
-    
+
     public boolean isMatchConfirmationActive(int cid) {
         MapleMatchCheckingElement mmce = matchEntries.get(cid);
         if (mmce != null) {
@@ -259,19 +260,19 @@ public class MapleMatchCheckerCoordinator {
             return false;
         }
     }
-    
+
     private void createMatchConfirmationInternal(MatchCheckerType matchType, int world, int leaderCid, AbstractMatchCheckerListener leaderListener, Set<Integer> players, String message) {
         MapleMatchCheckingElement mmce = new MapleMatchCheckingElement(matchType, leaderCid, world, leaderListener, players, message);
-        
+
         for (Integer cid : players) {
             matchEntries.put(cid, mmce);
         }
-        
+
         mmce.dispatchMatchCreated();
-        
+
         acceptMatchElement(mmce, leaderCid);
     }
-    
+
     public boolean createMatchConfirmation(MatchCheckerType matchType, int world, int leaderCid, Set<Integer> players, String message) {
         try {
             semaphorePool.acquire();
@@ -295,10 +296,10 @@ public class MapleMatchCheckerCoordinator {
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
-        
+
         return false;
     }
-    
+
     private void disposeMatchElement(MapleMatchCheckingElement mmce) {
         Set<Integer> matchPlayers = mmce.getMatchPlayers();     // thanks Ai for noticing players getting match-stuck on certain cases
         while (!poolMatchPlayers(matchPlayers)) {
@@ -306,7 +307,7 @@ public class MapleMatchCheckerCoordinator {
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {}
         }
-        
+
         try {
             for (Integer cid : matchPlayers) {
                 matchEntries.remove(cid);
@@ -315,32 +316,32 @@ public class MapleMatchCheckerCoordinator {
             unpoolMatchPlayers(matchPlayers);
         }
     }
-    
+
     private void acceptMatchElement(MapleMatchCheckingElement mmce, int cid) {
         if (mmce.acceptEntry(cid)) {
             unpoolMatchPlayer(cid);
             disposeMatchElement(mmce);
-            
+
             mmce.dispatchMatchResult(true);
         }
     }
-    
+
     private void denyMatchElement(MapleMatchCheckingElement mmce, int cid) {
         unpoolMatchPlayer(cid);
         disposeMatchElement(mmce);
-        
+
         mmce.dispatchMatchResult(false);
     }
-    
+
     private void dismissMatchElement(MapleMatchCheckingElement mmce, int cid) {
         mmce.setMatchActive(false);
-        
+
         unpoolMatchPlayer(cid);
         disposeMatchElement(mmce);
-        
+
         mmce.dispatchMatchDismissed();
     }
-    
+
     public boolean answerMatchConfirmation(int cid, boolean accept) {
         try {
             semaphorePool.acquire();
@@ -349,14 +350,14 @@ public class MapleMatchCheckerCoordinator {
                     if (poolMatchPlayer(cid)) {
                         try {
                             MapleMatchCheckingElement mmce = matchEntries.get(cid);
-                            
+
                             if (mmce != null) {
                                 synchronized (mmce) {
                                     if (!mmce.isMatchActive()) {    // thanks Alex (CanIGetaPR) for noticing that exploiters could stall on match checking
                                         matchEntries.remove(cid);
                                         return false;
                                     }
-                                    
+
                                     if (accept) {
                                         acceptMatchElement(mmce, cid);
                                     } else {
@@ -364,7 +365,7 @@ public class MapleMatchCheckerCoordinator {
                                         matchEntries.remove(cid);
                                     }
                                 }
-                                
+
                                 return true;
                             }
                         } finally {
@@ -378,10 +379,10 @@ public class MapleMatchCheckerCoordinator {
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
-        
+
         return false;
     }
-    
+
     public boolean dismissMatchConfirmation(int cid) {
         try {
             semaphorePool.acquire();
@@ -396,7 +397,7 @@ public class MapleMatchCheckerCoordinator {
                                     if (!mmce.isMatchActive()) {
                                         return false;
                                     }
-                                    
+
                                     dismissMatchElement(mmce, cid);
                                     return true;
                                 }
@@ -412,8 +413,8 @@ public class MapleMatchCheckerCoordinator {
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
-        
+
         return false;
     }
-        
+
 }

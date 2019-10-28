@@ -175,10 +175,6 @@ public class Server {
         }
     }
 
-    public World getWorld(int id) {
-        return worldServer.getWorld(id);
-    }
-
     public List<World> getWorlds() {
         return worldServer.getWorldsSync();
     }
@@ -810,7 +806,7 @@ public class Server {
     }
 
     public void reloadGuildCharacters(int world) {
-        World worlda = getWorld(world);
+        World worlda = worldServer.getWorld(world);
         for (MapleCharacter mc : worlda.getPlayerStorage().getAllCharacters()) {
             if (mc.getGuildId() > 0) {
                 setGuildMemberOnline(mc, true, worlda.getId());
@@ -915,7 +911,7 @@ public class Server {
 
         lgnWLock.lock();
         try {
-            World wserv = this.getWorld(chrView.getWorld());
+            World wserv = worldServer.getWorld(chrView.getWorld());
             if (wserv != null) wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
         } finally {
             lgnWLock.unlock();
@@ -936,7 +932,7 @@ public class Server {
 
             MapleCharacter chrView = chr.generateCharacterEntry();
 
-            World wserv = this.getWorld(chrView.getWorld());
+            World wserv = worldServer.getWorld(chrView.getWorld());
             if (wserv != null) wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
         } finally {
             lgnWLock.unlock();
@@ -953,7 +949,7 @@ public class Server {
 
             Integer world = worldChars.remove(chrid);
             if (world != null) {
-                World wserv = this.getWorld(world);
+                World wserv = worldServer.getWorld(world);
                 if (wserv != null) wserv.unregisterAccountCharacterView(accountid, chrid);
             }
         } finally {
@@ -966,7 +962,7 @@ public class Server {
         try {
             Integer chrid = chr.getId(), accountid = chr.getAccountID(), world = worldChars.get(chr.getId());
             if (world != null) {
-                World wserv = this.getWorld(world);
+                World wserv = worldServer.getWorld(world);
                 if (wserv != null) wserv.unregisterAccountCharacterView(accountid, chrid);
             }
 
@@ -974,7 +970,7 @@ public class Server {
 
             MapleCharacter chrView = chr.generateCharacterEntry();
 
-            World wserv = this.getWorld(toWorld);
+            World wserv = worldServer.getWorld(toWorld);
             if (wserv != null) wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
         } finally {
             lgnWLock.unlock();
@@ -1196,7 +1192,7 @@ public class Server {
 
             int gmLevel = 0;
             for (Integer aw : accWorlds) {
-                World wserv = this.getWorld(aw);
+                World wserv = worldServer.getWorld(aw);
 
                 if (wserv != null) {
                     for (MapleCharacter chr : wserv.getAllCharactersView()) {
