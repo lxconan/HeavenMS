@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 import tools.MaplePacketCreator;
 
@@ -38,7 +39,8 @@ public class SaveAllCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
-        for (World world : Server.getInstance().getWorlds()) {
+        Server.getInstance();
+        for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 chr.saveCharToDB();
             }

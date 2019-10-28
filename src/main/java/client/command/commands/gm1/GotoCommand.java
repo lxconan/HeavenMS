@@ -30,6 +30,7 @@ import constants.game.GameConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import net.server.Server;
+import net.server.WorldServer;
 import server.maps.MaplePortal;
 import server.maps.FieldLimit;
 import server.maps.MapleMap;
@@ -43,28 +44,29 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class GotoCommand extends Command {
-    
+
     {
         setDescription("");
-        
-        MapleMapManager mapManager = Server.getInstance().getWorlds().get(0).getChannels().get(0).getMapFactory();
-        
+
+        Server.getInstance();
+        MapleMapManager mapManager = WorldServer.getInstance().getWorlds().get(0).getChannels().get(0).getMapFactory();
+
         List<Entry<String, Integer>> towns = new ArrayList<>(GameConstants.GOTO_TOWNS.entrySet());
         sortGotoEntries(towns);
         for (Map.Entry<String, Integer> e : towns) {
             GOTO_TOWNS_INFO += ("'" + e.getKey() + "' - #b" + (mapManager.getMap(e.getValue()).getMapName()) + "#k\r\n");
         }
-        
+
         List<Entry<String, Integer>> areas = new ArrayList<>(GameConstants.GOTO_AREAS.entrySet());
         sortGotoEntries(areas);
         for (Map.Entry<String, Integer> e : areas) {
             GOTO_AREAS_INFO += ("'" + e.getKey() + "' - #b" + (mapManager.getMap(e.getValue()).getMapName()) + "#k\r\n");
         }
     }
-    
+
     public static String GOTO_TOWNS_INFO = "";
     public static String GOTO_AREAS_INFO = "";
-    
+
     private static void sortGotoEntries(List<Entry<String, Integer>> listEntries) {
         Collections.sort(listEntries, new Comparator<Entry<String, Integer>>() {
             @Override
@@ -83,11 +85,11 @@ public class GotoCommand extends Command {
             if (player.isGM()) {
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
-            
+
             player.getAbstractPlayerInteraction().npcTalk(9000020, sendStr);
             return;
         }
-        
+
         if (!player.isAlive()) {
             player.dropMessage(1, "This command cannot be used when you're dead.");
             return;
@@ -107,10 +109,10 @@ public class GotoCommand extends Command {
         } else {
             gotomaps = GameConstants.GOTO_TOWNS;
         }
-        
+
         if (gotomaps.containsKey(params[0])) {
             MapleMap target = c.getChannelServer().getMapFactory().getMap(gotomaps.get(params[0]));
-            
+
             // expedition issue with this command detected thanks to Masterrulax
             MaplePortal targetPortal = target.getRandomPlayerSpawnpoint();
             player.saveLocationOnWarp();
@@ -121,7 +123,7 @@ public class GotoCommand extends Command {
             if (player.isGM()) {
                 sendStr += ("\r\n#rAreas:#k\r\n" + GOTO_AREAS_INFO);
             }
-            
+
             player.getAbstractPlayerInteraction().npcTalk(9000020, sendStr);
         }
     }

@@ -66,7 +66,6 @@ import config.YamlConfig;
 import constants.game.ExpTable;
 import constants.game.GameConstants;
 import constants.inventory.ItemConstants;
-import constants.net.ServerConstants;
 import constants.skills.Buccaneer;
 import constants.skills.Corsair;
 import constants.skills.ThunderBreaker;
@@ -74,6 +73,7 @@ import net.opcodes.SendOpcode;
 import net.server.PlayerCoolDownValueHolder;
 import net.server.Server;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import net.server.channel.Channel;
 import net.server.channel.handlers.PlayerInteractionHandler;
 import net.server.channel.handlers.SummonDamageHandler.SummonAttackEntry;
@@ -6271,7 +6271,8 @@ public class MaplePacketCreator {
         mplew.writeInt(0);
         mplew.writeBool(error == 0); //0 = ?, otherwise list servers
         if (error == 0) {
-            List<World> worlds = Server.getInstance().getWorlds();
+            Server.getInstance();
+            List<World> worlds = WorldServer.getInstance().getWorlds();
             mplew.writeInt(worlds.size());
             for (World world : worlds) {
                 mplew.writeMapleAsciiString(GameConstants.WORLD_NAMES[world.getId()]);

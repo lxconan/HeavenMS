@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 import server.TimerManager;
 
@@ -42,7 +43,7 @@ public class ShutdownCommand extends Command {
             player.yellowMessage("Syntax: !shutdown [<time>|NOW]");
             return;
         }
-        
+
         int time = 60000;
         if (params[0].equalsIgnoreCase("now")){
             time = 1;
@@ -62,13 +63,14 @@ public class ShutdownCommand extends Command {
             strTime += minutes + " minutes, ";
             strTime += seconds + " seconds";
 
-            for (World w : Server.getInstance().getWorlds()) {
+            Server.getInstance();
+            for (World w : WorldServer.getInstance().getWorlds()) {
                 for (MapleCharacter chr : w.getPlayerStorage().getAllCharacters()) {
                     chr.dropMessage("Server is undergoing maintenance process, and will be shutdown in " + strTime + ". Prepare yourself to quit safely in the mean time.");
                 }
             }
         }
-        
+
         TimerManager.getInstance().schedule(Server.getInstance().shutdown(false), time);
     }
 }

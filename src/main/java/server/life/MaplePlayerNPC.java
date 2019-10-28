@@ -47,7 +47,6 @@ import client.MapleClient;
 import client.inventory.Item;
 import client.inventory.MapleInventoryType;
 import constants.game.GameConstants;
-import constants.net.ServerConstants;
 import net.server.Server;
 import net.server.channel.Channel;
 import net.server.world.World;
@@ -672,7 +671,8 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
             ps.executeUpdate();
             ps.close();
 
-            for(World w : Server.getInstance().getWorlds()) {
+            Server.getInstance();
+            for(World w : WorldServer.getInstance().getWorlds()) {
                 w.resetPlayerNpcMapData();
             }
 

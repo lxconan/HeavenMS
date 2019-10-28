@@ -22,7 +22,6 @@
 package net.server;
 
 import abstraction.ApplicationContextFactory;
-import abstraction.DataConnectionFactory;
 import abstraction.dao.PlayerNpcFieldGateway;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -161,7 +160,7 @@ public class Server {
 
     private void loadPlayerNpcMapStepFromDb() {
         try {
-            List<World> worldList = this.getWorlds();
+            List<World> worldList = WorldServer.getInstance().getWorlds();
             playerNpcFieldGateway.forEach(playerNpcField -> {
                 World w = worldList.get(playerNpcField.getWorld());
                 if (w != null) {
@@ -173,10 +172,6 @@ public class Server {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public List<World> getWorlds() {
-        return worldServer.getWorldsSync();
     }
 
     public int getWorldsSize() {
@@ -269,7 +264,7 @@ public class Server {
     }
 
     public void commitActiveCoupons() {
-        for (World world : getWorlds()) {
+        for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 if (!chr.isLoggedin()) continue;
 
@@ -979,7 +974,7 @@ public class Server {
 
     public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(Integer accountId,
                                                                                                                     int visibleWorlds) {
-        List<World> wlist = this.getWorlds();
+        List<World> wlist = WorldServer.getInstance().getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
 
         List<Pair<Integer, List<MapleCharacter>>> accChars = new ArrayList<>(wlist.size() + 1);
@@ -1210,7 +1205,7 @@ public class Server {
     }
 
     private int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
-        List<World> wlist = this.getWorlds();
+        List<World> wlist = WorldServer.getInstance().getWorlds();
         Pair<Short, List<List<MapleCharacter>>> accCharacters = loadAccountCharactersViewFromDb(accId, wlist.size());
 
         lgnWLock.lock();
@@ -1262,7 +1257,7 @@ public class Server {
             lgnWLock.unlock();
         }
 
-        List<World> worldList = this.getWorlds();
+        List<World> worldList = WorldServer.getInstance().getWorlds();
         for (Integer worldid : accWorlds) {
             if (worldid < worldList.size()) {
                 World wserv = worldList.get(worldid);
@@ -1399,8 +1394,8 @@ public class Server {
 
     private synchronized void shutdownInternal(boolean restart) {
         logger.info((restart ? "Restarting" : "Shutting down") + " the server!\r\n");
-        if (getWorlds() == null) return;//already shutdown
-        for (World w : getWorlds()) {
+        if (WorldServer.getInstance().getWorlds() == null) return;//already shutdown
+        for (World w : WorldServer.getInstance().getWorlds()) {
             w.shutdown();
         }
 

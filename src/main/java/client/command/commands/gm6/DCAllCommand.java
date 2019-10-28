@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 
 public class DCAllCommand extends Command {
@@ -37,7 +38,8 @@ public class DCAllCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
-        for (World world : Server.getInstance().getWorlds()) {
+        Server.getInstance();
+        for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 if (!chr.isGM()) {
                     chr.getClient().disconnect(false, false);

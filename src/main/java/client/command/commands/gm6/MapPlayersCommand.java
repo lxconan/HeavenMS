@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 
 public class MapPlayersCommand extends Command {
@@ -39,7 +40,8 @@ public class MapPlayersCommand extends Command {
         MapleCharacter player = c.getPlayer();
         String names = "";
         int map = player.getMapId();
-        for (World world : Server.getInstance().getWorlds()) {
+        Server.getInstance();
+        for (World world : WorldServer.getInstance().getWorlds()) {
             for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
                 int curMap = chr.getMapId();
                 String hp = Integer.toString(chr.getHp());

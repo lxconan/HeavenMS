@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import client.MapleCharacter;
 import client.MapleClient;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import net.server.world.World;
 import net.server.Server;
 import tools.Pair;
@@ -84,7 +85,8 @@ public class MapleLoginBypassCoordinator {
             Set<Integer> onlineAccounts = new HashSet<>();
             long timeNow = ServerTimer.getInstance().getCurrentTime();
 
-            for (World w : Server.getInstance().getWorlds()) {
+            Server.getInstance();
+            for (World w : WorldServer.getInstance().getWorlds()) {
                 for (MapleCharacter chr : w.getPlayerStorage().getAllCharacters()) {
                     MapleClient c = chr.getClient();
                     if (c != null) {

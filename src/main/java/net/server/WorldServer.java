@@ -173,7 +173,7 @@ public class WorldServer {
     List<Channel> getAllChannels() {
         try {
             List<Channel> allChannels = new ArrayList<>();
-            for (World world : getWorldsSync()) {
+            for (World world : getWorlds()) {
                 allChannels.addAll(world.getChannels());
             }
             return allChannels;
@@ -182,7 +182,7 @@ public class WorldServer {
         }
     }
 
-    List<World> getWorldsSync() {
+    public List<World> getWorlds() {
         wldRLock.lock();
         try {
             return Collections.unmodifiableList(worlds);
