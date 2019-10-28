@@ -124,9 +124,7 @@ public class Server {
     private final Map<Integer, NewYearCardRecord> newyears = new HashMap<>();
     private final List<MapleClient> processDiseaseAnnouncePlayers = new LinkedList<>();
     private final List<MapleClient> registeredDiseaseAnnouncePlayers = new LinkedList<>();
-
-    private final List<List<Pair<String, Integer>>> playerRanking = new LinkedList<>();
-
+    
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
     private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
@@ -451,7 +449,7 @@ public class Server {
     public List<Pair<String, Integer>> getWorldPlayerRanking(int worldid) {
         worldServer.getWldRLock().lock();
         try {
-            return new ArrayList<>(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldid : 0));
+            return new ArrayList<>(worldServer.playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldid : 0));
         } finally {
             worldServer.getWldRLock().unlock();
         }
@@ -463,13 +461,13 @@ public class Server {
             worldServer.getWldWLock().lock();
             try {
                 if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                    for (int i = playerRanking.size(); i <= worldid; i++) {
-                        playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+                    for (int i = worldServer.playerRanking.size(); i <= worldid; i++) {
+                        worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
                     }
 
-                    playerRanking.add(worldid, ranking.get(0).getRight());
+                    worldServer.playerRanking.add(worldid, ranking.get(0).getRight());
                 } else {
-                    playerRanking.add(0, ranking.get(0).getRight());
+                    worldServer.playerRanking.add(0, ranking.get(0).getRight());
                 }
             } finally {
                 worldServer.getWldWLock().unlock();
@@ -481,11 +479,11 @@ public class Server {
         if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
             worldServer.getWldWLock().lock();
             try {
-                if (playerRanking.size() < this.getWorldsSize()) {
+                if (worldServer.playerRanking.size() < this.getWorldsSize()) {
                     return;
                 }
 
-                playerRanking.remove(playerRanking.size() - 1);
+                worldServer.playerRanking.remove(worldServer.playerRanking.size() - 1);
             } finally {
                 worldServer.getWldWLock().unlock();
             }
@@ -495,7 +493,7 @@ public class Server {
 
             worldServer.getWldWLock().lock();
             try {
-                playerRanking.add(0, ranking.get(0).getRight());
+                worldServer.playerRanking.add(0, ranking.get(0).getRight());
             } finally {
                 worldServer.getWldWLock().unlock();
             }
@@ -508,15 +506,15 @@ public class Server {
             worldServer.getWldWLock().lock();
             try {
                 if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                    for (int i = playerRanking.size(); i <= rankUpdates.get(rankUpdates.size() - 1).getLeft(); i++) {
-                        playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+                    for (int i = worldServer.playerRanking.size(); i <= rankUpdates.get(rankUpdates.size() - 1).getLeft(); i++) {
+                        worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
                     }
 
                     for (Pair<Integer, List<Pair<String, Integer>>> wranks : rankUpdates) {
-                        playerRanking.set(wranks.getLeft(), wranks.getRight());
+                        worldServer.playerRanking.set(wranks.getLeft(), wranks.getRight());
                     }
                 } else {
-                    playerRanking.set(0, rankUpdates.get(0).getRight());
+                    worldServer.playerRanking.set(0, rankUpdates.get(0).getRight());
                 }
             } finally {
                 worldServer.getWldWLock().unlock();
@@ -526,7 +524,7 @@ public class Server {
 
     private void initWorldPlayerRanking() {
         if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-            playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+            worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
         }
         updateWorldPlayerRanking();
     }

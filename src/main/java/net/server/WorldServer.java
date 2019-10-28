@@ -21,6 +21,7 @@ class WorldServer {
     private final ReentrantReadWriteLock.ReadLock wldRLock = wldLock.readLock();
     private final ReentrantReadWriteLock.WriteLock wldWLock = wldLock.writeLock();
     public List<Pair<Integer, String>> worldRecommendedList = new LinkedList<>();
+    public final List<List<Pair<String, Integer>>> playerRanking = new LinkedList<>();
 
     List<World> getWorlds() {
         return worlds;
