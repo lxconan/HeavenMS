@@ -133,27 +133,6 @@ public class WorldServer {
         }
     }
 
-    public boolean removeChannel(int worldId) {   //lol don't!
-        wldWLock.lock();
-        try {
-            if (worldId >= worlds.size()) return false;
-
-            World world = worlds.get(worldId);
-            if (world != null) {
-                int channel = world.removeChannel();
-
-                Map<Integer, String> m = channels.get(worldId);
-                if (m != null) m.remove(channel);
-
-                return channel > -1;
-            }
-        } finally {
-            wldWLock.unlock();
-        }
-
-        return false;
-    }
-
     public Channel getChannel(int world, int channel) {
         // TODO: This method is unsafe. Because the channel is not synchronized.
         try {
