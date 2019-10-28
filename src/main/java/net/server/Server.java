@@ -114,7 +114,8 @@ public class Server {
     private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
     private final Map<Integer, Integer> worldChars = new HashMap<>();
     private final Map<String, Integer> transitioningChars = new HashMap<>();
-    private List<Pair<Integer, String>> worldRecommendedList = new LinkedList<>();
+
+    // TODO: next, extract worldRecommendedList to WorldServer.
     private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
     private final Map<MapleClient, Long> inLoginState = new HashMap<>(100);
 
@@ -148,7 +149,7 @@ public class Server {
     }
 
     public List<Pair<Integer, String>> worldRecommendedList() {
-        return worldRecommendedList;
+        return worldServer.worldRecommendedList;
     }
 
     public void setNewYearCard(NewYearCardRecord nyc) {
@@ -224,7 +225,7 @@ public class Server {
     }
 
     public int addWorld() {
-        int newWorld = initWorld();
+        int newWorld = worldServer.initWorld();
         if (newWorld > -1) {
             installWorldPlayerRanking(newWorld);
 
@@ -242,58 +243,6 @@ public class Server {
         }
 
         return newWorld;
-    }
-
-    private int initWorld() {
-        worldServer.getWldWLock().lock();
-        try {
-            int i = worldServer.getWorlds().size();
-
-            if (i >= YamlConfig.config.server.WLDLIST_SIZE) {
-                return -1;
-            }
-
-            logger.info("Starting world " + i);
-
-            int exprate = YamlConfig.config.worlds.get(i).exp_rate;
-            int mesorate = YamlConfig.config.worlds.get(i).meso_rate;
-            int droprate = YamlConfig.config.worlds.get(i).drop_rate;
-            int bossdroprate = YamlConfig.config.worlds.get(i).boss_drop_rate;
-            int questrate = YamlConfig.config.worlds.get(i).quest_rate;
-            int travelrate = YamlConfig.config.worlds.get(i).travel_rate;
-            int fishingrate = YamlConfig.config.worlds.get(i).fishing_rate;
-
-            int flag = YamlConfig.config.worlds.get(i).flag;
-            String event_message = YamlConfig.config.worlds.get(i).event_message;
-            String why_am_i_recommended = YamlConfig.config.worlds.get(i).why_am_i_recommended;
-
-            World world = new World(i,
-                flag,
-                event_message,
-                exprate, droprate, bossdroprate, mesorate, questrate, travelrate, fishingrate);
-
-            worldRecommendedList.add(new Pair<>(i, why_am_i_recommended));
-            worldServer.getWorlds().add(world);
-
-            Map<Integer, String> channelInfo = new HashMap<>();
-            long bootTime = ServerTimer.getInstance().getCurrentTime();
-            for (int j = 1; j <= YamlConfig.config.worlds.get(i).channels; j++) {
-                int channelid = j;
-                Channel channel = new Channel(i, channelid, bootTime);
-
-                world.addChannel(channel);
-                channelInfo.put(channelid, channel.getIP());
-            }
-
-            worldServer.getChannels().add(i, channelInfo);
-
-            world.setServerMessage(YamlConfig.config.worlds.get(i).server_message);
-
-            logger.info("Finished loading world " + i);
-            return i;
-        } finally {
-            worldServer.getWldWLock().unlock();
-        }
     }
 
     public boolean removeChannel(int worldid) {   //lol don't!
@@ -328,7 +277,7 @@ public class Server {
 
                 worldServer.getWorlds().remove(worldid);
                 worldServer.getChannels().remove(worldid);
-                worldRecommendedList.remove(worldid);
+                worldServer.worldRecommendedList.remove(worldid);
             } else {
                 return false;
             }
@@ -337,17 +286,6 @@ public class Server {
         }
 
         return true;
-    }
-
-    private void resetServerWorlds() {  // thanks maple006 for noticing proprietary lists assigned to null
-        worldServer.getWldWLock().lock();
-        try {
-            worldServer.getWorlds().clear();
-            worldServer.getChannels().clear();
-            worldRecommendedList.clear();
-        } finally {
-            worldServer.getWldWLock().unlock();
-        }
     }
 
     public Map<Integer, Integer> getCouponRates() {
@@ -746,7 +684,7 @@ public class Server {
             Integer worldCount = Math.min(GameConstants.WORLD_NAMES.length, YamlConfig.config.server.WORLDS);
 
             for (int i = 0; i < worldCount; i++) {
-                initWorld();
+                worldServer.initWorld();
             }
             initWorldPlayerRanking();
 
@@ -1257,23 +1195,6 @@ public class Server {
         }
     }
 
-    /*
-    public void deleteAccountEntry(Integer accountid) { is this even a thing?
-        lgnWLock.lock();
-        try {
-            accountCharacterCount.remove(accountid);
-            accountChars.remove(accountid);
-        } finally {
-            lgnWLock.unlock();
-        }
-
-        for (World wserv : this.getWorlds()) {
-            wserv.clearAccountCharacterView(accountid);
-            wserv.unregisterAccountStorage(accountid);
-        }
-    }
-    */
-
     public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(Integer accountId,
                                                                                                                     int visibleWorlds) {
         List<World> wlist = this.getWorlds();
@@ -1720,7 +1641,7 @@ public class Server {
         TimerManager.getInstance().purge();
         TimerManager.getInstance().stop();
 
-        resetServerWorlds();
+        worldServer.resetServerWorlds();
 
         logger.info("Worlds + Channels are offline.");
         acceptor.unbind();
