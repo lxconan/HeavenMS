@@ -570,7 +570,7 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
 
         MaplePlayerNPC pn = processPlayerNPCInternal(chr.getClient().getChannelServer().getMapFactory().getMap(mapid), pos, chr, true).getLeft();
         if(pn != null) {
-            for (Channel channel : Server.getInstance().getChannelsFromWorld(chr.getWorld())) {
+            for (Channel channel : WorldServer.getInstance().getChannelsFromWorld(chr.getWorld())) {
                 MapleMap m = channel.getMapFactory().getMap(mapid);
 
                 m.addPlayerNPCMapObject(pn);
@@ -607,7 +607,7 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
             MaplePlayerNPC pn = getPlayerNPCFromWorldMap(chr.getName(), worldid, mapid);
 
             if(pn != null) {
-                for (Channel channel : Server.getInstance().getChannelsFromWorld(worldid)) {
+                for (Channel channel : WorldServer.getInstance().getChannelsFromWorld(worldid)) {
                     MapleMap m = channel.getMapFactory().getMap(mapid);
                     m.removeMapObject(pn);
 
@@ -644,7 +644,7 @@ public class MaplePlayerNPC extends AbstractMapleMapObject {
                 int world = rs.getInt("world"), map = rs.getInt("map");
                 if(world >= wsize) continue;
 
-                for (Channel channel : Server.getInstance().getChannelsFromWorld(world)) {
+                for (Channel channel : WorldServer.getInstance().getChannelsFromWorld(world)) {
                     MapleMap m = channel.getMapFactory().getMap(map);
 
                     for(MapleMapObject pnpcObj : m.getMapObjectsInRange(new Point(0, 0), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.PLAYER_NPC))) {

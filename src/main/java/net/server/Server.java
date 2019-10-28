@@ -174,10 +174,6 @@ public class Server {
         }
     }
 
-    public List<Channel> getChannelsFromWorld(int world) {
-        return worldServer.getChannelsFromWorld(world);
-    }
-
     public List<Channel> getAllChannels() {
         return worldServer.getAllChannels();
     }
@@ -804,19 +800,19 @@ public class Server {
     }
 
     public void broadcastMessage(int world, final byte[] packet) {
-        for (Channel ch : getChannelsFromWorld(world)) {
+        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
             ch.broadcastPacket(packet);
         }
     }
 
     public void broadcastGMMessage(int world, final byte[] packet) {
-        for (Channel ch : getChannelsFromWorld(world)) {
+        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
             ch.broadcastGMPacket(packet);
         }
     }
 
     public boolean isGmOnline(int world) {
-        for (Channel ch : getChannelsFromWorld(world)) {
+        for (Channel ch : worldServer.getChannelsFromWorld(world)) {
             for (MapleCharacter player : ch.getPlayerStorage().getAllCharacters()) {
                 if (player.isGM()) {
                     return true;

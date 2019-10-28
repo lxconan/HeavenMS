@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +106,7 @@ public class MaplePlayerNPCPodium {
                 }
             });
 
-            for(Channel ch : Server.getInstance().getChannelsFromWorld(map.getWorld())) {
+            for(Channel ch : WorldServer.getInstance().getChannelsFromWorld(map.getWorld())) {
                 MapleMap m = ch.getMapFactory().getMap(map.getId());
 
                 for(MaplePlayerNPC pn : playerNpcs) {
@@ -117,7 +118,7 @@ public class MaplePlayerNPCPodium {
 
             Point ret = rearrangePlayerNpcs(map, newStep, playerNpcs);
 
-            for(Channel ch : Server.getInstance().getChannelsFromWorld(map.getWorld())) {
+            for(Channel ch : WorldServer.getInstance().getChannelsFromWorld(map.getWorld())) {
                 MapleMap m = ch.getMapFactory().getMap(map.getId());
 
                 for(MaplePlayerNPC pn : playerNpcs) {

@@ -30,7 +30,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +45,6 @@ import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 import net.server.PlayerStorage;
 import net.server.Server;
 import net.server.channel.Channel;
-import net.server.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.DatabaseConnection;
@@ -366,7 +364,7 @@ public class MapleGuild {
         membersLock.lock();
         try {
             for (MapleGuildCharacter mgc : members) {
-                for (Channel cs : Server.getInstance().getChannelsFromWorld(world)) {
+                for (Channel cs : WorldServer.getInstance().getChannelsFromWorld(world)) {
                     if (cs.getPlayerStorage().getCharacterById(mgc.getId()) != null) {
                         cs.getPlayerStorage().getCharacterById(mgc.getId()).getClient().announce(serverNotice);
                         break;

@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.channel.Channel;
 import server.expeditions.MapleExpedition;
 
@@ -41,7 +42,7 @@ public class ExpedsCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
-        for (Channel ch : Server.getInstance().getChannelsFromWorld(c.getWorld())) {
+        for (Channel ch : WorldServer.getInstance().getChannelsFromWorld(c.getWorld())) {
             List<MapleExpedition> expeds = ch.getExpeditions();
             if (expeds.isEmpty()) {
                 player.yellowMessage("No Expeditions in Channel " + ch.getId());

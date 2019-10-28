@@ -27,6 +27,7 @@ import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.channel.Channel;
 
 public class OnlineTwoCommand extends Command {
@@ -38,7 +39,7 @@ public class OnlineTwoCommand extends Command {
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
         int total = 0;
-        for (Channel ch : Server.getInstance().getChannelsFromWorld(player.getWorld())) {
+        for (Channel ch : WorldServer.getInstance().getChannelsFromWorld(player.getWorld())) {
             int size = ch.getPlayerStorage().getAllCharacters().size();
             total += size;
             String s = "(Channel " + ch.getId() + " Online: " + size + ") : ";
