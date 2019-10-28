@@ -174,10 +174,6 @@ public class Server {
         }
     }
 
-    public List<Channel> getAllChannels() {
-        return worldServer.getAllChannels();
-    }
-
     public Set<Integer> getOpenChannels(int world) {
         return worldServer.getOpenChannels(world);
     }
@@ -483,7 +479,7 @@ public class Server {
         OpcodeConstants.generateOpcodeNames();
         CommandsExecutor.getInstance();
 
-        for (Channel ch : this.getAllChannels()) {
+        for (Channel ch : worldServer.getAllChannels()) {
             ch.reloadEventScriptManager();
         }
     }
@@ -1387,7 +1383,7 @@ public class Server {
             w.shutdown();
         }
 
-        List<Channel> allChannels = getAllChannels();
+        List<Channel> allChannels = worldServer.getAllChannels();
 
         if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().cancelThreadTrackerTask();
 

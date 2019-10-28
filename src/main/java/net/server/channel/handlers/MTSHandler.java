@@ -31,6 +31,7 @@ import java.util.List;
 
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -427,7 +428,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                         int price = rs.getInt("price") + 100 + (int) (rs.getInt("price") * 0.1); //taxes
                         if (c.getPlayer().getCashShop().getCash(4) >= price) { //FIX
                             boolean alwaysnull = true;
-                            for (Channel cserv : Server.getInstance().getAllChannels()) {
+                            for (Channel cserv : WorldServer.getInstance().getAllChannels()) {
                                 MapleCharacter victim = cserv.getPlayerStorage().getCharacterById(rs.getInt("seller"));
                                 if (victim != null) {
                                     victim.getCashShop().gainCash(4, rs.getInt("price"));
@@ -490,7 +491,7 @@ public final class MTSHandler extends AbstractMaplePacketHandler {
                     if (rs.next()) {
                         int price = rs.getInt("price") + 100 + (int) (rs.getInt("price") * 0.1);
                         if (c.getPlayer().getCashShop().getCash(4) >= price) {
-                            for (Channel cserv : Server.getInstance().getAllChannels()) {
+                            for (Channel cserv : WorldServer.getInstance().getAllChannels()) {
                                 MapleCharacter victim = cserv.getPlayerStorage().getCharacterById(rs.getInt("seller"));
                                 if (victim != null) {
                                     victim.getCashShop().gainCash(4, rs.getInt("price"));

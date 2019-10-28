@@ -170,7 +170,7 @@ public class WorldServer {
         }
     }
 
-    List<Channel> getAllChannels() {
+    public List<Channel> getAllChannels() {
         try {
             List<Channel> allChannels = new ArrayList<>();
             for (World world : getWorlds()) {
