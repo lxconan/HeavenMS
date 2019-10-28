@@ -402,7 +402,6 @@ public class CommandsExecutor {
         addCommand("eraseallpnpcs", rank, EraseAllPNpcsCommand.class);
         addCommand("addchannel", rank, ServerAddChannelCommand.class);
         addCommand("removechannel", rank, ServerRemoveChannelCommand.class);
-        addCommand("removeworld", rank, ServerRemoveWorldCommand.class);
         commandsNameDesc.add(levelCommandsCursor);
     }
 }

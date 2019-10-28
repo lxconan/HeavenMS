@@ -330,75 +330,11 @@ public class WorldServer {
         }
     }
 
-    private void removeWorldPlayerRanking() {
-        if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-            wldWLock.lock();
-            try {
-                if (playerRanking.size() < getWorldsSize()) {
-                    return;
-                }
-
-                playerRanking.remove(playerRanking.size() - 1);
-            } finally {
-                wldWLock.unlock();
-            }
-        } else {
-            List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(-1 * (getWorldsSize() - 2));  // update
-            // ranking list
-
-            wldWLock.lock();
-            try {
-                playerRanking.add(0, ranking.get(0).getRight());
-            } finally {
-                wldWLock.unlock();
-            }
-        }
-    }
-
     void initWorldPlayerRanking() {
         if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
             playerRanking.add(new ArrayList<>(0));
         }
         updateWorldPlayerRanking();
-    }
-
-    public boolean removeWorld() {   //lol don't!
-        World w;
-        int worldid;
-
-        wldRLock.lock();
-        try {
-            worldid = worlds.size() - 1;
-            if (worldid < 0) {
-                return false;
-            }
-
-            w = worlds.get(worldid);
-        } finally {
-            wldRLock.unlock();
-        }
-
-        if (w == null || !w.canUninstall()) {
-            return false;
-        }
-
-        wldWLock.lock();
-        try {
-            if (worldid == worlds.size() - 1) {
-                removeWorldPlayerRanking();
-                w.shutdown();
-
-                worlds.remove(worldid);
-                channels.remove(worldid);
-                worldRecommendedList.remove(worldid);
-            } else {
-                return false;
-            }
-        } finally {
-            wldWLock.unlock();
-        }
-
-        return true;
     }
 
     public void broadcastMessage(int world, final byte[] packet) {

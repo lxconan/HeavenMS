@@ -46,7 +46,6 @@ public class WarpWorldCommand extends Command {
             return;
         }
 
-        Server server = Server.getInstance();
         byte worldb = Byte.parseByte(params[0]);
         if (worldb <= (WorldServer.getInstance().getWorldsSize() - 1)) {
             try {
