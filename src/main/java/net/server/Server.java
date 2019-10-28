@@ -174,10 +174,6 @@ public class Server {
         }
     }
 
-    public Channel getChannel(int world, int channel) {
-        return worldServer.getChannel(world, channel);
-    }
-
     public List<Channel> getChannelsFromWorld(int world) {
         return worldServer.getChannelsFromWorld(world);
     }

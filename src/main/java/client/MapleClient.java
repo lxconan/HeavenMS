@@ -66,7 +66,6 @@ import org.apache.mina.core.session.IoSession;
 
 import client.inventory.MapleInventoryType;
 import constants.game.GameConstants;
-import constants.net.ServerConstants;
 import scripting.AbstractPlayerInteraction;
 import scripting.event.EventInstanceManager;
 import scripting.event.EventManager;
@@ -1093,7 +1092,7 @@ public class MapleClient {
 	}
 
 	public Channel getChannelServer() {
-		return Server.getInstance().getChannel(world, channel);
+		return WorldServer.getInstance().getChannel(world, channel);
 	}
 
 	public World getWorldServer() {
@@ -1101,7 +1100,7 @@ public class MapleClient {
 	}
 
 	public Channel getChannelServer(byte channel) {
-		return Server.getInstance().getChannel(world, channel);
+		return WorldServer.getInstance().getChannel(world, channel);
 	}
 
         public boolean deleteCharacter(int cid, int senderAccId) {

@@ -28,9 +28,9 @@ import java.util.HashSet;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicLong;
 
-import config.ServerConfig;
 import config.YamlConfig;
 import net.server.ServerTimer;
+import net.server.WorldServer;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -131,7 +131,7 @@ public class MapleServerHandler extends IoHandlerAdapter {
         }
 
         if (!isLoginServerHandler()) {
-            if (Server.getInstance().getChannel(world, channel) == null) {
+            if (WorldServer.getInstance().getChannel(world, channel) == null) {
                 MapleSessionCoordinator.getInstance().closeSession(session, true);
                 return;
             }
