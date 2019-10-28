@@ -94,8 +94,7 @@ public class Server {
         if (instance == null) {
             final ApplicationContext context = ApplicationContextFactory.getInstance();
             Server.instance = new Server(
-                context.getBean(PlayerNpcFieldGateway.class),
-                context.getBean(DataConnectionFactory.class));
+                context.getBean(PlayerNpcFieldGateway.class));
         }
         return instance;
     }
@@ -132,11 +131,9 @@ public class Server {
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
     private final PlayerNpcFieldGateway playerNpcFieldGateway;
-    private final DataConnectionFactory dataConnectionFactory;
 
-    public Server(PlayerNpcFieldGateway playerNpcFieldGateway, DataConnectionFactory dataConnectionFactory) {
+    public Server(PlayerNpcFieldGateway playerNpcFieldGateway) {
         this.playerNpcFieldGateway = playerNpcFieldGateway;
-        this.dataConnectionFactory = dataConnectionFactory;
     }
 
     public boolean isOnline() {
@@ -217,27 +214,6 @@ public class Server {
 
     public int addChannel(int worldid) {
         return worldServer.addChannel(worldid);
-    }
-
-    public int addWorld() {
-        int newWorld = worldServer.initWorld();
-        if (newWorld > -1) {
-            worldServer.installWorldPlayerRanking(newWorld);
-
-            Set<Integer> accounts;
-            lgnRLock.lock();
-            try {
-                accounts = new HashSet<>(accountChars.keySet());
-            } finally {
-                lgnRLock.unlock();
-            }
-
-            for (Integer accId : accounts) {
-                loadAccountCharactersView(accId, 0, newWorld);
-            }
-        }
-
-        return newWorld;
     }
 
     public boolean removeChannel(int worldid) {   //lol don't!
@@ -413,13 +389,6 @@ public class Server {
     }
 
     public void updateWorldPlayerRanking() {
-        worldServer.updateWorldPlayerRanking();
-    }
-
-    private void initWorldPlayerRanking() {
-        if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-            worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
-        }
         worldServer.updateWorldPlayerRanking();
     }
 

@@ -244,7 +244,7 @@ class WorldServer {
         }
     }
 
-    List<Pair<Integer, List<Pair<String, Integer>>>> updatePlayerRankingFromDB(int worldid) {
+    private List<Pair<Integer, List<Pair<String, Integer>>>> updatePlayerRankingFromDB(int worldid) {
         List<Pair<Integer, List<Pair<String, Integer>>>> rankSystem = new ArrayList<>();
         List<Pair<String, Integer>> rankUpdate = new ArrayList<>(0);
 
