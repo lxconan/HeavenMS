@@ -27,6 +27,7 @@ import client.MapleCharacter;
 import client.command.Command;
 import client.MapleClient;
 import net.server.Server;
+import net.server.WorldServer;
 import tools.MaplePacketCreator;
 
 import java.util.List;
@@ -40,8 +41,8 @@ public class RanksCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         MapleCharacter player = c.getPlayer();
-        
-        List<Pair<String, Integer>> worldRanking = Server.getInstance().getWorldPlayerRanking(player.getWorld());
+
+        List<Pair<String, Integer>> worldRanking = WorldServer.getInstance().getWorldPlayerRanking(player.getWorld());
         player.announce(MaplePacketCreator.showPlayerRanks(9010000, worldRanking));
     }
 }

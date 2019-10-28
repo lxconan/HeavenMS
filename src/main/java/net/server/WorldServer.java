@@ -45,7 +45,7 @@ public class WorldServer {
         }
     }
 
-    List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
+    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
         wldRLock.lock();
         try {
             return new ArrayList<>(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldId : 0));
@@ -106,7 +106,7 @@ public class WorldServer {
         }
     }
 
-    int addChannel(int worldid) {
+    public int addChannel(int worldid) {
         wldWLock.lock();
         try {
             if (worldid >= worlds.size()) return -3;
@@ -132,7 +132,7 @@ public class WorldServer {
         }
     }
 
-    boolean removeChannel(int worldId) {   //lol don't!
+    public boolean removeChannel(int worldId) {   //lol don't!
         wldWLock.lock();
         try {
             if (worldId >= worlds.size()) return false;
@@ -307,7 +307,7 @@ public class WorldServer {
         return rankSystem;
     }
 
-    void updateWorldPlayerRanking() {
+    public void updateWorldPlayerRanking() {
         List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (getWorldsSize() - 1));
         if (!rankUpdates.isEmpty()) {
             wldWLock.lock();
@@ -361,7 +361,7 @@ public class WorldServer {
         updateWorldPlayerRanking();
     }
 
-    boolean removeWorld() {   //lol don't!
+    public boolean removeWorld() {   //lol don't!
         World w;
         int worldid;
 

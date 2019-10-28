@@ -48,7 +48,7 @@ public class ServerRemoveChannelCommand extends Command {
         ThreadManager.getInstance().newTask(new Runnable() {
             @Override
             public void run() {
-                if(Server.getInstance().removeChannel(worldId)) {
+                if(WorldServer.getInstance().removeChannel(worldId)) {
                     if(player.isLoggedinWorld()) {
                         player.dropMessage(5, "Successfully removed a channel on World " + worldId + ". Current channel count: " + WorldServer.getInstance().getWorld(worldId).getChannelsSize() + ".");
                     }

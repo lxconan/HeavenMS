@@ -48,7 +48,7 @@ public class ServerRemoveWorldCommand extends Command {
         ThreadManager.getInstance().newTask(new Runnable() {
             @Override
             public void run() {
-                if(Server.getInstance().removeWorld()) {
+                if(WorldServer.getInstance().removeWorld()) {
                     if(player.isLoggedinWorld()) {
                         player.dropMessage(5, "Successfully removed a world. Current world count: " + WorldServer.getInstance().getWorldsSize() + ".");
                     }

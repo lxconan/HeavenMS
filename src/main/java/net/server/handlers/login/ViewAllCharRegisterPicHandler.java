@@ -83,7 +83,7 @@ public final class ViewAllCharRegisterPicHandler extends AbstractMaplePacketHand
         String pic = slea.readMapleAsciiString();
         c.setPic(pic);
 
-        String[] socket = server.getInetSocket(c.getWorld(), channel);
+        String[] socket = WorldServer.getInstance().getInetSocket(c.getWorld(), channel);
         if (socket == null) {
             c.announce(MaplePacketCreator.getAfterLoginError(10));
             return;

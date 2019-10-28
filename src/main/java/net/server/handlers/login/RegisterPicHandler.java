@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldServer;
 import net.server.world.World;
 import tools.MaplePacketCreator;
 import tools.data.input.SeekableLittleEndianAccessor;
@@ -25,70 +26,70 @@ public final class RegisterPicHandler extends AbstractMaplePacketHandler {
 
             case REMOTE_NO_MATCH:
                 return 17;
-                
+
             case COORDINATOR_ERROR:
                 return 8;
-                
+
             default:
                 return 9;
         }
     }
-    
+
     @Override
     public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         slea.readByte();
         int charId = slea.readInt();
-        
+
         String macs = slea.readMapleAsciiString();
         String hwid = slea.readMapleAsciiString();
-        
+
         if (!hwid.matches("[0-9A-F]{12}_[0-9A-F]{8}")) {
             c.announce(MaplePacketCreator.getAfterLoginError(17));
             return;
         }
-        
+
         c.updateMacs(macs);
         c.updateHWID(hwid);
-        
+
         IoSession session = c.getSession();
         AntiMulticlientResult res = MapleSessionCoordinator.getInstance().attemptGameSession(session, c.getAccID(), hwid);
         if (res != AntiMulticlientResult.SUCCESS) {
             c.announce(MaplePacketCreator.getAfterLoginError(parseAntiMulticlientError(res)));
             return;
         }
-        
+
         if (c.hasBannedMac() || c.hasBannedHWID()) {
             MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
             return;
         }
-        
+
         Server server = Server.getInstance();
         if(!server.haveCharacterEntry(c.getAccID(), charId)) {
             MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
             return;
         }
-		
+
         String pic = slea.readMapleAsciiString();
         if (c.getPic() == null || c.getPic().equals("")) {
             c.setPic(pic);
-            
+
             c.setWorld(server.getCharacterWorld(charId));
             World wserv = c.getWorldServer();
             if(wserv == null || wserv.isWorldCapacityFull()) {
                 c.announce(MaplePacketCreator.getAfterLoginError(10));
                 return;
             }
-            
-            String[] socket = server.getInetSocket(c.getWorld(), c.getChannel());
+
+            String[] socket = WorldServer.getInstance().getInetSocket(c.getWorld(), c.getChannel());
             if(socket == null) {
                 c.announce(MaplePacketCreator.getAfterLoginError(10));
                 return;
             }
-            
+
             server.unregisterLoginState(c);
             c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION);
             server.setCharacteridInTransition(session, charId);
-            
+
             try {
                 c.announce(MaplePacketCreator.getServerIP(InetAddress.getByName(socket[0]), Integer.parseInt(socket[1]), charId));
             } catch (UnknownHostException e) {

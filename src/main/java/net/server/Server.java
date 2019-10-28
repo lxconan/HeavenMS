@@ -174,22 +174,6 @@ public class Server {
         }
     }
 
-    public String[] getInetSocket(int world, int channel) {
-        return worldServer.getInetSocket(world, channel);
-    }
-
-    public int addChannel(int worldid) {
-        return worldServer.addChannel(worldid);
-    }
-
-    public boolean removeChannel(int worldid) {   //lol don't!
-        return worldServer.removeChannel(worldid);
-    }
-
-    public boolean removeWorld() {   //lol don't!
-        return worldServer.removeWorld();
-    }
-
     public Map<Integer, Integer> getCouponRates() {
         return couponRates;
     }
@@ -348,14 +332,6 @@ public class Server {
         } finally {
             disLock.unlock();
         }
-    }
-
-    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
-        return worldServer.getWorldPlayerRanking(worldId);
-    }
-
-    public void updateWorldPlayerRanking() {
-        worldServer.updateWorldPlayerRanking();
     }
 
     public void init() {

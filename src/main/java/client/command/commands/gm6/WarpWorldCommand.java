@@ -50,7 +50,7 @@ public class WarpWorldCommand extends Command {
         byte worldb = Byte.parseByte(params[0]);
         if (worldb <= (WorldServer.getInstance().getWorldsSize() - 1)) {
             try {
-                String[] socket = server.getInetSocket(worldb, c.getChannel());
+                String[] socket = WorldServer.getInstance().getInetSocket(worldb, c.getChannel());
                 c.getWorldServer().removePlayer(player);
                 player.getMap().removePlayer(player);//LOL FORGOT THIS ><
                 c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION);

@@ -27,6 +27,7 @@ import client.MapleCharacter;
 import client.command.Command;
 import client.MapleClient;
 import net.server.Server;
+import net.server.WorldServer;
 import server.ThreadManager;
 
 public class ServerAddChannelCommand extends Command {
@@ -37,7 +38,7 @@ public class ServerAddChannelCommand extends Command {
     @Override
     public void execute(MapleClient c, String[] params) {
         final MapleCharacter player = c.getPlayer();
-        
+
         if (params.length < 1) {
             player.dropMessage(5, "Syntax: @addchannel <worldid>");
             return;
@@ -48,7 +49,7 @@ public class ServerAddChannelCommand extends Command {
         ThreadManager.getInstance().newTask(new Runnable() {
             @Override
             public void run() {
-                int chid = Server.getInstance().addChannel(worldid);
+                int chid = WorldServer.getInstance().addChannel(worldid);
                 if(player.isLoggedinWorld()) {
                     if(chid >= 0) {
                         player.dropMessage(5, "NEW Channel " + chid + " successfully deployed on world " + worldid + ".");
