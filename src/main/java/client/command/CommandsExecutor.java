@@ -400,7 +400,6 @@ public class CommandsExecutor {
         addCommand("supplyratecoupon", rank, SupplyRateCouponCommand.class);
         addCommand("spawnallpnpcs", rank, SpawnAllPNpcsCommand.class);
         addCommand("eraseallpnpcs", rank, EraseAllPNpcsCommand.class);
-        addCommand("addchannel", rank, ServerAddChannelCommand.class);
         commandsNameDesc.add(levelCommandsCursor);
     }
 }
