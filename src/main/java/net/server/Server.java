@@ -69,10 +69,7 @@ import server.TimerManager;
 import server.expeditions.MapleExpeditionBossLog;
 import server.life.MaplePlayerNPCFactory;
 import server.quest.MapleQuest;
-import tools.AutoJCE;
-import tools.DatabaseMigration;
-import tools.FilePrinter;
-import tools.Pair;
+import tools.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -451,7 +448,7 @@ public class Server {
     }
 
     private void installWorldPlayerRanking(int worldid) {
-        List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(worldid);
+        List<Pair<Integer, List<Pair<String, Integer>>>> ranking = worldServer.updatePlayerRankingFromDB(worldid);
         if (!ranking.isEmpty()) {
             worldServer.getWldWLock().lock();
             try {
@@ -483,7 +480,7 @@ public class Server {
                 worldServer.getWldWLock().unlock();
             }
         } else {
-            List<Pair<Integer, List<Pair<String, Integer>>>> ranking = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 2));  // update
+            List<Pair<Integer, List<Pair<String, Integer>>>> ranking = worldServer.updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 2));  // update
             // ranking list
 
             worldServer.getWldWLock().lock();
@@ -496,102 +493,14 @@ public class Server {
     }
 
     public void updateWorldPlayerRanking() {
-        List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 1));
-        if (!rankUpdates.isEmpty()) {
-            worldServer.getWldWLock().lock();
-            try {
-                if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                    for (int i = worldServer.playerRanking.size(); i <= rankUpdates.get(rankUpdates.size() - 1).getLeft(); i++) {
-                        worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
-                    }
-
-                    for (Pair<Integer, List<Pair<String, Integer>>> wranks : rankUpdates) {
-                        worldServer.playerRanking.set(wranks.getLeft(), wranks.getRight());
-                    }
-                } else {
-                    worldServer.playerRanking.set(0, rankUpdates.get(0).getRight());
-                }
-            } finally {
-                worldServer.getWldWLock().unlock();
-            }
-        }
+        worldServer.updateWorldPlayerRanking();
     }
 
     private void initWorldPlayerRanking() {
         if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
             worldServer.playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
         }
-        updateWorldPlayerRanking();
-    }
-
-    private List<Pair<Integer, List<Pair<String, Integer>>>> updatePlayerRankingFromDB(int worldid) {
-        List<Pair<Integer, List<Pair<String, Integer>>>> rankSystem = new ArrayList<>();
-        List<Pair<String, Integer>> rankUpdate = new ArrayList<>(0);
-
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        Connection con = null;
-        try {
-            con = createConnection();
-
-            String worldQuery;
-            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                if (worldid >= 0) {
-                    worldQuery = (" AND `characters`.`world` = " + worldid);
-                } else {
-                    worldQuery = (" AND `characters`.`world` >= 0 AND `characters`.`world` <= " + -worldid);
-                }
-            } else {
-                worldQuery = (" AND `characters`.`world` >= 0 AND `characters`.`world` <= " + Math.abs(worldid));
-            }
-
-            ps = con.prepareStatement("SELECT `characters`.`name`, `characters`.`level`, `characters`.`world` FROM `characters` LEFT JOIN accounts " +
-                "ON accounts.id = characters.accountid WHERE `characters`.`gm` < 2 AND `accounts`.`banned` = '0'" + worldQuery + " ORDER BY " + (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? "world, " : "") + "level DESC, exp DESC, lastExpGainTime ASC LIMIT 50");
-            rs = ps.executeQuery();
-
-            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
-                int currentWorld = -1;
-                while (rs.next()) {
-                    int rsWorld = rs.getInt("world");
-                    if (currentWorld < rsWorld) {
-                        currentWorld = rsWorld;
-                        rankUpdate = new ArrayList<>(50);
-                        rankSystem.add(new Pair<>(rsWorld, rankUpdate));
-                    }
-
-                    rankUpdate.add(new Pair<>(rs.getString("name"), rs.getInt("level")));
-                }
-            } else {
-                rankUpdate = new ArrayList<>(50);
-                rankSystem.add(new Pair<>(0, rankUpdate));
-
-                while (rs.next()) {
-                    rankUpdate.add(new Pair<>(rs.getString("name"), rs.getInt("level")));
-                }
-            }
-
-            ps.close();
-            rs.close();
-            con.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            try {
-                if (ps != null && !ps.isClosed()) {
-                    ps.close();
-                }
-                if (rs != null && !rs.isClosed()) {
-                    rs.close();
-                }
-                if (con != null && !con.isClosed()) {
-                    con.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return rankSystem;
+        worldServer.updateWorldPlayerRanking();
     }
 
     public void init() {
@@ -1660,6 +1569,6 @@ public class Server {
     }
 
     private Connection createConnection() throws SQLException {
-        return dataConnectionFactory.getConnection();
+        return DatabaseConnection.getConnection();
     }
 }

@@ -7,8 +7,13 @@ import net.server.channel.Channel;
 import net.server.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.DatabaseConnection;
 import tools.Pair;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -48,7 +53,7 @@ class WorldServer {
         }
     }
 
-    public List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
+    List<Pair<String, Integer>> getWorldPlayerRanking(int worldId) {
         wldRLock.lock();
         try {
             return new ArrayList<>(playerRanking.get(!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? worldId : 0));
@@ -236,6 +241,98 @@ class WorldServer {
             worldRecommendedList.clear();
         } finally {
             wldWLock.unlock();
+        }
+    }
+
+    List<Pair<Integer, List<Pair<String, Integer>>>> updatePlayerRankingFromDB(int worldid) {
+        List<Pair<Integer, List<Pair<String, Integer>>>> rankSystem = new ArrayList<>();
+        List<Pair<String, Integer>> rankUpdate = new ArrayList<>(0);
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection con = null;
+        try {
+            con = DatabaseConnection.getConnection();
+
+            String worldQuery;
+            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+                if (worldid >= 0) {
+                    worldQuery = (" AND `characters`.`world` = " + worldid);
+                } else {
+                    worldQuery = (" AND `characters`.`world` >= 0 AND `characters`.`world` <= " + -worldid);
+                }
+            } else {
+                worldQuery = (" AND `characters`.`world` >= 0 AND `characters`.`world` <= " + Math.abs(worldid));
+            }
+
+            ps = con.prepareStatement("SELECT `characters`.`name`, `characters`.`level`, `characters`.`world` FROM `characters` LEFT JOIN accounts " +
+                "ON accounts.id = characters.accountid WHERE `characters`.`gm` < 2 AND `accounts`.`banned` = '0'" + worldQuery + " ORDER BY " + (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING ? "world, " : "") + "level DESC, exp DESC, lastExpGainTime ASC LIMIT 50");
+            rs = ps.executeQuery();
+
+            if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+                int currentWorld = -1;
+                while (rs.next()) {
+                    int rsWorld = rs.getInt("world");
+                    if (currentWorld < rsWorld) {
+                        currentWorld = rsWorld;
+                        rankUpdate = new ArrayList<>(50);
+                        rankSystem.add(new Pair<>(rsWorld, rankUpdate));
+                    }
+
+                    rankUpdate.add(new Pair<>(rs.getString("name"), rs.getInt("level")));
+                }
+            } else {
+                rankUpdate = new ArrayList<>(50);
+                rankSystem.add(new Pair<>(0, rankUpdate));
+
+                while (rs.next()) {
+                    rankUpdate.add(new Pair<>(rs.getString("name"), rs.getInt("level")));
+                }
+            }
+
+            ps.close();
+            rs.close();
+            con.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ps != null && !ps.isClosed()) {
+                    ps.close();
+                }
+                if (rs != null && !rs.isClosed()) {
+                    rs.close();
+                }
+                if (con != null && !con.isClosed()) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return rankSystem;
+    }
+
+    public void updateWorldPlayerRanking() {
+        List<Pair<Integer, List<Pair<String, Integer>>>> rankUpdates = updatePlayerRankingFromDB(-1 * (this.getWorldsSize() - 1));
+        if (!rankUpdates.isEmpty()) {
+            wldWLock.lock();
+            try {
+                if (!YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
+                    for (int i = playerRanking.size(); i <= rankUpdates.get(rankUpdates.size() - 1).getLeft(); i++) {
+                        playerRanking.add(new ArrayList<Pair<String, Integer>>(0));
+                    }
+
+                    for (Pair<Integer, List<Pair<String, Integer>>> wranks : rankUpdates) {
+                        playerRanking.set(wranks.getLeft(), wranks.getRight());
+                    }
+                } else {
+                    playerRanking.set(0, rankUpdates.get(0).getRight());
+                }
+            } finally {
+                wldWLock.unlock();
+            }
         }
     }
 }
