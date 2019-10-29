@@ -101,7 +101,6 @@ public class Server {
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
     private final Properties subnetInfo = new Properties();
-    private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
     private final Map<String, Integer> transitioningChars = new HashMap<>();
 
     private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
@@ -794,7 +793,7 @@ public class Server {
     public short getAccountCharacterCount(Integer accountid) {
         loginServer.lgnRLock.lock();
         try {
-            return accountCharacterCount.get(accountid);
+            return loginServer.accountCharacterCount.get(accountid);
         } finally {
             loginServer.lgnRLock.unlock();
         }
@@ -843,7 +842,7 @@ public class Server {
 
         loginServer.lgnWLock.lock();
         try {
-            accountCharacterCount.put(accountid, (short) (accountCharacterCount.get(accountid) + 1));
+            loginServer.accountCharacterCount.put(accountid, (short) (loginServer.accountCharacterCount.get(accountid) + 1));
 
             Set<Integer> accChars = loginServer.accountChars.get(accountid);
             accChars.add(chrid);
@@ -862,7 +861,7 @@ public class Server {
     public void deleteCharacterEntry(Integer accountid, Integer chrid) {
         loginServer.lgnWLock.lock();
         try {
-            accountCharacterCount.put(accountid, (short) (accountCharacterCount.get(accountid) - 1));
+            loginServer.accountCharacterCount.put(accountid, (short) (loginServer.accountCharacterCount.get(accountid) - 1));
 
             Set<Integer> accChars = loginServer.accountChars.get(accountid);
             accChars.remove(chrid);
@@ -912,7 +911,7 @@ public class Server {
                 List<MapleCharacter> wchars = w.getAccountCharactersView(accountId);
                 if (wchars == null) {
                     if (!loginServer.accountChars.containsKey(accountId)) {
-                        accountCharacterCount.put(accountId, (short) 0);
+                        loginServer.accountCharacterCount.put(accountId, (short) 0);
                         loginServer.accountChars.put(accountId, new HashSet<Integer>());    // not advisable at all to write on the map on a read-protected
                         // environment
                     }                                                           // yet it's known there's no problem since no other point in the
@@ -1136,7 +1135,7 @@ public class Server {
         loginServer.lgnWLock.lock();
         try {
             List<List<MapleCharacter>> accChars = accCharacters.getRight();
-            accountCharacterCount.put(accId, accCharacters.getLeft());
+            loginServer.accountCharacterCount.put(accId, accCharacters.getLeft());
 
             Set<Integer> chars = loginServer.accountChars.get(accId);
             if (chars == null) {

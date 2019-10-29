@@ -14,4 +14,5 @@ public class LoginServer {
     public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
     public final Map<Integer, Integer> worldChars = new HashMap<>();
     public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
+    public final Map<Integer, Short> accountCharacterCount = new HashMap<>();
 }
