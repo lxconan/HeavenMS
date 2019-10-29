@@ -797,84 +797,9 @@ public class Server {
         worldCharacterServer.deleteCharacterEntry(accountId, characterId);
     }
 
-    public void transferWorldCharacterEntry(MapleCharacter chr, Integer toWorld) { // used before setting the new worldid on the character object
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            Integer chrid = chr.getId(), accountid = chr.getAccountID(), world = worldCharacterServer.worldChars.get(chr.getId());
-            if (world != null) {
-                World wserv = worldServer.getWorld(world);
-                if (wserv != null) wserv.unregisterAccountCharacterView(accountid, chrid);
-            }
-
-            worldCharacterServer.worldChars.put(chrid, toWorld);
-
-            MapleCharacter chrView = chr.generateCharacterEntry();
-
-            World wserv = worldServer.getWorld(toWorld);
-            if (wserv != null) wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
-    }
-
     public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
         Integer accountId, int visibleWorlds) {
-        List<World> wlist = worldServer.getWorlds();
-        if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
-        return worldCharacterServer.loadAccountCharacterList(accountId, wlist);
-    }
-
-    private Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
-        short characterCount = 0;
-        List<List<MapleCharacter>> wchars = new ArrayList<>(wlen);
-        for (int i = 0; i < wlen; i++) wchars.add(i, new LinkedList<MapleCharacter>());
-
-        List<MapleCharacter> chars = new LinkedList<>();
-        int curWorld = 0;
-        try {
-            List<Pair<Item, Integer>> accEquips = ItemFactory.loadEquippedItems(accId, true, true);
-            Map<Integer, List<Item>> accPlayerEquips = new HashMap<>();
-
-            for (Pair<Item, Integer> ae : accEquips) {
-                List<Item> playerEquips = accPlayerEquips.get(ae.getRight());
-                if (playerEquips == null) {
-                    playerEquips = new LinkedList<>();
-                    accPlayerEquips.put(ae.getRight(), playerEquips);
-                }
-
-                playerEquips.add(ae.getLeft());
-            }
-
-            Connection con = createConnection();
-            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE accountid = ? ORDER BY world, id")) {
-                ps.setInt(1, accId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        characterCount++;
-
-                        int cworld = rs.getByte("world");
-                        if (cworld >= wlen) continue;
-
-                        if (cworld > curWorld) {
-                            wchars.add(curWorld, chars);
-
-                            curWorld = cworld;
-                            chars = new LinkedList<>();
-                        }
-
-                        Integer cid = rs.getInt("id");
-                        chars.add(MapleCharacter.loadCharacterEntryFromDB(rs, accPlayerEquips.get(cid)));
-                    }
-                }
-            }
-            con.close();
-
-            wchars.add(curWorld, chars);
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-        }
-
-        return new Pair<>(characterCount, wchars);
+        return worldCharacterServer.loadAccountCharlist(accountId, visibleWorlds);
     }
 
     public void loadAllAccountsCharactersView() {
@@ -1006,7 +931,7 @@ public class Server {
 
     private int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
         List<World> wlist = worldServer.getWorlds();
-        Pair<Short, List<List<MapleCharacter>>> accCharacters = loadAccountCharactersViewFromDb(accId, wlist.size());
+        Pair<Short, List<List<MapleCharacter>>> accCharacters = worldCharacterServer.loadAccountCharactersViewFromDb(accId, wlist.size());
 
         worldCharacterServer.lgnWLock.lock();
         try {

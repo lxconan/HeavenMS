@@ -1,6 +1,8 @@
 package net.server;
 
 import client.MapleCharacter;
+import client.inventory.Item;
+import client.inventory.ItemFactory;
 import config.YamlConfig;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
@@ -9,8 +11,13 @@ import net.server.world.World;
 import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.DatabaseConnection;
 import tools.Pair;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -90,7 +97,15 @@ public class WorldCharacterServer {
         }
     }
 
-    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharacterList(Integer accountId, List<World> wlist) {
+    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
+        Integer accountId, int visibleWorlds) {
+        List<World> wlist = worldServer.getWorlds();
+        if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
+        return loadAccountCharacterList(accountId, wlist);
+    }
+
+    private Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharacterList(
+        Integer accountId, List<World> wlist) {
         List<Pair<Integer, List<MapleCharacter>>> accChars = new ArrayList<>(wlist.size() + 1);
         int chrTotal = 0;
         List<MapleCharacter> lastwchars = null;
@@ -222,5 +237,58 @@ public class WorldCharacterServer {
         } finally {
             lgnWLock.unlock();
         }
+    }
+
+    public Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
+        short characterCount = 0;
+        List<List<MapleCharacter>> wchars = new ArrayList<>(wlen);
+        for (int i = 0; i < wlen; i++) wchars.add(i, new LinkedList<MapleCharacter>());
+
+        List<MapleCharacter> chars = new LinkedList<>();
+        int curWorld = 0;
+        try {
+            List<Pair<Item, Integer>> accEquips = ItemFactory.loadEquippedItems(accId, true, true);
+            Map<Integer, List<Item>> accPlayerEquips = new HashMap<>();
+
+            for (Pair<Item, Integer> ae : accEquips) {
+                List<Item> playerEquips = accPlayerEquips.get(ae.getRight());
+                if (playerEquips == null) {
+                    playerEquips = new LinkedList<>();
+                    accPlayerEquips.put(ae.getRight(), playerEquips);
+                }
+
+                playerEquips.add(ae.getLeft());
+            }
+
+            Connection con = DatabaseConnection.getConnection();
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE accountid = ? ORDER BY world, id")) {
+                ps.setInt(1, accId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        characterCount++;
+
+                        int cworld = rs.getByte("world");
+                        if (cworld >= wlen) continue;
+
+                        if (cworld > curWorld) {
+                            wchars.add(curWorld, chars);
+
+                            curWorld = cworld;
+                            chars = new LinkedList<>();
+                        }
+
+                        Integer cid = rs.getInt("id");
+                        chars.add(MapleCharacter.loadCharacterEntryFromDB(rs, accPlayerEquips.get(cid)));
+                    }
+                }
+            }
+            con.close();
+
+            wchars.add(curWorld, chars);
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+
+        return new Pair<>(characterCount, wchars);
     }
 }
