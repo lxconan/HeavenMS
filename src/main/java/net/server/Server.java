@@ -777,30 +777,12 @@ public class Server {
         return loginServer.haveCharacterEntry(accountId, characterId);
     }
 
-    public short getAccountCharacterCount(Integer accountid) {
-        loginServer.lgnRLock.lock();
-        try {
-            return loginServer.accountCharacterCount.get(accountid);
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
+    public short getAccountCharacterCount(Integer accountId) {
+        return loginServer.getAccountCharacterCount(accountId);
     }
 
-    public short getAccountWorldCharacterCount(Integer accountid, Integer worldid) {
-        loginServer.lgnRLock.lock();
-        try {
-            short count = 0;
-
-            for (Integer chr : loginServer.accountChars.get(accountid)) {
-                if (loginServer.worldChars.get(chr).equals(worldid)) {
-                    count++;
-                }
-            }
-
-            return count;
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
+    public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
+        return loginServer.getAccountWorldCharacterCount(accountId, worldId);
     }
 
     private Set<Integer> getAccountCharacterEntries(Integer accountid) {

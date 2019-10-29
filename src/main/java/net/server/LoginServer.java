@@ -36,4 +36,30 @@ public class LoginServer {
             lgnRLock.unlock();
         }
     }
+
+    public short getAccountCharacterCount(Integer accountId) {
+        lgnRLock.lock();
+        try {
+            return accountCharacterCount.get(accountId);
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
+
+    public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
+        lgnRLock.lock();
+        try {
+            short count = 0;
+
+            for (Integer chr : accountChars.get(accountId)) {
+                if (worldChars.get(chr).equals(worldId)) {
+                    count++;
+                }
+            }
+
+            return count;
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
 }
