@@ -26,4 +26,14 @@ public class LoginServer {
             lgnRLock.unlock();
         }
     }
+
+    public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
+        lgnRLock.lock();
+        try {
+            Set<Integer> accChars = accountChars.get(accountId);
+            return accChars.contains(characterId);
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
 }

@@ -773,14 +773,8 @@ public class Server {
         return loginServer.getCharacterWorld(characterId);
     }
 
-    public boolean haveCharacterEntry(Integer accountid, Integer chrid) {
-        loginServer.lgnRLock.lock();
-        try {
-            Set<Integer> accChars = loginServer.accountChars.get(accountid);
-            return accChars.contains(chrid);
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
+    public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
+        return loginServer.haveCharacterEntry(accountId, characterId);
     }
 
     public short getAccountCharacterCount(Integer accountid) {
