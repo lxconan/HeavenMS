@@ -4,6 +4,7 @@ import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -58,6 +59,15 @@ public class LoginServer {
             }
 
             return count;
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
+
+    public Set<Integer> getAccountCharacterEntries(Integer accountid) {
+        lgnRLock.lock();
+        try {
+            return new HashSet<>(accountChars.get(accountid));
         } finally {
             lgnRLock.unlock();
         }

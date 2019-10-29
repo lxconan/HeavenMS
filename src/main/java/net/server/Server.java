@@ -785,15 +785,6 @@ public class Server {
         return loginServer.getAccountWorldCharacterCount(accountId, worldId);
     }
 
-    private Set<Integer> getAccountCharacterEntries(Integer accountid) {
-        loginServer.lgnRLock.lock();
-        try {
-            return new HashSet<>(loginServer.accountChars.get(accountid));
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
-    }
-
     public void updateCharacterEntry(MapleCharacter chr) {
         MapleCharacter chrView = chr.generateCharacterEntry();
 
@@ -1071,7 +1062,7 @@ public class Server {
 
             loginServer.lgnRLock.lock();
             try {
-                for (Integer chrid : getAccountCharacterEntries(accId)) {
+                for (Integer chrid : loginServer.getAccountCharacterEntries(accId)) {
                     accWorlds.add(loginServer.worldChars.get(chrid));
                 }
             } finally {
