@@ -1156,7 +1156,7 @@ public class Server {
             return true;
         }
 
-        String remoteIp = getRemoteIp(session);
+        String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
 
         loginServer.lgnRLock.lock();
         try {
