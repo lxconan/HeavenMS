@@ -354,4 +354,15 @@ public class WorldCharacterServer {
             }
         }
     }
+
+    public void setCharacterInTransition(IoSession session, int charId) {
+        String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
+
+        lgnWLock.lock();
+        try {
+            transitioningChars.put(remoteIp, charId);
+        } finally {
+            lgnWLock.unlock();
+        }
+    }
 }

@@ -28,8 +28,6 @@ import client.MapleClient;
 import client.MapleFamily;
 import client.SkillFactory;
 import client.command.CommandsExecutor;
-import client.inventory.Item;
-import client.inventory.ItemFactory;
 import client.inventory.manipulator.MapleCashidGenerator;
 import client.newyear.NewYearCardRecord;
 import config.YamlConfig;
@@ -938,14 +936,7 @@ public class Server {
     }
 
     public void setCharacterInTransition(IoSession session, int charId) {
-        String remoteIp = getRemoteIp(session);
-
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            worldCharacterServer.transitioningChars.put(remoteIp, charId);
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
+        worldCharacterServer.setCharacterInTransition(session, charId);
     }
 
     public boolean validateCharacteridInTransition(IoSession session, int charId) {
