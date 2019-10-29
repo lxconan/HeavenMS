@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import net.server.coordinator.session.MapleSessionCoordinator;
 import net.server.coordinator.session.MapleSessionCoordinator.AntiMulticlientResult;
@@ -88,7 +89,7 @@ public final class CharSelectedHandler extends AbstractMaplePacketHandler {
             return;
         }
 
-        c.setWorld(server.getCharacterWorld(charId));
+        c.setWorld(WorldCharacterServer.getInstance().getCharacterWorld(charId));
         World wserv = c.getWorldServer();
         if(wserv == null || wserv.isWorldCapacityFull()) {
             c.announce(MaplePacketCreator.getAfterLoginError(10));

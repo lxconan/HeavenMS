@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import net.server.Server;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import server.TimerManager;
 import tools.DatabaseConnection;
@@ -250,7 +251,7 @@ public class NewYearCardRecord {
             public void run() {
                 Server server = Server.getInstance();
 
-                int world = server.getCharacterWorld(receiverId);
+                int world = WorldCharacterServer.getInstance().getCharacterWorld(receiverId);
                 if(world == -1) {
                     sendTask.cancel(false);
                     sendTask = null;

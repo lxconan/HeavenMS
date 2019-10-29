@@ -767,10 +767,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public int getCharacterWorld(Integer characterId) {
-        return WorldCharacterServer.getInstance().getCharacterWorld(characterId);
-    }
-
     public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
         return worldCharacterServer.haveCharacterEntry(accountId, characterId);
     }

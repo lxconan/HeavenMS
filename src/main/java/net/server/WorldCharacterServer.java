@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-class WorldCharacterServer {
+public class WorldCharacterServer {
     private static final Logger logger = LoggerFactory.getLogger(WorldCharacterServer.class);
     private static final WorldCharacterServer instance = new WorldCharacterServer();
     public static WorldCharacterServer getInstance() { return instance; }
@@ -45,7 +45,7 @@ class WorldCharacterServer {
         }
     }
 
-    int getCharacterWorld(Integer characterId) {
+    public int getCharacterWorld(Integer characterId) {
         lgnRLock.lock();
         try {
             Integer worldId = worldChars.get(characterId);

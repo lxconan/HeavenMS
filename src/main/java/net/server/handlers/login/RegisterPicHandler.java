@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import net.server.world.World;
 import tools.MaplePacketCreator;
@@ -73,7 +74,7 @@ public final class RegisterPicHandler extends AbstractMaplePacketHandler {
         if (c.getPic() == null || c.getPic().equals("")) {
             c.setPic(pic);
 
-            c.setWorld(server.getCharacterWorld(charId));
+            c.setWorld(WorldCharacterServer.getInstance().getCharacterWorld(charId));
             World wserv = c.getWorldServer();
             if(wserv == null || wserv.isWorldCapacityFull()) {
                 c.announce(MaplePacketCreator.getAfterLoginError(10));
