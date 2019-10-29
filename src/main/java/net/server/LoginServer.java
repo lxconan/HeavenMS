@@ -112,4 +112,18 @@ public class LoginServer {
         return new Pair<>(new Pair<>(chrTotal, lastwchars), accChars);
     }
 
+    public Set<Integer> getWorldsForAccount(Integer accountId) {
+        Set<Integer> accWorlds = new HashSet<>();
+
+        lgnRLock.lock();
+        try {
+            for (Integer chrid : getAccountCharacterEntries(accountId)) {
+                accWorlds.add(worldChars.get(chrid));
+            }
+        } finally {
+            lgnRLock.unlock();
+        }
+
+        return accWorlds;
+    }
 }
