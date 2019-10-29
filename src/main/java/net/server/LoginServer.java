@@ -7,12 +7,16 @@ import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 import net.server.coordinator.session.MapleSessionCoordinator;
 import net.server.world.World;
 import org.apache.mina.core.session.IoSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.Pair;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LoginServer {
+    private static final Logger logger = LoggerFactory.getLogger(LoginServer.class);
+
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
     private final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
     public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
@@ -142,6 +146,30 @@ public class LoginServer {
             return transitioningChars.containsKey(remoteIp);
         } finally {
             lgnRLock.unlock();
+        }
+    }
+
+    public void updateCharacterEntry(MapleCharacter chrView, World world) {
+        lgnWLock.lock();
+        try {
+            final int characterId = chrView.getId();
+            if (!worldChars.containsKey(characterId)) {
+                logger.warn("Attempt to update character entry but the character is out of sync with LoginServer. Character Id: " + characterId);
+            }
+
+            final int accountID = chrView.getAccountID();
+            final Set<Integer> characters = accountChars.get(accountID);
+            if (characters == null) {
+                logger.warn("Attempt to update character entry but the account is out of sync with LoginServer. Account Id: " + accountID);
+            }
+
+            if (characters != null && !characters.contains(characterId)) {
+                logger.warn("Attempt to update character entry but the account character is out of sync with LoginServer. Character Id: " + characterId);
+            }
+
+            world.registerAccountCharacterView(accountID, chrView);
+        } finally {
+            lgnWLock.unlock();
         }
     }
 }

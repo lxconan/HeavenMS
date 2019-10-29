@@ -789,38 +789,18 @@ public class Server {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
         if (world == null) return;
-        updateCharacterEntry(chrView, world);
-    }
-
-    private void updateCharacterEntry(MapleCharacter chrView, World world) {
-        loginServer.lgnWLock.lock();
-        try {
-            final int characterId = chrView.getId();
-            if (!loginServer.worldChars.containsKey(characterId)) {
-                logger.warn("Attempt to update character entry but the character is out of sync with LoginServer. Character Id: " + characterId);
-            }
-
-            final int accountID = chrView.getAccountID();
-            final Set<Integer> characters = loginServer.accountChars.get(accountID);
-            if (characters == null) {
-                logger.warn("Attempt to update character entry but the account is out of sync with LoginServer. Account Id: " + accountID);
-            }
-
-            if (characters != null && !characters.contains(characterId)) {
-                logger.warn("Attempt to update character entry but the account character is out of sync with LoginServer. Character Id: " + characterId);
-            }
-
-            world.registerAccountCharacterView(accountID, chrView);
-        } finally {
-            loginServer.lgnWLock.unlock();
-        }
+        loginServer.updateCharacterEntry(chrView, world);
     }
 
     public void createCharacterEntry(MapleCharacter chr) {
+        World world = worldServer.getWorld(chr.getWorld());
+        createCharacterEntry(chr, world);
+    }
+
+    private void createCharacterEntry(MapleCharacter chr, World world) {
         Integer accountId = chr.getAccountID();
         Integer characterId = chr.getId();
         int worldId = chr.getWorld();
-        World world = worldServer.getWorld(worldId);
 
         loginServer.lgnWLock.lock();
         try {
