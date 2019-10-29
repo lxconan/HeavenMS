@@ -861,6 +861,10 @@ public class Server {
         List<World> wlist = worldServer.getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
 
+        return loadAccountCharacterList(accountId, wlist);
+    }
+
+    private Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharacterList(Integer accountId, List<World> wlist) {
         List<Pair<Integer, List<MapleCharacter>>> accChars = new ArrayList<>(wlist.size() + 1);
         int chrTotal = 0;
         List<MapleCharacter> lastwchars = null;
