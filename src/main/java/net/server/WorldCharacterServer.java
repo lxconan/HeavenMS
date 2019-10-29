@@ -365,4 +365,20 @@ public class WorldCharacterServer {
             lgnWLock.unlock();
         }
     }
+
+    public boolean validateCharacterInTransition(IoSession session, int charId) {
+        if (!YamlConfig.config.server.USE_IP_VALIDATION) {
+            return true;
+        }
+
+        String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
+
+        lgnWLock.lock();
+        try {
+            Integer cid = transitioningChars.remove(remoteIp);
+            return cid != null && cid.equals(charId);
+        } finally {
+            lgnWLock.unlock();
+        }
+    }
 }
