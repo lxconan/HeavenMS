@@ -924,7 +924,7 @@ public class Server {
 
             while (rs.next()) {
                 int accountId = rs.getInt("id");
-                if (isFirstAccountLogin(accountId)) {
+                if (loginServer.isFirstAccountLogin(accountId)) {
                     loadAccountCharactersView(accountId, 0, 0);
                 }
             }
@@ -934,15 +934,6 @@ public class Server {
             con.close();
         } catch (SQLException se) {
             se.printStackTrace();
-        }
-    }
-
-    private boolean isFirstAccountLogin(Integer accId) {
-        loginServer.lgnRLock.lock();
-        try {
-            return !loginServer.accountChars.containsKey(accId);
-        } finally {
-            loginServer.lgnRLock.unlock();
         }
     }
 
@@ -1030,7 +1021,7 @@ public class Server {
 
     public void loadAccountCharacters(MapleClient c) {
         Integer accId = c.getAccID();
-        if (!isFirstAccountLogin(accId)) {
+        if (!loginServer.isFirstAccountLogin(accId)) {
             Set<Integer> accWorlds = new HashSet<>();
 
             loginServer.lgnRLock.lock();

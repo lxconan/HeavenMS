@@ -18,6 +18,15 @@ public class LoginServer {
     public final Map<Integer, Short> accountCharacterCount = new HashMap<>();
     public final Map<String, Integer> transitioningChars = new HashMap<>();
 
+    public boolean isFirstAccountLogin(Integer accId) {
+        lgnRLock.lock();
+        try {
+            return !accountChars.containsKey(accId);
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
+
     public int getCharacterWorld(Integer characterId) {
         lgnRLock.lock();
         try {
