@@ -1060,7 +1060,7 @@ public class MapleClient {
                                 MapleSessionCoordinator.getInstance().closeSession(session, false);
                                 session.removeAttribute(MapleClient.CLIENT_KEY);
                         }
-                        if (!Server.getInstance().hasCharacteridInTransition(session)) {
+                        if (!Server.getInstance().hasCharacterInTransition(session)) {
                                 updateLoginState(MapleClient.LOGIN_NOTLOGGEDIN);
                         }
 

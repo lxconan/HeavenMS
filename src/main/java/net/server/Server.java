@@ -1151,19 +1151,8 @@ public class Server {
         }
     }
 
-    public boolean hasCharacteridInTransition(IoSession session) {
-        if (!YamlConfig.config.server.USE_IP_VALIDATION) {
-            return true;
-        }
-
-        String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
-
-        loginServer.lgnRLock.lock();
-        try {
-            return loginServer.transitioningChars.containsKey(remoteIp);
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
+    public boolean hasCharacterInTransition(IoSession session) {
+        return loginServer.hasCharacterInTransition(session);
     }
 
     public void registerLoginState(MapleClient c) {

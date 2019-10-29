@@ -1,9 +1,12 @@
 package net.server;
 
 import client.MapleCharacter;
+import config.YamlConfig;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
+import net.server.coordinator.session.MapleSessionCoordinator;
 import net.server.world.World;
+import org.apache.mina.core.session.IoSession;
 import tools.Pair;
 
 import java.util.*;
@@ -125,5 +128,20 @@ public class LoginServer {
         }
 
         return accWorlds;
+    }
+
+    public boolean hasCharacterInTransition(IoSession session) {
+        if (!YamlConfig.config.server.USE_IP_VALIDATION) {
+            return true;
+        }
+
+        String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
+
+        lgnRLock.lock();
+        try {
+            return transitioningChars.containsKey(remoteIp);
+        } finally {
+            lgnRLock.unlock();
+        }
     }
 }
