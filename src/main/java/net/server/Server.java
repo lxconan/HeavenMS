@@ -937,7 +937,7 @@ public class Server {
         return MapleSessionCoordinator.getSessionRemoteAddress(session);
     }
 
-    public void setCharacteridInTransition(IoSession session, int charId) {
+    public void setCharacterInTransition(IoSession session, int charId) {
         String remoteIp = getRemoteIp(session);
 
         worldCharacterServer.lgnWLock.lock();
