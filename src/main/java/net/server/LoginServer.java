@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LoginServer {
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
-    public final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
+    private final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
     public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
     public final Map<Integer, Integer> worldChars = new HashMap<>();
     public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
