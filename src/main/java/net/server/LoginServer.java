@@ -5,6 +5,7 @@ import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LoginServer {
@@ -12,4 +13,5 @@ public class LoginServer {
     public final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
     public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
     public final Map<Integer, Integer> worldChars = new HashMap<>();
+    public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
 }

@@ -101,7 +101,6 @@ public class Server {
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
     private final Properties subnetInfo = new Properties();
-    private final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
     private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
     private final Map<String, Integer> transitioningChars = new HashMap<>();
 
@@ -785,7 +784,7 @@ public class Server {
     public boolean haveCharacterEntry(Integer accountid, Integer chrid) {
         loginServer.lgnRLock.lock();
         try {
-            Set<Integer> accChars = accountChars.get(accountid);
+            Set<Integer> accChars = loginServer.accountChars.get(accountid);
             return accChars.contains(chrid);
         } finally {
             loginServer.lgnRLock.unlock();
@@ -806,7 +805,7 @@ public class Server {
         try {
             short count = 0;
 
-            for (Integer chr : accountChars.get(accountid)) {
+            for (Integer chr : loginServer.accountChars.get(accountid)) {
                 if (loginServer.worldChars.get(chr).equals(worldid)) {
                     count++;
                 }
@@ -821,7 +820,7 @@ public class Server {
     private Set<Integer> getAccountCharacterEntries(Integer accountid) {
         loginServer.lgnRLock.lock();
         try {
-            return new HashSet<>(accountChars.get(accountid));
+            return new HashSet<>(loginServer.accountChars.get(accountid));
         } finally {
             loginServer.lgnRLock.unlock();
         }
@@ -846,7 +845,7 @@ public class Server {
         try {
             accountCharacterCount.put(accountid, (short) (accountCharacterCount.get(accountid) + 1));
 
-            Set<Integer> accChars = accountChars.get(accountid);
+            Set<Integer> accChars = loginServer.accountChars.get(accountid);
             accChars.add(chrid);
 
             loginServer.worldChars.put(chrid, world);
@@ -865,7 +864,7 @@ public class Server {
         try {
             accountCharacterCount.put(accountid, (short) (accountCharacterCount.get(accountid) - 1));
 
-            Set<Integer> accChars = accountChars.get(accountid);
+            Set<Integer> accChars = loginServer.accountChars.get(accountid);
             accChars.remove(chrid);
 
             Integer world = loginServer.worldChars.remove(chrid);
@@ -912,9 +911,9 @@ public class Server {
             for (World w : wlist) {
                 List<MapleCharacter> wchars = w.getAccountCharactersView(accountId);
                 if (wchars == null) {
-                    if (!accountChars.containsKey(accountId)) {
+                    if (!loginServer.accountChars.containsKey(accountId)) {
                         accountCharacterCount.put(accountId, (short) 0);
-                        accountChars.put(accountId, new HashSet<Integer>());    // not advisable at all to write on the map on a read-protected
+                        loginServer.accountChars.put(accountId, new HashSet<Integer>());    // not advisable at all to write on the map on a read-protected
                         // environment
                     }                                                           // yet it's known there's no problem since no other point in the
                     // source does
@@ -1009,7 +1008,7 @@ public class Server {
     private boolean isFirstAccountLogin(Integer accId) {
         loginServer.lgnRLock.lock();
         try {
-            return !accountChars.containsKey(accId);
+            return !loginServer.accountChars.containsKey(accId);
         } finally {
             loginServer.lgnRLock.unlock();
         }
@@ -1139,7 +1138,7 @@ public class Server {
             List<List<MapleCharacter>> accChars = accCharacters.getRight();
             accountCharacterCount.put(accId, accCharacters.getLeft());
 
-            Set<Integer> chars = accountChars.get(accId);
+            Set<Integer> chars = loginServer.accountChars.get(accId);
             if (chars == null) {
                 chars = new HashSet<>(5);
             }
@@ -1158,7 +1157,7 @@ public class Server {
                 }
             }
 
-            accountChars.put(accId, chars);
+            loginServer.accountChars.put(accId, chars);
         } finally {
             loginServer.lgnWLock.unlock();
         }
@@ -1171,7 +1170,7 @@ public class Server {
         Set<Integer> accWorlds = new HashSet<>();
         loginServer.lgnWLock.lock();
         try {
-            Set<Integer> chars = accountChars.get(accountId);
+            Set<Integer> chars = loginServer.accountChars.get(accountId);
 
             for (Integer cid : chars) {
                 Integer worldid = loginServer.worldChars.get(cid);
