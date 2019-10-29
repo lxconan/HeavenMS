@@ -1022,16 +1022,7 @@ public class Server {
     public void loadAccountCharacters(MapleClient c) {
         Integer accId = c.getAccID();
         if (!loginServer.isFirstAccountLogin(accId)) {
-            Set<Integer> accWorlds = new HashSet<>();
-
-            loginServer.lgnRLock.lock();
-            try {
-                for (Integer chrid : loginServer.getAccountCharacterEntries(accId)) {
-                    accWorlds.add(loginServer.worldChars.get(chrid));
-                }
-            } finally {
-                loginServer.lgnRLock.unlock();
-            }
+            Set<Integer> accWorlds = getWorldsForAccount(accId);
 
             int gmLevel = 0;
             for (Integer aw : accWorlds) {
@@ -1050,6 +1041,20 @@ public class Server {
 
         int gmLevel = loadAccountCharactersView(c.getAccID(), 0, 0);
         c.setGMLevel(gmLevel);
+    }
+
+    private Set<Integer> getWorldsForAccount(Integer accountId) {
+        Set<Integer> accWorlds = new HashSet<>();
+
+        loginServer.lgnRLock.lock();
+        try {
+            for (Integer chrid : loginServer.getAccountCharacterEntries(accountId)) {
+                accWorlds.add(loginServer.worldChars.get(chrid));
+            }
+        } finally {
+            loginServer.lgnRLock.unlock();
+        }
+        return accWorlds;
     }
 
     private int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
