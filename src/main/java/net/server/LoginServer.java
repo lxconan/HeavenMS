@@ -16,4 +16,14 @@ public class LoginServer {
     public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
     public final Map<Integer, Short> accountCharacterCount = new HashMap<>();
     public final Map<String, Integer> transitioningChars = new HashMap<>();
+
+    public int getCharacterWorld(Integer characterId) {
+        lgnRLock.lock();
+        try {
+            Integer worldId = worldChars.get(characterId);
+            return worldId != null ? worldId : -1;
+        } finally {
+            lgnRLock.unlock();
+        }
+    }
 }

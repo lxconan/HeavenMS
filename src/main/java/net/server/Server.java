@@ -769,14 +769,8 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public int getCharacterWorld(Integer chrid) {
-        loginServer.lgnRLock.lock();
-        try {
-            Integer worldid = loginServer.worldChars.get(chrid);
-            return worldid != null ? worldid : -1;
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
+    public int getCharacterWorld(Integer characterId) {
+        return loginServer.getCharacterWorld(characterId);
     }
 
     public boolean haveCharacterEntry(Integer accountid, Integer chrid) {
