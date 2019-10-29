@@ -112,7 +112,7 @@ public class Server {
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
     private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
-    private final WorldCharacterServer worldCharacterServer = new WorldCharacterServer();
+    private final WorldCharacterServer worldCharacterServer = WorldCharacterServer.getInstance();
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
@@ -768,7 +768,7 @@ public class Server {
     }
 
     public int getCharacterWorld(Integer characterId) {
-        return worldCharacterServer.getCharacterWorld(characterId);
+        return WorldCharacterServer.getInstance().getCharacterWorld(characterId);
     }
 
     public boolean haveCharacterEntry(Integer accountId, Integer characterId) {

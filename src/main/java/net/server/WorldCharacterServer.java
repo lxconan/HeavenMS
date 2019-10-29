@@ -24,6 +24,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class WorldCharacterServer {
     private static final Logger logger = LoggerFactory.getLogger(WorldCharacterServer.class);
+    private static final WorldCharacterServer instance = new WorldCharacterServer();
+    public static WorldCharacterServer getInstance() { return instance; }
 
     private final WorldServer worldServer = WorldServer.getInstance();
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
