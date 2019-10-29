@@ -101,7 +101,6 @@ public class Server {
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
     private final Properties subnetInfo = new Properties();
-    private final Map<String, Integer> transitioningChars = new HashMap<>();
 
     private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
     private final Map<MapleClient, Long> inLoginState = new HashMap<>(100);
@@ -1199,7 +1198,7 @@ public class Server {
 
         loginServer.lgnWLock.lock();
         try {
-            transitioningChars.put(remoteIp, charId);
+            loginServer.transitioningChars.put(remoteIp, charId);
         } finally {
             loginServer.lgnWLock.unlock();
         }
@@ -1214,7 +1213,7 @@ public class Server {
 
         loginServer.lgnWLock.lock();
         try {
-            Integer cid = transitioningChars.remove(remoteIp);
+            Integer cid = loginServer.transitioningChars.remove(remoteIp);
             return cid != null && cid.equals(charId);
         } finally {
             loginServer.lgnWLock.unlock();
@@ -1230,7 +1229,7 @@ public class Server {
 
         loginServer.lgnWLock.lock();
         try {
-            return transitioningChars.remove(remoteIp);
+            return loginServer.transitioningChars.remove(remoteIp);
         } finally {
             loginServer.lgnWLock.unlock();
         }
@@ -1245,7 +1244,7 @@ public class Server {
 
         loginServer.lgnRLock.lock();
         try {
-            return transitioningChars.containsKey(remoteIp);
+            return loginServer.transitioningChars.containsKey(remoteIp);
         } finally {
             loginServer.lgnRLock.unlock();
         }

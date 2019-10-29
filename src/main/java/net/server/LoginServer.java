@@ -15,4 +15,5 @@ public class LoginServer {
     public final Map<Integer, Integer> worldChars = new HashMap<>();
     public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
     public final Map<Integer, Short> accountCharacterCount = new HashMap<>();
+    public final Map<String, Integer> transitioningChars = new HashMap<>();
 }
