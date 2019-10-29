@@ -856,42 +856,11 @@ public class Server {
         }
     }
 
-    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(Integer accountId,
-                                                                                                                    int visibleWorlds) {
+    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
+        Integer accountId, int visibleWorlds) {
         List<World> wlist = worldServer.getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
-
-        return loadAccountCharacterList(accountId, wlist);
-    }
-
-    private Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharacterList(Integer accountId, List<World> wlist) {
-        List<Pair<Integer, List<MapleCharacter>>> accChars = new ArrayList<>(wlist.size() + 1);
-        int chrTotal = 0;
-        List<MapleCharacter> lastwchars = null;
-
-        loginServer.lgnRLock.lock();
-        try {
-            for (World w : wlist) {
-                List<MapleCharacter> wchars = w.getAccountCharactersView(accountId);
-                if (wchars == null) {
-                    if (!loginServer.accountChars.containsKey(accountId)) {
-                        loginServer.accountCharacterCount.put(accountId, (short) 0);
-                        loginServer.accountChars.put(accountId, new HashSet<Integer>());    // not advisable at all to write on the map on a read-protected
-                        // environment
-                    }                                                           // yet it's known there's no problem since no other point in the
-                    // source does
-                } else if (!wchars.isEmpty()) {                                  // this action.
-                    lastwchars = wchars;
-
-                    accChars.add(new Pair<>(w.getId(), wchars));
-                    chrTotal += wchars.size();
-                }
-            }
-        } finally {
-            loginServer.lgnRLock.unlock();
-        }
-
-        return new Pair<>(new Pair<>(chrTotal, lastwchars), accChars);
+        return loginServer.loadAccountCharacterList(accountId, wlist);
     }
 
     private Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
