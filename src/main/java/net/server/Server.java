@@ -811,7 +811,7 @@ public class Server {
             while (rs.next()) {
                 int accountId = rs.getInt("id");
                 if (worldCharacterServer.isFirstAccountLogin(accountId)) {
-                    loadAccountCharactersView(accountId, 0, 0);
+                    worldCharacterServer.loadAccountCharactersView(accountId, 0, 0);
                 }
             }
 
@@ -925,44 +925,8 @@ public class Server {
             return;
         }
 
-        int gmLevel = loadAccountCharactersView(c.getAccID(), 0, 0);
+        int gmLevel = worldCharacterServer.loadAccountCharactersView(c.getAccID(), 0, 0);
         c.setGMLevel(gmLevel);
-    }
-
-    private int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
-        List<World> wlist = worldServer.getWorlds();
-        Pair<Short, List<List<MapleCharacter>>> accCharacters = worldCharacterServer.loadAccountCharactersViewFromDb(accId, wlist.size());
-
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            List<List<MapleCharacter>> accChars = accCharacters.getRight();
-            worldCharacterServer.accountCharacterCount.put(accId, accCharacters.getLeft());
-
-            Set<Integer> chars = worldCharacterServer.accountChars.get(accId);
-            if (chars == null) {
-                chars = new HashSet<>(5);
-            }
-
-            for (int wid = fromWorldid; wid < wlist.size(); wid++) {
-                World w = wlist.get(wid);
-                List<MapleCharacter> wchars = accChars.get(wid);
-                w.loadAccountCharactersView(accId, wchars);
-
-                for (MapleCharacter chr : wchars) {
-                    int cid = chr.getId();
-                    if (gmLevel < chr.gmLevel()) gmLevel = chr.gmLevel();
-
-                    chars.add(cid);
-                    worldCharacterServer.worldChars.put(cid, wid);
-                }
-            }
-
-            worldCharacterServer.accountChars.put(accId, chars);
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
-
-        return gmLevel;
     }
 
     public void loadAccountStorages(MapleClient c) {

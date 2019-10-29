@@ -239,10 +239,46 @@ public class WorldCharacterServer {
         }
     }
 
-    public Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
+    public int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
+        List<World> wlist = worldServer.getWorlds();
+        Pair<Short, List<List<MapleCharacter>>> accCharacters = loadAccountCharactersViewFromDb(accId, wlist.size());
+
+        lgnWLock.lock();
+        try {
+            List<List<MapleCharacter>> accChars = accCharacters.getRight();
+            accountCharacterCount.put(accId, accCharacters.getLeft());
+
+            Set<Integer> chars = accountChars.get(accId);
+            if (chars == null) {
+                chars = new HashSet<>(5);
+            }
+
+            for (int wid = fromWorldid; wid < wlist.size(); wid++) {
+                World w = wlist.get(wid);
+                List<MapleCharacter> wchars = accChars.get(wid);
+                w.loadAccountCharactersView(accId, wchars);
+
+                for (MapleCharacter chr : wchars) {
+                    int cid = chr.getId();
+                    if (gmLevel < chr.gmLevel()) gmLevel = chr.gmLevel();
+
+                    chars.add(cid);
+                    worldChars.put(cid, wid);
+                }
+            }
+
+            accountChars.put(accId, chars);
+        } finally {
+            lgnWLock.unlock();
+        }
+
+        return gmLevel;
+    }
+
+    private Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
         short characterCount = 0;
         List<List<MapleCharacter>> wchars = new ArrayList<>(wlen);
-        for (int i = 0; i < wlen; i++) wchars.add(i, new LinkedList<MapleCharacter>());
+        for (int i = 0; i < wlen; i++) wchars.add(i, new LinkedList<>());
 
         List<MapleCharacter> chars = new LinkedList<>();
         int curWorld = 0;
@@ -285,8 +321,8 @@ public class WorldCharacterServer {
             con.close();
 
             wchars.add(curWorld, chars);
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
+        } catch (SQLException error) {
+            logger.error("Unhandled SQL exception while load account character from DB.", error);
         }
 
         return new Pair<>(characterCount, wchars);
