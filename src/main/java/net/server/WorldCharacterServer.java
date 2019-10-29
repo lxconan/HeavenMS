@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class WorldCharacterServer {
     private static final Logger logger = LoggerFactory.getLogger(WorldCharacterServer.class);
 
+    private final WorldServer worldServer = WorldServer.getInstance();
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
     private final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
     public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
@@ -149,7 +150,13 @@ public class WorldCharacterServer {
         }
     }
 
-    public void updateCharacterEntry(MapleCharacter chrView, World world) {
+    public void updateCharacterEntry(MapleCharacter chr) {
+        MapleCharacter chrView = chr.generateCharacterEntry();
+        World world = worldServer.getWorld(chrView.getWorld());
+        updateCharacterEntry(chrView, world);
+    }
+
+    private void updateCharacterEntry(MapleCharacter chrView, World world) {
         lgnWLock.lock();
         try {
             final int characterId = chrView.getId();
