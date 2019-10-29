@@ -180,7 +180,12 @@ public class WorldCharacterServer {
         }
     }
 
-    public void createCharacterEntry(MapleCharacter chr, World world) {
+    public void createCharacterEntry(MapleCharacter chr) {
+        World world = worldServer.getWorld(chr.getWorld());
+        createCharacterEntry(chr, world);
+    }
+
+    private void createCharacterEntry(MapleCharacter chr, World world) {
         Integer accountId = chr.getAccountID();
         Integer characterId = chr.getId();
         int worldId = chr.getWorld();
@@ -196,6 +201,24 @@ public class WorldCharacterServer {
 
             MapleCharacter chrView = chr.generateCharacterEntry();
             if (world != null) world.registerAccountCharacterView(chrView.getAccountID(), chrView);
+        } finally {
+            lgnWLock.unlock();
+        }
+    }
+
+    public void deleteCharacterEntry(Integer accountId, Integer characterId) {
+        lgnWLock.lock();
+        try {
+            accountCharacterCount.put(accountId, (short) (accountCharacterCount.get(accountId) - 1));
+
+            Set<Integer> accChars = accountChars.get(accountId);
+            accChars.remove(characterId);
+
+            Integer world = worldChars.remove(characterId);
+            if (world != null) {
+                World wserv = worldServer.getWorld(world);
+                if (wserv != null) wserv.unregisterAccountCharacterView(accountId, characterId);
+            }
         } finally {
             lgnWLock.unlock();
         }

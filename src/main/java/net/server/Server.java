@@ -790,26 +790,11 @@ public class Server {
     }
 
     public void createCharacterEntry(MapleCharacter chr) {
-        World world = worldServer.getWorld(chr.getWorld());
-        worldCharacterServer.createCharacterEntry(chr, world);
+        worldCharacterServer.createCharacterEntry(chr);
     }
 
     public void deleteCharacterEntry(Integer accountId, Integer characterId) {
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            worldCharacterServer.accountCharacterCount.put(accountId, (short) (worldCharacterServer.accountCharacterCount.get(accountId) - 1));
-
-            Set<Integer> accChars = worldCharacterServer.accountChars.get(accountId);
-            accChars.remove(characterId);
-
-            Integer world = worldCharacterServer.worldChars.remove(characterId);
-            if (world != null) {
-                World wserv = worldServer.getWorld(world);
-                if (wserv != null) wserv.unregisterAccountCharacterView(accountId, characterId);
-            }
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
+        worldCharacterServer.deleteCharacterEntry(accountId, characterId);
     }
 
     public void transferWorldCharacterEntry(MapleCharacter chr, Integer toWorld) { // used before setting the new worldid on the character object
