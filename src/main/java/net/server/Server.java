@@ -789,7 +789,10 @@ public class Server {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
         if (world == null) return;
+        updateCharacterEntry(chrView, world);
+    }
 
+    private void updateCharacterEntry(MapleCharacter chrView, World world) {
         loginServer.lgnWLock.lock();
         try {
             final int characterId = chrView.getId();
