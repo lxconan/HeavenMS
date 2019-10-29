@@ -114,7 +114,7 @@ public class Server {
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
     private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
-    private final LoginServer loginServer = new LoginServer();
+    private final WorldCharacterServer worldCharacterServer = new WorldCharacterServer();
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
@@ -770,67 +770,67 @@ public class Server {
     }
 
     public int getCharacterWorld(Integer characterId) {
-        return loginServer.getCharacterWorld(characterId);
+        return worldCharacterServer.getCharacterWorld(characterId);
     }
 
     public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
-        return loginServer.haveCharacterEntry(accountId, characterId);
+        return worldCharacterServer.haveCharacterEntry(accountId, characterId);
     }
 
     public short getAccountCharacterCount(Integer accountId) {
-        return loginServer.getAccountCharacterCount(accountId);
+        return worldCharacterServer.getAccountCharacterCount(accountId);
     }
 
     public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
-        return loginServer.getAccountWorldCharacterCount(accountId, worldId);
+        return worldCharacterServer.getAccountWorldCharacterCount(accountId, worldId);
     }
 
     public void updateCharacterEntry(MapleCharacter chr) {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
-        loginServer.updateCharacterEntry(chrView, world);
+        worldCharacterServer.updateCharacterEntry(chrView, world);
     }
 
     public void createCharacterEntry(MapleCharacter chr) {
         World world = worldServer.getWorld(chr.getWorld());
-        loginServer.createCharacterEntry(chr, world);
+        worldCharacterServer.createCharacterEntry(chr, world);
     }
 
     public void deleteCharacterEntry(Integer accountId, Integer characterId) {
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            loginServer.accountCharacterCount.put(accountId, (short) (loginServer.accountCharacterCount.get(accountId) - 1));
+            worldCharacterServer.accountCharacterCount.put(accountId, (short) (worldCharacterServer.accountCharacterCount.get(accountId) - 1));
 
-            Set<Integer> accChars = loginServer.accountChars.get(accountId);
+            Set<Integer> accChars = worldCharacterServer.accountChars.get(accountId);
             accChars.remove(characterId);
 
-            Integer world = loginServer.worldChars.remove(characterId);
+            Integer world = worldCharacterServer.worldChars.remove(characterId);
             if (world != null) {
                 World wserv = worldServer.getWorld(world);
                 if (wserv != null) wserv.unregisterAccountCharacterView(accountId, characterId);
             }
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
     }
 
     public void transferWorldCharacterEntry(MapleCharacter chr, Integer toWorld) { // used before setting the new worldid on the character object
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            Integer chrid = chr.getId(), accountid = chr.getAccountID(), world = loginServer.worldChars.get(chr.getId());
+            Integer chrid = chr.getId(), accountid = chr.getAccountID(), world = worldCharacterServer.worldChars.get(chr.getId());
             if (world != null) {
                 World wserv = worldServer.getWorld(world);
                 if (wserv != null) wserv.unregisterAccountCharacterView(accountid, chrid);
             }
 
-            loginServer.worldChars.put(chrid, toWorld);
+            worldCharacterServer.worldChars.put(chrid, toWorld);
 
             MapleCharacter chrView = chr.generateCharacterEntry();
 
             World wserv = worldServer.getWorld(toWorld);
             if (wserv != null) wserv.registerAccountCharacterView(chrView.getAccountID(), chrView);
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
     }
 
@@ -838,7 +838,7 @@ public class Server {
         Integer accountId, int visibleWorlds) {
         List<World> wlist = worldServer.getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
-        return loginServer.loadAccountCharacterList(accountId, wlist);
+        return worldCharacterServer.loadAccountCharacterList(accountId, wlist);
     }
 
     private Pair<Short, List<List<MapleCharacter>>> loadAccountCharactersViewFromDb(int accId, int wlen) {
@@ -902,7 +902,7 @@ public class Server {
 
             while (rs.next()) {
                 int accountId = rs.getInt("id");
-                if (loginServer.isFirstAccountLogin(accountId)) {
+                if (worldCharacterServer.isFirstAccountLogin(accountId)) {
                     loadAccountCharactersView(accountId, 0, 0);
                 }
             }
@@ -999,8 +999,8 @@ public class Server {
 
     public void loadAccountCharacters(MapleClient c) {
         Integer accId = c.getAccID();
-        if (!loginServer.isFirstAccountLogin(accId)) {
-            Set<Integer> accWorlds = loginServer.getWorldsForAccount(accId);
+        if (!worldCharacterServer.isFirstAccountLogin(accId)) {
+            Set<Integer> accWorlds = worldCharacterServer.getWorldsForAccount(accId);
 
             int gmLevel = 0;
             for (Integer aw : accWorlds) {
@@ -1025,12 +1025,12 @@ public class Server {
         List<World> wlist = worldServer.getWorlds();
         Pair<Short, List<List<MapleCharacter>>> accCharacters = loadAccountCharactersViewFromDb(accId, wlist.size());
 
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
             List<List<MapleCharacter>> accChars = accCharacters.getRight();
-            loginServer.accountCharacterCount.put(accId, accCharacters.getLeft());
+            worldCharacterServer.accountCharacterCount.put(accId, accCharacters.getLeft());
 
-            Set<Integer> chars = loginServer.accountChars.get(accId);
+            Set<Integer> chars = worldCharacterServer.accountChars.get(accId);
             if (chars == null) {
                 chars = new HashSet<>(5);
             }
@@ -1045,13 +1045,13 @@ public class Server {
                     if (gmLevel < chr.gmLevel()) gmLevel = chr.gmLevel();
 
                     chars.add(cid);
-                    loginServer.worldChars.put(cid, wid);
+                    worldCharacterServer.worldChars.put(cid, wid);
                 }
             }
 
-            loginServer.accountChars.put(accId, chars);
+            worldCharacterServer.accountChars.put(accId, chars);
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
 
         return gmLevel;
@@ -1060,18 +1060,18 @@ public class Server {
     public void loadAccountStorages(MapleClient c) {
         int accountId = c.getAccID();
         Set<Integer> accWorlds = new HashSet<>();
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            Set<Integer> chars = loginServer.accountChars.get(accountId);
+            Set<Integer> chars = worldCharacterServer.accountChars.get(accountId);
 
             for (Integer cid : chars) {
-                Integer worldid = loginServer.worldChars.get(cid);
+                Integer worldid = worldCharacterServer.worldChars.get(cid);
                 if (worldid != null) {
                     accWorlds.add(worldid);
                 }
             }
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
 
         List<World> worldList = worldServer.getWorlds();
@@ -1090,11 +1090,11 @@ public class Server {
     public void setCharacteridInTransition(IoSession session, int charId) {
         String remoteIp = getRemoteIp(session);
 
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            loginServer.transitioningChars.put(remoteIp, charId);
+            worldCharacterServer.transitioningChars.put(remoteIp, charId);
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
     }
 
@@ -1105,12 +1105,12 @@ public class Server {
 
         String remoteIp = getRemoteIp(session);
 
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            Integer cid = loginServer.transitioningChars.remove(remoteIp);
+            Integer cid = worldCharacterServer.transitioningChars.remove(remoteIp);
             return cid != null && cid.equals(charId);
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
     }
 
@@ -1121,16 +1121,16 @@ public class Server {
 
         String remoteIp = getRemoteIp(session);
 
-        loginServer.lgnWLock.lock();
+        worldCharacterServer.lgnWLock.lock();
         try {
-            return loginServer.transitioningChars.remove(remoteIp);
+            return worldCharacterServer.transitioningChars.remove(remoteIp);
         } finally {
-            loginServer.lgnWLock.unlock();
+            worldCharacterServer.lgnWLock.unlock();
         }
     }
 
     public boolean hasCharacterInTransition(IoSession session) {
-        return loginServer.hasCharacterInTransition(session);
+        return worldCharacterServer.hasCharacterInTransition(session);
     }
 
     public void registerLoginState(MapleClient c) {
