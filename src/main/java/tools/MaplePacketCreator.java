@@ -737,7 +737,7 @@ public class MaplePacketCreator {
     public static byte[] getAuthSuccess(MapleClient c) {
         Server.getInstance().loadAccountCharacters(c);    // locks the login session until data
         // is recovered from the cache or the DB.
-        Server.getInstance().loadAccountStorages(c);
+        Server.getInstance().loadAccountStorage(c);
 
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(SendOpcode.LOGIN_STATUS.getValue());

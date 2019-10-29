@@ -923,8 +923,8 @@ public class Server {
         c.setGMLevel(gmLevel);
     }
 
-    public void loadAccountStorages(MapleClient c) {
-        worldCharacterServer.loadAccountStorages(c);
+    public void loadAccountStorage(MapleClient c) {
+        worldCharacterServer.loadAccountStorage(c);
     }
 
     private String getRemoteIp(IoSession session) {

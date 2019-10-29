@@ -327,7 +327,7 @@ public class WorldCharacterServer {
         return new Pair<>(characterCount, wchars);
     }
 
-    void loadAccountStorages(MapleClient c) {
+    void loadAccountStorage(MapleClient c) {
         int accountId = c.getAccID();
         Set<Integer> accWorlds = new HashSet<>();
         lgnWLock.lock();
