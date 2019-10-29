@@ -930,29 +930,7 @@ public class Server {
     }
 
     public void loadAccountStorages(MapleClient c) {
-        int accountId = c.getAccID();
-        Set<Integer> accWorlds = new HashSet<>();
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            Set<Integer> chars = worldCharacterServer.accountChars.get(accountId);
-
-            for (Integer cid : chars) {
-                Integer worldid = worldCharacterServer.worldChars.get(cid);
-                if (worldid != null) {
-                    accWorlds.add(worldid);
-                }
-            }
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
-
-        List<World> worldList = worldServer.getWorlds();
-        for (Integer worldid : accWorlds) {
-            if (worldid < worldList.size()) {
-                World wserv = worldList.get(worldid);
-                wserv.registerAccountStorage(accountId);
-            }
-        }
+        worldCharacterServer.loadAccountStorages(c);
     }
 
     private String getRemoteIp(IoSession session) {

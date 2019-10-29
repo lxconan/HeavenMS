@@ -1,6 +1,7 @@
 package net.server;
 
 import client.MapleCharacter;
+import client.MapleClient;
 import client.inventory.Item;
 import client.inventory.ItemFactory;
 import config.YamlConfig;
@@ -326,5 +327,31 @@ public class WorldCharacterServer {
         }
 
         return new Pair<>(characterCount, wchars);
+    }
+
+    public void loadAccountStorages(MapleClient c) {
+        int accountId = c.getAccID();
+        Set<Integer> accWorlds = new HashSet<>();
+        lgnWLock.lock();
+        try {
+            Set<Integer> chars = accountChars.get(accountId);
+
+            for (Integer cid : chars) {
+                Integer worldid = worldChars.get(cid);
+                if (worldid != null) {
+                    accWorlds.add(worldid);
+                }
+            }
+        } finally {
+            lgnWLock.unlock();
+        }
+
+        List<World> worldList = worldServer.getWorlds();
+        for (Integer worldid : accWorlds) {
+            if (worldid < worldList.size()) {
+                World wserv = worldList.get(worldid);
+                wserv.registerAccountStorage(accountId);
+            }
+        }
     }
 }
