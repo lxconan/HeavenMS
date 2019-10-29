@@ -167,7 +167,28 @@ public class LoginServer {
                 logger.warn("Attempt to update character entry but the account character is out of sync with LoginServer. Character Id: " + characterId);
             }
 
-            world.registerAccountCharacterView(accountID, chrView);
+            if (world != null) { world.registerAccountCharacterView(accountID, chrView); }
+        } finally {
+            lgnWLock.unlock();
+        }
+    }
+
+    public void createCharacterEntry(MapleCharacter chr, World world) {
+        Integer accountId = chr.getAccountID();
+        Integer characterId = chr.getId();
+        int worldId = chr.getWorld();
+
+        lgnWLock.lock();
+        try {
+            accountCharacterCount.put(accountId, (short) (accountCharacterCount.get(accountId) + 1));
+
+            Set<Integer> accChars = accountChars.get(accountId);
+            accChars.add(characterId);
+
+            worldChars.put(characterId, worldId);
+
+            MapleCharacter chrView = chr.generateCharacterEntry();
+            if (world != null) world.registerAccountCharacterView(chrView.getAccountID(), chrView);
         } finally {
             lgnWLock.unlock();
         }

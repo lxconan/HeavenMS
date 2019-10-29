@@ -788,48 +788,26 @@ public class Server {
     public void updateCharacterEntry(MapleCharacter chr) {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
-        if (world == null) return;
         loginServer.updateCharacterEntry(chrView, world);
     }
 
     public void createCharacterEntry(MapleCharacter chr) {
         World world = worldServer.getWorld(chr.getWorld());
-        createCharacterEntry(chr, world);
+        loginServer.createCharacterEntry(chr, world);
     }
 
-    private void createCharacterEntry(MapleCharacter chr, World world) {
-        Integer accountId = chr.getAccountID();
-        Integer characterId = chr.getId();
-        int worldId = chr.getWorld();
-
+    public void deleteCharacterEntry(Integer accountId, Integer characterId) {
         loginServer.lgnWLock.lock();
         try {
-            loginServer.accountCharacterCount.put(accountId, (short) (loginServer.accountCharacterCount.get(accountId) + 1));
+            loginServer.accountCharacterCount.put(accountId, (short) (loginServer.accountCharacterCount.get(accountId) - 1));
 
             Set<Integer> accChars = loginServer.accountChars.get(accountId);
-            accChars.add(characterId);
+            accChars.remove(characterId);
 
-            loginServer.worldChars.put(characterId, worldId);
-
-            MapleCharacter chrView = chr.generateCharacterEntry();
-            if (world != null) world.registerAccountCharacterView(chrView.getAccountID(), chrView);
-        } finally {
-            loginServer.lgnWLock.unlock();
-        }
-    }
-
-    public void deleteCharacterEntry(Integer accountid, Integer chrid) {
-        loginServer.lgnWLock.lock();
-        try {
-            loginServer.accountCharacterCount.put(accountid, (short) (loginServer.accountCharacterCount.get(accountid) - 1));
-
-            Set<Integer> accChars = loginServer.accountChars.get(accountid);
-            accChars.remove(chrid);
-
-            Integer world = loginServer.worldChars.remove(chrid);
+            Integer world = loginServer.worldChars.remove(characterId);
             if (world != null) {
                 World wserv = worldServer.getWorld(world);
-                if (wserv != null) wserv.unregisterAccountCharacterView(accountid, chrid);
+                if (wserv != null) wserv.unregisterAccountCharacterView(accountId, characterId);
             }
         } finally {
             loginServer.lgnWLock.unlock();
