@@ -943,19 +943,8 @@ public class Server {
         return worldCharacterServer.validateCharacterInTransition(session, charId);
     }
 
-    public Integer freeCharacteridInTransition(IoSession session) {
-        if (!YamlConfig.config.server.USE_IP_VALIDATION) {
-            return null;
-        }
-
-        String remoteIp = getRemoteIp(session);
-
-        worldCharacterServer.lgnWLock.lock();
-        try {
-            return worldCharacterServer.transitioningChars.remove(remoteIp);
-        } finally {
-            worldCharacterServer.lgnWLock.unlock();
-        }
+    public Integer freeCharacterInTransition(IoSession session) {
+        return worldCharacterServer.freeCharacterInTransition(session);
     }
 
     public boolean hasCharacterInTransition(IoSession session) {

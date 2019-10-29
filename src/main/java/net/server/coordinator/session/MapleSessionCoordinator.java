@@ -489,7 +489,7 @@ public class MapleSessionCoordinator {
             }
 
             MapleClient client = new MapleClient(null, null, session);
-            Integer cid = Server.getInstance().freeCharacteridInTransition(session);
+            Integer cid = Server.getInstance().freeCharacterInTransition(session);
             if (cid != null) {
                 try {
                     client.setAccID(MapleCharacter.loadCharFromDB(cid, client, false).getAccountID());
