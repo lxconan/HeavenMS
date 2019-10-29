@@ -22,19 +22,19 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class WorldCharacterServer {
+class WorldCharacterServer {
     private static final Logger logger = LoggerFactory.getLogger(WorldCharacterServer.class);
 
     private final WorldServer worldServer = WorldServer.getInstance();
     private final ReentrantReadWriteLock lgnLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_LOGIN, true);
     private final ReentrantReadWriteLock.ReadLock lgnRLock = lgnLock.readLock();
-    public final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
-    public final Map<Integer, Integer> worldChars = new HashMap<>();
-    public final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
-    public final Map<Integer, Short> accountCharacterCount = new HashMap<>();
-    public final Map<String, Integer> transitioningChars = new HashMap<>();
+    private final ReentrantReadWriteLock.WriteLock lgnWLock = lgnLock.writeLock();
+    private final Map<Integer, Integer> worldChars = new HashMap<>();
+    private final Map<Integer, Set<Integer>> accountChars = new HashMap<>();
+    private final Map<Integer, Short> accountCharacterCount = new HashMap<>();
+    private final Map<String, Integer> transitioningChars = new HashMap<>();
 
-    public boolean isFirstAccountLogin(Integer accId) {
+    boolean isFirstAccountLogin(Integer accId) {
         lgnRLock.lock();
         try {
             return !accountChars.containsKey(accId);
@@ -43,7 +43,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public int getCharacterWorld(Integer characterId) {
+    int getCharacterWorld(Integer characterId) {
         lgnRLock.lock();
         try {
             Integer worldId = worldChars.get(characterId);
@@ -53,7 +53,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
+    boolean haveCharacterEntry(Integer accountId, Integer characterId) {
         lgnRLock.lock();
         try {
             Set<Integer> accChars = accountChars.get(accountId);
@@ -63,7 +63,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public short getAccountCharacterCount(Integer accountId) {
+    short getAccountCharacterCount(Integer accountId) {
         lgnRLock.lock();
         try {
             return accountCharacterCount.get(accountId);
@@ -72,7 +72,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
+    short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
         lgnRLock.lock();
         try {
             short count = 0;
@@ -89,7 +89,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public Set<Integer> getAccountCharacterEntries(Integer accountid) {
+    private Set<Integer> getAccountCharacterEntries(Integer accountid) {
         lgnRLock.lock();
         try {
             return new HashSet<>(accountChars.get(accountid));
@@ -98,7 +98,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
+    Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
         Integer accountId, int visibleWorlds) {
         List<World> wlist = worldServer.getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
@@ -118,7 +118,7 @@ public class WorldCharacterServer {
                 if (wchars == null) {
                     if (!accountChars.containsKey(accountId)) {
                         accountCharacterCount.put(accountId, (short) 0);
-                        accountChars.put(accountId, new HashSet<Integer>());    // not advisable at all to write on the map on a read-protected
+                        accountChars.put(accountId, new HashSet<>());    // not advisable at all to write on the map on a read-protected
                                                                                 // environment
                     }                                                           // yet it's known there's no problem since no other point in the
                                                                                 // source does
@@ -136,7 +136,7 @@ public class WorldCharacterServer {
         return new Pair<>(new Pair<>(chrTotal, lastwchars), accChars);
     }
 
-    public Set<Integer> getWorldsForAccount(Integer accountId) {
+    Set<Integer> getWorldsForAccount(Integer accountId) {
         Set<Integer> accWorlds = new HashSet<>();
 
         lgnRLock.lock();
@@ -151,7 +151,7 @@ public class WorldCharacterServer {
         return accWorlds;
     }
 
-    public boolean hasCharacterInTransition(IoSession session) {
+    boolean hasCharacterInTransition(IoSession session) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return true;
         }
@@ -166,7 +166,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public void updateCharacterEntry(MapleCharacter chr) {
+    void updateCharacterEntry(MapleCharacter chr) {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
         updateCharacterEntry(chrView, world);
@@ -196,7 +196,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public void createCharacterEntry(MapleCharacter chr) {
+    void createCharacterEntry(MapleCharacter chr) {
         World world = worldServer.getWorld(chr.getWorld());
         createCharacterEntry(chr, world);
     }
@@ -222,7 +222,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public void deleteCharacterEntry(Integer accountId, Integer characterId) {
+    void deleteCharacterEntry(Integer accountId, Integer characterId) {
         lgnWLock.lock();
         try {
             accountCharacterCount.put(accountId, (short) (accountCharacterCount.get(accountId) - 1));
@@ -240,7 +240,8 @@ public class WorldCharacterServer {
         }
     }
 
-    public int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldid) {    // returns the maximum gmLevel found
+    @SuppressWarnings("SameParameterValue")
+    int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldId) {    // returns the maximum gmLevel found
         List<World> wlist = worldServer.getWorlds();
         Pair<Short, List<List<MapleCharacter>>> accCharacters = loadAccountCharactersViewFromDb(accId, wlist.size());
 
@@ -254,7 +255,7 @@ public class WorldCharacterServer {
                 chars = new HashSet<>(5);
             }
 
-            for (int wid = fromWorldid; wid < wlist.size(); wid++) {
+            for (int wid = fromWorldId; wid < wlist.size(); wid++) {
                 World w = wlist.get(wid);
                 List<MapleCharacter> wchars = accChars.get(wid);
                 w.loadAccountCharactersView(accId, wchars);
@@ -288,12 +289,7 @@ public class WorldCharacterServer {
             Map<Integer, List<Item>> accPlayerEquips = new HashMap<>();
 
             for (Pair<Item, Integer> ae : accEquips) {
-                List<Item> playerEquips = accPlayerEquips.get(ae.getRight());
-                if (playerEquips == null) {
-                    playerEquips = new LinkedList<>();
-                    accPlayerEquips.put(ae.getRight(), playerEquips);
-                }
-
+                List<Item> playerEquips = accPlayerEquips.computeIfAbsent(ae.getRight(), k -> new LinkedList<>());
                 playerEquips.add(ae.getLeft());
             }
 
@@ -329,7 +325,7 @@ public class WorldCharacterServer {
         return new Pair<>(characterCount, wchars);
     }
 
-    public void loadAccountStorages(MapleClient c) {
+    void loadAccountStorages(MapleClient c) {
         int accountId = c.getAccID();
         Set<Integer> accWorlds = new HashSet<>();
         lgnWLock.lock();
@@ -355,7 +351,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public void setCharacterInTransition(IoSession session, int charId) {
+    void setCharacterInTransition(IoSession session, int charId) {
         String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
 
         lgnWLock.lock();
@@ -366,7 +362,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public boolean validateCharacterInTransition(IoSession session, int charId) {
+    boolean validateCharacterInTransition(IoSession session, int charId) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return true;
         }
@@ -382,7 +378,7 @@ public class WorldCharacterServer {
         }
     }
 
-    public Integer freeCharacterInTransition(IoSession session) {
+    Integer freeCharacterInTransition(IoSession session) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return null;
         }
