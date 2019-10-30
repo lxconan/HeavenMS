@@ -198,7 +198,7 @@ public class WorldCharacterServer {
         }
     }
 
-    void createCharacterEntry(MapleCharacter chr) {
+    public void createCharacterEntry(MapleCharacter chr) {
         World world = worldServer.getWorld(chr.getWorld());
         createCharacterEntry(chr, world);
     }
