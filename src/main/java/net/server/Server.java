@@ -923,14 +923,6 @@ public class Server {
         c.setGMLevel(gmLevel);
     }
 
-    public void setCharacterInTransition(IoSession session, int charId) {
-        worldCharacterServer.setCharacterInTransition(session, charId);
-    }
-
-    public boolean validateCharacterInTransition(IoSession session, int charId) {
-        return worldCharacterServer.validateCharacterInTransition(session, charId);
-    }
-
     public Integer freeCharacterInTransition(IoSession session) {
         return worldCharacterServer.freeCharacterInTransition(session);
     }

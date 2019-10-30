@@ -33,6 +33,7 @@ import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
 import net.server.PlayerBuffValueHolder;
 import net.server.Server;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import net.server.channel.Channel;
 import net.server.channel.CharacterIdChannelPair;
@@ -136,7 +137,7 @@ public final class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
                 IoSession session = c.getSession();
                 String remoteHwid;
                 if (player == null) {
-                    if (!server.validateCharacterInTransition(session, cid)) {
+                    if (!WorldCharacterServer.getInstance().validateCharacterInTransition(session, cid)) {
                         c.disconnect(true, false);
                         return;
                     }

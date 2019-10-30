@@ -353,7 +353,7 @@ public class WorldCharacterServer {
         }
     }
 
-    void setCharacterInTransition(IoSession session, int charId) {
+    public void setCharacterInTransition(IoSession session, int charId) {
         String remoteIp = MapleSessionCoordinator.getSessionRemoteAddress(session);
 
         lgnWLock.lock();
@@ -364,7 +364,7 @@ public class WorldCharacterServer {
         }
     }
 
-    boolean validateCharacterInTransition(IoSession session, int charId) {
+    public boolean validateCharacterInTransition(IoSession session, int charId) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return true;
         }

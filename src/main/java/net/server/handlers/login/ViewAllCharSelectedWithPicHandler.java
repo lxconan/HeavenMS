@@ -93,7 +93,7 @@ public class ViewAllCharSelectedWithPicHandler extends AbstractMaplePacketHandle
 
             server.unregisterLoginState(c);
             c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION);
-            server.setCharacterInTransition(session, charId);
+            WorldCharacterServer.getInstance().setCharacterInTransition(session, charId);
 
             try {
                 c.announce(MaplePacketCreator.getServerIP(InetAddress.getByName(socket[0]), Integer.parseInt(socket[1]), charId));
