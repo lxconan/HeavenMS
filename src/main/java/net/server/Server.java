@@ -52,7 +52,6 @@ import org.apache.mina.core.buffer.SimpleBufferAllocator;
 import org.apache.mina.core.filterchain.IoFilter;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
@@ -767,14 +766,9 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
-        Integer accountId, int visibleWorlds) {
-        return worldCharacterServer.loadAccountCharlist(accountId, visibleWorlds);
-    }
-
     public void loadAllAccountsCharactersView() {
         try {
-            Connection con = createConnection();
+            Connection con = DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement("SELECT id FROM accounts");
             ResultSet rs = ps.executeQuery();
 

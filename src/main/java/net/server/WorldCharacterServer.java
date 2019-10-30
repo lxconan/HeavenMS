@@ -100,7 +100,7 @@ public class WorldCharacterServer {
         }
     }
 
-    Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
+    public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
         Integer accountId, int visibleWorlds) {
         List<World> wlist = worldServer.getWorlds();
         if (wlist.size() > visibleWorlds) wlist = wlist.subList(0, visibleWorlds);
