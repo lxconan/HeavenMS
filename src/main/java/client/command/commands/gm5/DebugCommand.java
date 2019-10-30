@@ -26,6 +26,7 @@ package client.command.commands.gm5;
 import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
+import net.server.CouponService;
 import net.server.Server;
 import server.maps.MaplePortal;
 import server.TimerManager;
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class DebugCommand extends Command {
     private final static String debugTypes[] = {"monster", "packet", "portal", "spawnpoint", "pos", "map", "mobsp", "event", "areas", "reactors", "servercoupons", "playercoupons", "timer", "marriage", "buff", ""};
-    
+
     {
         setDescription("");
     }
@@ -62,10 +63,10 @@ public class DebugCommand extends Command {
                 for(int i = 0; i < debugTypes.length; i++) {
                     msgTypes += ("#L" + i + "#" + debugTypes[i] + "#l\r\n");
                 }
-                
+
                 c.getAbstractPlayerInteraction().npcTalk(9201143, msgTypes);
                 break;
-            
+
             case "monster":
                 List<MapleMapObject> monsters = player.getMap().getMapObjectsInRange(player.getPosition(), Double.POSITIVE_INFINITY, Arrays.asList(MapleMapObjectType.MONSTER));
                 for (MapleMapObject monstermo : monsters) {
@@ -132,7 +133,7 @@ public class DebugCommand extends Command {
             case "servercoupons":
             case "coupons":
                 String s = "Currently active SERVER coupons: ";
-                for (Integer i : Server.getInstance().getActiveCoupons()) {
+                for (Integer i : CouponService.getInstance().getActiveCoupons()) {
                     s += (i + " ");
                 }
 
@@ -156,7 +157,7 @@ public class DebugCommand extends Command {
             case "marriage":
                 c.getChannelServer().debugMarriageStatus();
                 break;
-            
+
             case "buff":
                 c.getPlayer().debugListAllBuffs();
                 break;

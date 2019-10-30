@@ -6798,7 +6798,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
         activeCouponRates.clear();
 
         Map<Integer, Integer> coupons = CouponService.getInstance().getCouponRates();
-        List<Integer> active = Server.getInstance().getActiveCoupons();
+        List<Integer> active = CouponService.getInstance().getActiveCoupons();
 
         for (Item it: cashItems) {
             if (ItemConstants.isRateCoupon(it.getItemId()) && active.contains(it.getItemId())) {

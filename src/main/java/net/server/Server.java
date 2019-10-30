@@ -125,10 +125,6 @@ public class Server {
         return availableDeveloperRoom;
     }
 
-    public List<Integer> getActiveCoupons() {
-        return couponService.getActiveCoupons();
-    }
-
     public void commitActiveCoupons() {
         couponService.commitActiveCoupons();
     }
