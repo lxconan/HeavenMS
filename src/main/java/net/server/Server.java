@@ -923,14 +923,6 @@ public class Server {
         c.setGMLevel(gmLevel);
     }
 
-    public Integer freeCharacterInTransition(IoSession session) {
-        return worldCharacterServer.freeCharacterInTransition(session);
-    }
-
-    public boolean hasCharacterInTransition(IoSession session) {
-        return worldCharacterServer.hasCharacterInTransition(session);
-    }
-
     public void registerLoginState(MapleClient c) {
         srvLock.lock();
         try {

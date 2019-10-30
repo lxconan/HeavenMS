@@ -47,6 +47,7 @@ import java.util.concurrent.locks.Lock;
 import config.YamlConfig;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import net.server.ServerTimer;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import tools.*;
 
@@ -1064,7 +1065,7 @@ public class MapleClient {
                 MapleSessionCoordinator.getInstance().closeSession(session, false);
                 session.removeAttribute(MapleClient.CLIENT_KEY);
             }
-            if (!Server.getInstance().hasCharacterInTransition(session)) {
+            if (!WorldCharacterServer.getInstance().hasCharacterInTransition(session)) {
                 updateLoginState(MapleClient.LOGIN_NOTLOGGEDIN);
             }
 

@@ -153,7 +153,7 @@ public class WorldCharacterServer {
         return accWorlds;
     }
 
-    boolean hasCharacterInTransition(IoSession session) {
+    public boolean hasCharacterInTransition(IoSession session) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return true;
         }
@@ -380,7 +380,7 @@ public class WorldCharacterServer {
         }
     }
 
-    Integer freeCharacterInTransition(IoSession session) {
+    public Integer freeCharacterInTransition(IoSession session) {
         if (!YamlConfig.config.server.USE_IP_VALIDATION) {
             return null;
         }

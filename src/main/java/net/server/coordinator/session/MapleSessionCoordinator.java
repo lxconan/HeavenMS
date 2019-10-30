@@ -20,6 +20,7 @@
 package net.server.coordinator.session;
 
 import net.server.ServerTimer;
+import net.server.WorldCharacterServer;
 import net.server.coordinator.login.LoginStorage;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -489,7 +490,7 @@ public class MapleSessionCoordinator {
             }
 
             MapleClient client = new MapleClient(null, null, session);
-            Integer cid = Server.getInstance().freeCharacterInTransition(session);
+            Integer cid = WorldCharacterServer.getInstance().freeCharacterInTransition(session);
             if (cid != null) {
                 try {
                     client.setAccID(MapleCharacter.loadCharFromDB(cid, client, false).getAccountID());
