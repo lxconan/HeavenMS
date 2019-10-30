@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import net.AbstractMaplePacketHandler;
+import net.server.NewYearCardService;
 import net.server.Server;
 import tools.DatabaseConnection;
 import tools.MaplePacketCreator;
@@ -38,30 +39,30 @@ import tools.data.input.SeekableLittleEndianAccessor;
 /**
  *
  * @author Ronan
- * 
- * Header layout thanks to Eric 
+ *
+ * Header layout thanks to Eric
  */
 public final class NewYearCardHandler extends AbstractMaplePacketHandler {
 
     @Override
-    public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {        
+    public final void handlePacket(SeekableLittleEndianAccessor slea, MapleClient c) {
         final MapleCharacter player = c.getPlayer();
-        byte reqMode = slea.readByte();                 //[00] -> NewYearReq (0 = Send) 
-        
+        byte reqMode = slea.readByte();                 //[00] -> NewYearReq (0 = Send)
+
         if(reqMode == 0) {  // card has been sent
             if(player.haveItem(2160101)) {  // new year's card
-                short slot = slea.readShort();                      //[00 2C] -> nPOS (Item Slot Pos) 
-                int itemid = slea.readInt();                        //[00 20 F5 E5] -> nItemID (item id) 
+                short slot = slea.readShort();                      //[00 2C] -> nPOS (Item Slot Pos)
+                int itemid = slea.readInt();                        //[00 20 F5 E5] -> nItemID (item id)
 
                 int status = getValidNewYearCardStatus(itemid, player, slot);
                 if(status == 0) {
                     if(player.canHold(4300000, 1)) {
-                        String receiver = slea.readMapleAsciiString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to) 
+                        String receiver = slea.readMapleAsciiString();  //[04 00 54 65 73 74] -> sReceiverName (person to send to)
 
                         int receiverid = getReceiverId(receiver, c.getWorld());
                         if(receiverid != -1) {
                             if(receiverid != c.getPlayer().getId()) {
-                                String message = slea.readMapleAsciiString();   //[06 00 4C 65 74 74 65 72] -> sContent (message)  
+                                String message = slea.readMapleAsciiString();   //[06 00 4C 65 74 74 65 72] -> sContent (message)
 
                                 NewYearCardRecord newyear = new NewYearCardRecord(player.getId(), player.getName(), receiverid, receiver, message);
                                 NewYearCardRecord.saveNewYearCard(newyear);
@@ -70,7 +71,7 @@ public final class NewYearCardHandler extends AbstractMaplePacketHandler {
                                 player.getAbstractPlayerInteraction().gainItem(2160101, (short)-1);
                                 player.getAbstractPlayerInteraction().gainItem(4300000, (short) 1);
 
-                                Server.getInstance().setNewYearCard(newyear);
+                                NewYearCardService.getInstance().setNewYearCard(newyear);
                                 newyear.startNewYearCardTask();
                                 player.announce(MaplePacketCreator.onNewYearCardRes(player, newyear, 4, 0));    // successfully sent
                             } else {
@@ -90,9 +91,9 @@ public final class NewYearCardHandler extends AbstractMaplePacketHandler {
             }
         } else {    //receiver accepted the card
             int cardid = slea.readInt();
-            
+
             NewYearCardRecord newyear = NewYearCardRecord.loadNewYearCard(cardid);
-            
+
             if(newyear != null && newyear.getReceiverId() == player.getId() && !newyear.isReceiverCardReceived()) {
                 if(!newyear.isSenderCardDiscarded()) {
                     if(player.canHold(4301000, 1)) {
@@ -125,7 +126,7 @@ public final class NewYearCardHandler extends AbstractMaplePacketHandler {
             }
         }
     }
-    
+
     private static int getReceiverId(String receiver, int world) {
         try (Connection con = DatabaseConnection.getConnection()) {
             try (PreparedStatement ps = con.prepareStatement("SELECT id, world FROM characters WHERE name LIKE ?")) {
@@ -141,14 +142,14 @@ public final class NewYearCardHandler extends AbstractMaplePacketHandler {
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
-        
+
         return -1;
     }
-    
+
     private static int getValidNewYearCardStatus(int itemid, MapleCharacter player, short slot) {
         if(!ItemConstants.isNewYearCardUse(itemid)) return 0x14;
-        
-        Item it = player.getInventory(ItemConstants.getInventoryType(itemid)).getItem(slot);        
+
+        Item it = player.getInventory(ItemConstants.getInventoryType(itemid)).getItem(slot);
         return (it != null && it.getItemId() == itemid) ? 0 : 0x12;
-    } 
+    }
 }

@@ -28,6 +28,8 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
+
+import net.server.NewYearCardService;
 import net.server.Server;
 import net.server.WorldCharacterServer;
 import net.server.WorldServer;
@@ -178,7 +180,7 @@ public class NewYearCardRecord {
     }
 
     public static NewYearCardRecord loadNewYearCard(int cardid) {
-        NewYearCardRecord nyc = Server.getInstance().getNewYearCard(cardid);
+        NewYearCardRecord nyc = NewYearCardService.getInstance().getNewYearCard(cardid);
         if(nyc != null) return nyc;
 
         try (Connection con = DatabaseConnection.getConnection()) {
@@ -189,7 +191,7 @@ public class NewYearCardRecord {
                         NewYearCardRecord newyear = new NewYearCardRecord(rs.getInt("senderid"), rs.getString("sendername"), rs.getInt("receiverid"), rs.getString("receivername"), rs.getString("message"));
                         newyear.setExtraNewYearCardRecord(rs.getInt("id"), rs.getBoolean("senderdiscard"), rs.getBoolean("receiverdiscard"), rs.getBoolean("received"), rs.getLong("timesent"), rs.getLong("timereceived"));
 
-                        Server.getInstance().setNewYearCard(newyear);
+                        NewYearCardService.getInstance().setNewYearCard(newyear);
                         return newyear;
                     }
                 }
@@ -275,7 +277,7 @@ public class NewYearCardRecord {
     }
 
     private static void deleteNewYearCard(int id) {
-        Server.getInstance().removeNewYearCard(id);
+        NewYearCardService.getInstance().removeNewYearCard(id);
 
         try (Connection con = DatabaseConnection.getConnection()) {
             try (PreparedStatement ps = con.prepareStatement("DELETE FROM newyear WHERE id = ?")) {
@@ -353,7 +355,7 @@ public class NewYearCardRecord {
                         NewYearCardRecord newyear = new NewYearCardRecord(rs.getInt("senderid"), rs.getString("sendername"), rs.getInt("receiverid"), rs.getString("receivername"), rs.getString("message"));
                         newyear.setExtraNewYearCardRecord(rs.getInt("id"), rs.getBoolean("senderdiscard"), rs.getBoolean("receiverdiscard"), rs.getBoolean("received"), rs.getLong("timesent"), rs.getLong("timereceived"));
 
-                        Server.getInstance().setNewYearCard(newyear);
+                        NewYearCardService.getInstance().setNewYearCard(newyear);
                         newyear.startNewYearCardTask();
                     }
                 }

@@ -88,7 +88,6 @@ public class Server {
 
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
     private final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
-    private final Map<Integer, NewYearCardRecord> newyears = new HashMap<>();
 
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
 
@@ -97,18 +96,6 @@ public class Server {
 
     public boolean isOnline() {
         return online;
-    }
-
-    public void setNewYearCard(NewYearCardRecord nyc) {
-        newyears.put(nyc.getId(), nyc);
-    }
-
-    public NewYearCardRecord getNewYearCard(int cardid) {
-        return newyears.get(cardid);
-    }
-
-    public void removeNewYearCard(int cardId) {
-        newyears.remove(cardId);
     }
 
     public void setAvailableDeveloperRoom() {

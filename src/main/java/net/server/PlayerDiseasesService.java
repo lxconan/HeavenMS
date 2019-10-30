@@ -13,9 +13,9 @@ public class PlayerDiseasesService {
     private static final PlayerDiseasesService instance = new PlayerDiseasesService();
     public static PlayerDiseasesService getInstance() {return instance;}
 
-    public final List<MapleClient> processDiseaseAnnouncePlayers = new LinkedList<>();
-    public final List<MapleClient> registeredDiseaseAnnouncePlayers = new LinkedList<>();
-    public final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
+    private final List<MapleClient> processDiseaseAnnouncePlayers = new LinkedList<>();
+    private final List<MapleClient> registeredDiseaseAnnouncePlayers = new LinkedList<>();
+    private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
     public void runAnnouncePlayerDiseasesSchedule() {
         List<MapleClient> processDiseaseAnnounceClients;
