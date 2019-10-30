@@ -224,7 +224,7 @@ public class WorldCharacterServer {
         }
     }
 
-    void deleteCharacterEntry(Integer accountId, Integer characterId) {
+    public void deleteCharacterEntry(Integer accountId, Integer characterId) {
         lgnWLock.lock();
         try {
             accountCharacterCount.put(accountId, (short) (accountCharacterCount.get(accountId) - 1));

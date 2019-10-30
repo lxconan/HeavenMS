@@ -767,10 +767,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public void deleteCharacterEntry(Integer accountId, Integer characterId) {
-        worldCharacterServer.deleteCharacterEntry(accountId, characterId);
-    }
-
     public Pair<Pair<Integer, List<MapleCharacter>>, List<Pair<Integer, List<MapleCharacter>>>> loadAccountCharlist(
         Integer accountId, int visibleWorlds) {
         return worldCharacterServer.loadAccountCharlist(accountId, visibleWorlds);

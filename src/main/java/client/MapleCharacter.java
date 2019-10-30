@@ -2418,7 +2418,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                     }
 
                     con.close();
-                    Server.getInstance().deleteCharacterEntry(accId, cid);
+                    WorldCharacterServer.getInstance().deleteCharacterEntry(accId, cid);
                     return true;
             } catch (SQLException e) {
                     e.printStackTrace();
