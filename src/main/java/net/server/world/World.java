@@ -61,6 +61,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledFuture;
 
 import net.server.ServerTimer;
+import net.server.WorldCharacterServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scripting.event.EventInstanceManager;
@@ -502,7 +503,7 @@ public class World {
     }
 
     public List<MapleCharacter> loadAndGetAllCharactersView() {
-        Server.getInstance().loadAllAccountsCharactersView();
+        WorldCharacterServer.getInstance().loadAllAccountsCharactersView();
         return getAllCharactersView();
     }
 

@@ -242,7 +242,7 @@ public class WorldCharacterServer {
         }
     }
 
-    void loadAllAccountsCharactersView() {
+    public void loadAllAccountsCharactersView() {
         try {
             Connection con = DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement("SELECT id FROM accounts");

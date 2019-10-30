@@ -766,10 +766,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public void loadAllAccountsCharactersView() {
-        worldCharacterServer.loadAllAccountsCharactersView();
-    }
-
     private void applyAllNameChanges() {
         try (Connection con = createConnection();
              PreparedStatement ps = con.prepareStatement("SELECT * FROM namechanges WHERE completionTime IS NULL")) {
