@@ -1,6 +1,6 @@
 package abstraction.dao;
 
-import abstraction.DataConnectionFactory;
+import tools.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,15 +9,14 @@ import java.sql.SQLException;
 import java.util.function.Consumer;
 
 public class PlayerNpcFieldGateway {
-    private final DataConnectionFactory dataConnectionFactory;
-
-    public PlayerNpcFieldGateway(DataConnectionFactory dataConnectionFactory) {
-        this.dataConnectionFactory = dataConnectionFactory;
+    private final static PlayerNpcFieldGateway instance = new PlayerNpcFieldGateway();
+    public static PlayerNpcFieldGateway getInstance() {
+        return instance;
     }
 
     public void forEach(Consumer<PlayerNpcField> consumer) throws SQLException {
         try (
-            Connection con = dataConnectionFactory.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs_field");
             ResultSet rs = ps.executeQuery();
         ) {

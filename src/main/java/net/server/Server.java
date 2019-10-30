@@ -21,7 +21,6 @@
  */
 package net.server;
 
-import abstraction.ApplicationContextFactory;
 import abstraction.dao.PlayerNpcFieldGateway;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -56,7 +55,6 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import server.CashShop.CashItemFactory;
 import server.MapleSkillbookInformationProvider;
 import server.ThreadManager;
@@ -79,17 +77,8 @@ import java.util.concurrent.locks.Lock;
 
 public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
-
-    private static Server instance = null;
-
-    public static Server getInstance() {
-        if (instance == null) {
-            final ApplicationContext context = ApplicationContextFactory.getInstance();
-            Server.instance = new Server(
-                context.getBean(PlayerNpcFieldGateway.class));
-        }
-        return instance;
-    }
+    private static Server instance = new Server();
+    public static Server getInstance() { return instance; }
 
     private final Set<Integer> activeFly = new HashSet<>();
     private final Map<Integer, Integer> couponRates = new HashMap<>(30);
@@ -113,11 +102,7 @@ public class Server {
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
-    private final PlayerNpcFieldGateway playerNpcFieldGateway;
-
-    public Server(PlayerNpcFieldGateway playerNpcFieldGateway) {
-        this.playerNpcFieldGateway = playerNpcFieldGateway;
-    }
+    private final PlayerNpcFieldGateway playerNpcFieldGateway = PlayerNpcFieldGateway.getInstance();
 
     public boolean isOnline() {
         return online;
