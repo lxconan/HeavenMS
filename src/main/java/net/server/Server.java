@@ -30,7 +30,6 @@ import client.inventory.manipulator.MapleCashidGenerator;
 import client.newyear.NewYearCardRecord;
 import config.YamlConfig;
 import constants.game.GameConstants;
-import constants.inventory.ItemConstants;
 import constants.net.OpcodeConstants;
 import constants.net.ServerConstants;
 import net.MapleServerHandler;
@@ -163,70 +162,15 @@ public class Server {
     }
 
     public void commitActiveCoupons() {
-        for (World world : worldServer.getWorlds()) {
-            for (MapleCharacter chr : world.getPlayerStorage().getAllCharacters()) {
-                if (!chr.isLoggedin()) continue;
-
-                chr.updateCouponRates();
-            }
-        }
+        couponService.commitActiveCoupons();
     }
 
     public void toggleCoupon(Integer couponId) {
-        if (ItemConstants.isRateCoupon(couponId)) {
-            synchronized (couponService.activeCoupons) {
-                if (couponService.activeCoupons.contains(couponId)) {
-                    couponService.activeCoupons.remove(couponId);
-                } else {
-                    couponService.activeCoupons.add(couponId);
-                }
-
-                commitActiveCoupons();
-            }
-        }
+        couponService.toggleCoupon(couponId);
     }
 
     public void updateActiveCoupons() throws SQLException {
-        synchronized (couponService.activeCoupons) {
-            couponService.activeCoupons.clear();
-            Calendar c = Calendar.getInstance();
-
-            int weekDay = c.get(Calendar.DAY_OF_WEEK);
-            int hourDay = c.get(Calendar.HOUR_OF_DAY);
-
-            Connection con = null;
-            try {
-                con = createConnection();
-
-                int weekdayMask = (1 << weekDay);
-                PreparedStatement ps = con.prepareStatement("SELECT couponid FROM nxcoupons WHERE (activeday & ?) = ? AND starthour <= ? AND " +
-                    "endhour > ?");
-                ps.setInt(1, weekdayMask);
-                ps.setInt(2, weekdayMask);
-                ps.setInt(3, hourDay);
-                ps.setInt(4, hourDay);
-
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    couponService.activeCoupons.add(rs.getInt("couponid"));
-                }
-
-                rs.close();
-                ps.close();
-
-                con.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-
-                try {
-                    if (con != null && !con.isClosed()) {
-                        con.close();
-                    }
-                } catch (SQLException ex2) {
-                    ex2.printStackTrace();
-                }
-            }
-        }
+        couponService.updateActiveCoupons();
     }
 
     public void runAnnouncePlayerDiseasesSchedule() {
