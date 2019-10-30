@@ -66,7 +66,7 @@ public final class ViewAllCharRegisterPicHandler extends AbstractMaplePacketHand
         }
 
         Server server = Server.getInstance();
-        if(!server.haveCharacterEntry(c.getAccID(), charId)) {
+        if(!WorldCharacterServer.getInstance().haveCharacterEntry(c.getAccID(), charId)) {
             MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
             return;
         }

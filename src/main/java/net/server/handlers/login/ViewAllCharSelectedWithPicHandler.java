@@ -63,7 +63,7 @@ public class ViewAllCharSelectedWithPicHandler extends AbstractMaplePacketHandle
         IoSession session = c.getSession();
 
         Server server = Server.getInstance();
-        if(!server.haveCharacterEntry(c.getAccID(), charId)) {
+        if(!WorldCharacterServer.getInstance().haveCharacterEntry(c.getAccID(), charId)) {
             MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
             return;
         }

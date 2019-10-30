@@ -767,10 +767,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
-        return worldCharacterServer.haveCharacterEntry(accountId, characterId);
-    }
-
     public short getAccountCharacterCount(Integer accountId) {
         return worldCharacterServer.getAccountCharacterCount(accountId);
     }

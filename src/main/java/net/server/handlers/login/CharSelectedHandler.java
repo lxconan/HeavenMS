@@ -84,7 +84,7 @@ public final class CharSelectedHandler extends AbstractMaplePacketHandler {
         }
 
         Server server = Server.getInstance();
-        if(!server.haveCharacterEntry(c.getAccID(), charId)) {
+        if(!WorldCharacterServer.getInstance().haveCharacterEntry(c.getAccID(), charId)) {
             MapleSessionCoordinator.getInstance().closeSession(session, true);
             return;
         }

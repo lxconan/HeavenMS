@@ -55,7 +55,7 @@ public class WorldCharacterServer {
         }
     }
 
-    boolean haveCharacterEntry(Integer accountId, Integer characterId) {
+    public boolean haveCharacterEntry(Integer accountId, Integer characterId) {
         lgnRLock.lock();
         try {
             Set<Integer> accChars = accountChars.get(accountId);
