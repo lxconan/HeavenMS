@@ -767,24 +767,7 @@ public class Server {
     }
 
     public void loadAllAccountsCharactersView() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT id FROM accounts");
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                int accountId = rs.getInt("id");
-                if (worldCharacterServer.isFirstAccountLogin(accountId)) {
-                    worldCharacterServer.loadAccountCharactersView(accountId, 0, 0);
-                }
-            }
-
-            rs.close();
-            ps.close();
-            con.close();
-        } catch (SQLException se) {
-            se.printStackTrace();
-        }
+        worldCharacterServer.loadAllAccountsCharactersView();
     }
 
     private void applyAllNameChanges() {

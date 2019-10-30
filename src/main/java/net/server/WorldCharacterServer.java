@@ -242,6 +242,27 @@ public class WorldCharacterServer {
         }
     }
 
+    public void loadAllAccountsCharactersView() {
+        try {
+            Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT id FROM accounts");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int accountId = rs.getInt("id");
+                if (isFirstAccountLogin(accountId)) {
+                    loadAccountCharactersView(accountId, 0, 0);
+                }
+            }
+
+            rs.close();
+            ps.close();
+            con.close();
+        } catch (SQLException se) {
+            se.printStackTrace();
+        }
+    }
+
     @SuppressWarnings("SameParameterValue")
     int loadAccountCharactersView(Integer accId, int gmLevel, int fromWorldId) {    // returns the maximum gmLevel found
         List<World> wlist = worldServer.getWorlds();
