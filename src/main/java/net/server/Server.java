@@ -80,7 +80,7 @@ public class Server {
 
     private final Set<Integer> activeFly = new HashSet<>();
 
-    private final CouponService couponService = new CouponService();
+    private final CouponService couponService = CouponService.getInstance();
 
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
@@ -123,10 +123,6 @@ public class Server {
 
     public boolean canEnterDeveloperRoom() {
         return availableDeveloperRoom;
-    }
-
-    public Map<Integer, Integer> getCouponRates() {
-        return couponService.getCouponRates();
     }
 
     private void cleanNxcodeCoupons(Connection con) throws SQLException {

@@ -12,9 +12,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class CouponService {
+    private static final CouponService instance = new CouponService();
+    public static CouponService getInstance() { return instance; }
+
     private final WorldServer worldServer = WorldServer.getInstance();
     private final Map<Integer, Integer> couponRates = new HashMap<>(30);
-    public final List<Integer> activeCoupons = new LinkedList<>();
+    private final List<Integer> activeCoupons = new LinkedList<>();
 
     public Map<Integer, Integer> getCouponRates() {
         return couponRates;
