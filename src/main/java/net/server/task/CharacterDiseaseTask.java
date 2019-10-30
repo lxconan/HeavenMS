@@ -19,6 +19,7 @@
 */
 package net.server.task;
 
+import net.server.PlayerDiseasesService;
 import net.server.Server;
 import net.server.ServerTimer;
 
@@ -29,9 +30,7 @@ import net.server.ServerTimer;
 public class CharacterDiseaseTask implements Runnable {
     @Override
     public void run() {
-        Server serv = Server.getInstance();
-
         ServerTimer.getInstance().updateCurrentTime();
-        serv.runAnnouncePlayerDiseasesSchedule();
+        PlayerDiseasesService.getInstance().runAnnouncePlayerDiseasesSchedule();
     }
 }

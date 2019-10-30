@@ -90,8 +90,6 @@ public class Server {
     private final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
     private final Map<Integer, NewYearCardRecord> newyears = new HashMap<>();
 
-    private final PlayerDiseasesService playerDiseasesService = PlayerDiseasesService.getInstance();
-
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
 
     private boolean availableDeveloperRoom = false;
@@ -119,14 +117,6 @@ public class Server {
 
     public boolean canEnterDeveloperRoom() {
         return availableDeveloperRoom;
-    }
-
-    public void runAnnouncePlayerDiseasesSchedule() {
-        playerDiseasesService.runAnnouncePlayerDiseasesSchedule();
-    }
-
-    public void registerAnnouncePlayerDiseases(MapleClient c) {
-        playerDiseasesService.registerAnnouncePlayerDiseases(c);
     }
 
     public void init() {

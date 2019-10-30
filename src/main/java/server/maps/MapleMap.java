@@ -59,6 +59,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import net.server.PlayerDiseasesService;
 import net.server.ServerTimer;
 import net.server.WorldServer;
 import net.server.audit.locks.MonitoredLockType;
@@ -2714,7 +2715,7 @@ public class MapleMap {
     }
 
     private static void announcePlayerDiseases(final MapleClient c) {
-        Server.getInstance().registerAnnouncePlayerDiseases(c);
+        PlayerDiseasesService.getInstance().registerAnnouncePlayerDiseases(c);
     }
 
     public MaplePortal getRandomPlayerSpawnpoint() {
