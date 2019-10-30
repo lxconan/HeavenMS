@@ -8398,7 +8398,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             FilePrinter.print(FilePrinter.AUTOSAVING_CHARACTER, "Attempting to autosave " + name + " at " + c.getTime().toString());
         }
 
-        Server.getInstance().updateCharacterEntry(this);
+        WorldCharacterServer.getInstance().updateCharacterEntry(this);
 
         Connection con = null;
         try {

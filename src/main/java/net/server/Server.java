@@ -767,10 +767,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public void updateCharacterEntry(MapleCharacter chr) {
-        worldCharacterServer.updateCharacterEntry(chr);
-    }
-
     public void createCharacterEntry(MapleCharacter chr) {
         worldCharacterServer.createCharacterEntry(chr);
     }

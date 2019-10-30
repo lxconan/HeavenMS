@@ -168,7 +168,7 @@ public class WorldCharacterServer {
         }
     }
 
-    void updateCharacterEntry(MapleCharacter chr) {
+    public void updateCharacterEntry(MapleCharacter chr) {
         MapleCharacter chrView = chr.generateCharacterEntry();
         World world = worldServer.getWorld(chrView.getWorld());
         updateCharacterEntry(chrView, world);
