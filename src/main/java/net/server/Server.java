@@ -21,7 +21,6 @@
  */
 package net.server;
 
-import abstraction.dao.PlayerNpcFieldGateway;
 import client.MapleCharacter;
 import client.MapleClient;
 import client.MapleFamily;
@@ -102,7 +101,6 @@ public class Server {
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
-    private final PlayerNpcFieldGateway playerNpcFieldGateway = PlayerNpcFieldGateway.getInstance();
 
     public boolean isOnline() {
         return online;
@@ -126,22 +124,6 @@ public class Server {
 
     public boolean canEnterDeveloperRoom() {
         return availableDeveloperRoom;
-    }
-
-    private void loadPlayerNpcMapStepFromDb() {
-        try {
-            List<World> worldList = worldServer.getWorlds();
-            playerNpcFieldGateway.forEach(playerNpcField -> {
-                World w = worldList.get(playerNpcField.getWorld());
-                if (w != null) {
-                    w.setPlayerNpcMapData(playerNpcField.getMap(),
-                        playerNpcField.getStep(),
-                        playerNpcField.getPodium());
-                }
-            });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public Map<Integer, Integer> getCouponRates() {
@@ -392,7 +374,7 @@ public class Server {
             worldServer.initWorldPlayerRanking();
 
             MaplePlayerNPCFactory.loadFactoryMetadata();
-            loadPlayerNpcMapStepFromDb();
+            worldServer.loadPlayerNpcMapStepFromDb();
         } catch (Exception e) {
             logger.error("Syntax error in 'world.ini'", e);
             System.exit(0);

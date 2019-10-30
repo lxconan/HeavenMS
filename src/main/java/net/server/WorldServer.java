@@ -1,5 +1,6 @@
 package net.server;
 
+import abstraction.dao.PlayerNpcFieldGateway;
 import client.MapleCharacter;
 import config.YamlConfig;
 import net.server.audit.locks.MonitoredLockType;
@@ -25,6 +26,7 @@ public class WorldServer {
         return instance;
     }
 
+    private final PlayerNpcFieldGateway playerNpcFieldGateway = PlayerNpcFieldGateway.getInstance();
     private List<World> worlds = new ArrayList<>();
     private List<Map<Integer, String>> channels = new LinkedList<>();
     private final ReentrantReadWriteLock wldLock = new MonitoredReentrantReadWriteLock(MonitoredLockType.SERVER_WORLDS, true);
@@ -311,5 +313,21 @@ public class WorldServer {
             }
         }
         return false;
+    }
+
+    public void loadPlayerNpcMapStepFromDb() {
+        try {
+            List<World> worldList = getWorlds();
+            playerNpcFieldGateway.forEach(playerNpcField -> {
+                World w = worldList.get(playerNpcField.getWorld());
+                if (w != null) {
+                    w.setPlayerNpcMapData(playerNpcField.getMap(),
+                        playerNpcField.getStep(),
+                        playerNpcField.getPodium());
+                }
+            });
+        } catch (SQLException e) {
+            logger.error("Error occurred while loading player npc map step from db.", e);
+        }
     }
 }
