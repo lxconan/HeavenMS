@@ -89,11 +89,10 @@ public class Server {
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
     private final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
     private final Map<Integer, NewYearCardRecord> newyears = new HashMap<>();
-    private final List<MapleClient> processDiseaseAnnouncePlayers = new LinkedList<>();
-    private final List<MapleClient> registeredDiseaseAnnouncePlayers = new LinkedList<>();
+
+    private final PlayerDiseasesService playerDiseasesService = PlayerDiseasesService.getInstance();
 
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
-    private final Lock disLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER_DISEASES);
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
@@ -123,43 +122,11 @@ public class Server {
     }
 
     public void runAnnouncePlayerDiseasesSchedule() {
-        List<MapleClient> processDiseaseAnnounceClients;
-        disLock.lock();
-        try {
-            processDiseaseAnnounceClients = new LinkedList<>(processDiseaseAnnouncePlayers);
-            processDiseaseAnnouncePlayers.clear();
-        } finally {
-            disLock.unlock();
-        }
-
-        while (!processDiseaseAnnounceClients.isEmpty()) {
-            MapleClient c = processDiseaseAnnounceClients.remove(0);
-            MapleCharacter player = c.getPlayer();
-            if (player != null && player.isLoggedinWorld()) {
-                player.announceDiseases();
-                player.collectDiseases();
-            }
-        }
-
-        disLock.lock();
-        try {
-            // this is to force the system to wait for at least one complete tick before releasing disease info for the registered clients
-            while (!registeredDiseaseAnnouncePlayers.isEmpty()) {
-                MapleClient c = registeredDiseaseAnnouncePlayers.remove(0);
-                processDiseaseAnnouncePlayers.add(c);
-            }
-        } finally {
-            disLock.unlock();
-        }
+        playerDiseasesService.runAnnouncePlayerDiseasesSchedule();
     }
 
     public void registerAnnouncePlayerDiseases(MapleClient c) {
-        disLock.lock();
-        try {
-            registeredDiseaseAnnouncePlayers.add(c);
-        } finally {
-            disLock.unlock();
-        }
+        playerDiseasesService.registerAnnouncePlayerDiseases(c);
     }
 
     public void init() {
