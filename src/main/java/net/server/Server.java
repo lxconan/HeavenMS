@@ -125,10 +125,6 @@ public class Server {
         return availableDeveloperRoom;
     }
 
-    public void commitActiveCoupons() {
-        couponService.commitActiveCoupons();
-    }
-
     public void toggleCoupon(Integer couponId) {
         couponService.toggleCoupon(couponId);
     }
