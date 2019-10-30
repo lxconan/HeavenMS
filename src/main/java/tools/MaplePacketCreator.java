@@ -70,10 +70,7 @@ import constants.skills.Buccaneer;
 import constants.skills.Corsair;
 import constants.skills.ThunderBreaker;
 import net.opcodes.SendOpcode;
-import net.server.PlayerCoolDownValueHolder;
-import net.server.Server;
-import net.server.ServerTimer;
-import net.server.WorldServer;
+import net.server.*;
 import net.server.channel.Channel;
 import net.server.channel.handlers.PlayerInteractionHandler;
 import net.server.channel.handlers.SummonDamageHandler.SummonAttackEntry;
@@ -737,7 +734,7 @@ public class MaplePacketCreator {
     public static byte[] getAuthSuccess(MapleClient c) {
         Server.getInstance().loadAccountCharacters(c);    // locks the login session until data
         // is recovered from the cache or the DB.
-        Server.getInstance().loadAccountStorage(c);
+        WorldCharacterServer.getInstance().loadAccountStorage(c);
 
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(SendOpcode.LOGIN_STATUS.getValue());
