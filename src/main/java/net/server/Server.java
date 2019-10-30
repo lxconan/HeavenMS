@@ -849,27 +849,7 @@ public class Server {
     }
 
     public void loadAccountCharacters(MapleClient c) {
-        Integer accId = c.getAccID();
-        if (!worldCharacterServer.isFirstAccountLogin(accId)) {
-            Set<Integer> accWorlds = worldCharacterServer.getWorldsForAccount(accId);
-
-            int gmLevel = 0;
-            for (Integer aw : accWorlds) {
-                World wserv = worldServer.getWorld(aw);
-
-                if (wserv != null) {
-                    for (MapleCharacter chr : wserv.getAllCharactersView()) {
-                        if (gmLevel < chr.gmLevel()) gmLevel = chr.gmLevel();
-                    }
-                }
-            }
-
-            c.setGMLevel(gmLevel);
-            return;
-        }
-
-        int gmLevel = worldCharacterServer.loadAccountCharactersView(c.getAccID(), 0, 0);
-        c.setGMLevel(gmLevel);
+        worldCharacterServer.loadAccountCharacters(c);
     }
 
     public void registerLoginState(MapleClient c) {
