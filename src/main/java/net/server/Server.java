@@ -125,10 +125,6 @@ public class Server {
         return availableDeveloperRoom;
     }
 
-    public void updateActiveCoupons() throws SQLException {
-        couponService.updateActiveCoupons();
-    }
-
     public void runAnnouncePlayerDiseasesSchedule() {
         List<MapleClient> processDiseaseAnnounceClients;
         disLock.lock();
@@ -189,7 +185,7 @@ public class Server {
 
             couponService.cleanNxcodeCoupons(c);
             couponService.loadCouponRates(c);
-            updateActiveCoupons();
+            couponService.updateActiveCoupons();
 
             c.close();
         } catch (SQLException sqle) {

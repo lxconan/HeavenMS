@@ -33,7 +33,7 @@ public class CouponTask implements Runnable {
     @Override
     public void run() {
         try {
-            Server.getInstance().updateActiveCoupons();
+            CouponService.getInstance().updateActiveCoupons();
             CouponService.getInstance().commitActiveCoupons();
         } catch(SQLException sqle) {
             FilePrinter.printError(FilePrinter.EXCEPTION_CAUGHT, "Unexpected SQL error: " + sqle.getMessage());
