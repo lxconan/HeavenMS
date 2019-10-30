@@ -848,10 +848,6 @@ public class Server {
         }
     }
 
-    public void loadAccountCharacters(MapleClient c) {
-        worldCharacterServer.loadAccountCharacters(c);
-    }
-
     public void registerLoginState(MapleClient c) {
         srvLock.lock();
         try {

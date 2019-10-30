@@ -732,7 +732,7 @@ public class MaplePacketCreator {
      * @return the successful authentication packet
      */
     public static byte[] getAuthSuccess(MapleClient c) {
-        Server.getInstance().loadAccountCharacters(c);    // locks the login session until data
+        WorldCharacterServer.getInstance().loadAccountCharacters(c);    // locks the login session until data
         // is recovered from the cache or the DB.
         WorldCharacterServer.getInstance().loadAccountStorage(c);
 
