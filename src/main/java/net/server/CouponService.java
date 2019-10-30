@@ -67,7 +67,7 @@ public class CouponService {
         }
     }
 
-    public void updateActiveCoupons() {
+    public void updateActiveCoupons() throws SQLException {
         synchronized (activeCoupons) {
             activeCoupons.clear();
             Calendar c = Calendar.getInstance();
