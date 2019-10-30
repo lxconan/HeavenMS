@@ -743,7 +743,7 @@ public class MaplePacketCreator {
         mplew.writeInt(c.getAccID());
         mplew.write(c.getGender());
 
-        boolean canFly = Server.getInstance().canFly(c.getAccID());
+        boolean canFly = FlyStateService.getInstance().canFly(c.getAccID());
         mplew.writeBool((YamlConfig.config.server.USE_ENFORCE_ADMIN_ACCOUNT || canFly) ?
             c.getGMLevel() > 1 : false);    // thanks Steve(kaito1410) for pointing the GM account
         // boolean here

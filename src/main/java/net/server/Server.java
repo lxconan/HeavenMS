@@ -78,8 +78,6 @@ public class Server {
     private static Server instance = new Server();
     public static Server getInstance() { return instance; }
 
-    private final FlyStateService flyStateService = new FlyStateService();
-
     private final CouponService couponService = CouponService.getInstance();
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
@@ -595,14 +593,6 @@ public class Server {
             }
         }
         worlda.reloadGuildSummary();
-    }
-
-    public void changeFly(Integer accountid, boolean canFly) {
-        flyStateService.changeFly(accountid, canFly);
-    }
-
-    public boolean canFly(Integer accountid) {
-        return flyStateService.canFly(accountid);
     }
 
     private void applyAllNameChanges() {

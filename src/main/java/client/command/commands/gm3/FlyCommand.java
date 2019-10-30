@@ -26,6 +26,7 @@ package client.command.commands.gm3;
 import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
+import net.server.FlyStateService;
 import net.server.Server;
 
 public class FlyCommand extends Command {
@@ -42,7 +43,7 @@ public class FlyCommand extends Command {
         }
 
         Integer accid = c.getAccID();
-        Server srv = Server.getInstance();
+        FlyStateService srv = FlyStateService.getInstance();
         String sendStr = "";
         if (params[0].equalsIgnoreCase("on")) {
             sendStr += "Enabled Fly feature (F1). With fly active, you cannot attack.";
