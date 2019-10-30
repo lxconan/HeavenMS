@@ -1349,15 +1349,15 @@ public class MapleClient {
     }
 
     public short getAvailableCharacterSlots() {
-        return (short) Math.max(0, characterSlots - Server.getInstance().getAccountCharacterCount(accId));
+        return (short) Math.max(0, characterSlots - WorldCharacterServer.getInstance().getAccountCharacterCount(accId));
     }
 
     public short getAvailableCharacterWorldSlots() {
-        return (short) Math.max(0, characterSlots - Server.getInstance().getAccountWorldCharacterCount(accId, world));
+        return (short) Math.max(0, characterSlots - WorldCharacterServer.getInstance().getAccountWorldCharacterCount(accId, world));
     }
 
     public short getAvailableCharacterWorldSlots(int world) {
-        return (short) Math.max(0, characterSlots - Server.getInstance().getAccountWorldCharacterCount(accId, world));
+        return (short) Math.max(0, characterSlots - WorldCharacterServer.getInstance().getAccountWorldCharacterCount(accId, world));
     }
 
     public short getCharacterSlots() {

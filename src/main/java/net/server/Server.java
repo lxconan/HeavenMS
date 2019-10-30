@@ -767,14 +767,6 @@ public class Server {
         return activeFly.contains(accountid);
     }
 
-    public short getAccountCharacterCount(Integer accountId) {
-        return worldCharacterServer.getAccountCharacterCount(accountId);
-    }
-
-    public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
-        return worldCharacterServer.getAccountWorldCharacterCount(accountId, worldId);
-    }
-
     public void updateCharacterEntry(MapleCharacter chr) {
         worldCharacterServer.updateCharacterEntry(chr);
     }

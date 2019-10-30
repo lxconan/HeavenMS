@@ -65,7 +65,7 @@ public class WorldCharacterServer {
         }
     }
 
-    short getAccountCharacterCount(Integer accountId) {
+    public short getAccountCharacterCount(Integer accountId) {
         lgnRLock.lock();
         try {
             return accountCharacterCount.get(accountId);
@@ -74,7 +74,7 @@ public class WorldCharacterServer {
         }
     }
 
-    short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
+    public short getAccountWorldCharacterCount(Integer accountId, Integer worldId) {
         lgnRLock.lock();
         try {
             short count = 0;

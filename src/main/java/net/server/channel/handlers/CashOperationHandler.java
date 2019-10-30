@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import net.AbstractMaplePacketHandler;
 import net.server.Server;
+import net.server.WorldCharacterServer;
 import net.server.WorldServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -419,7 +420,7 @@ public final class CashOperationHandler extends AbstractMaplePacketHandler {
                         } else if(newWorldSelection == c.getWorld()) {
                             c.announce(MaplePacketCreator.showCashShopMessage((byte)0xDC));
                             return;
-                        } else if(c.getAvailableCharacterWorldSlots(newWorldSelection) < 1 || Server.getInstance().getAccountWorldCharacterCount(c.getAccID(), newWorldSelection) >= 3) {
+                        } else if(c.getAvailableCharacterWorldSlots(newWorldSelection) < 1 || WorldCharacterServer.getInstance().getAccountWorldCharacterCount(c.getAccID(), newWorldSelection) >= 3) {
                             c.announce(MaplePacketCreator.showCashShopMessage((byte)0xDF));
                             return;
                         } else if(chr.registerWorldTransfer(newWorldSelection)) {
