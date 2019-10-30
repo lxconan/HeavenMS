@@ -125,10 +125,6 @@ public class Server {
         return availableDeveloperRoom;
     }
 
-    public void toggleCoupon(Integer couponId) {
-        couponService.toggleCoupon(couponId);
-    }
-
     public void updateActiveCoupons() throws SQLException {
         couponService.updateActiveCoupons();
     }

@@ -26,6 +26,7 @@ package client.command.commands.gm3;
 import client.command.Command;
 import client.MapleClient;
 import client.MapleCharacter;
+import net.server.CouponService;
 import net.server.Server;
 
 public class ToggleCouponCommand extends Command {
@@ -40,6 +41,6 @@ public class ToggleCouponCommand extends Command {
             player.yellowMessage("Syntax: !togglecoupon <itemid>");
             return;
         }
-        Server.getInstance().toggleCoupon(Integer.parseInt(params[0]));
+        CouponService.getInstance().toggleCoupon(Integer.parseInt(params[0]));
     }
 }
