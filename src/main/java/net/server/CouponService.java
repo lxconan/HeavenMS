@@ -1,6 +1,7 @@
 package net.server;
 
 import client.MapleCharacter;
+import config.YamlConfig;
 import constants.inventory.ItemConstants;
 import net.server.world.World;
 import tools.DatabaseConnection;
@@ -107,5 +108,33 @@ public class CouponService {
                 }
             }
         }
+    }
+
+    public void cleanNxcodeCoupons(Connection con) throws SQLException {
+        if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS) return;
+
+        long timeClear = System.currentTimeMillis() - 14 * 24 * 60 * 60 * 1000;
+
+        PreparedStatement ps = con.prepareStatement("SELECT * FROM nxcode WHERE expiration <= ?");
+        ps.setLong(1, timeClear);
+        ResultSet rs = ps.executeQuery();
+
+        if (!rs.isLast()) {
+            PreparedStatement ps2 = con.prepareStatement("DELETE FROM nxcode_items WHERE codeid = ?");
+            while (rs.next()) {
+                ps2.setInt(1, rs.getInt("id"));
+                ps2.addBatch();
+            }
+            ps2.executeBatch();
+            ps2.close();
+
+            ps2 = con.prepareStatement("DELETE FROM nxcode WHERE expiration <= ?");
+            ps2.setLong(1, timeClear);
+            ps2.executeUpdate();
+            ps2.close();
+        }
+
+        rs.close();
+        ps.close();
     }
 }
