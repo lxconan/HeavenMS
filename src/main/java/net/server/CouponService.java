@@ -24,10 +24,10 @@ public class CouponService {
         return couponRates;
     }
 
-    public void loadCouponRates(Connection c) throws SQLException {
+    void loadCouponRates(Connection c) throws SQLException {
         try (
             PreparedStatement ps = c.prepareStatement("SELECT couponid, rate FROM nxcoupons");
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery()
         ) {
             while (rs.next()) {
                 int cid = rs.getInt("couponid");
@@ -67,7 +67,7 @@ public class CouponService {
         }
     }
 
-    public void updateActiveCoupons() throws SQLException {
+    public void updateActiveCoupons() {
         synchronized (activeCoupons) {
             activeCoupons.clear();
             Calendar c = Calendar.getInstance();
@@ -110,7 +110,7 @@ public class CouponService {
         }
     }
 
-    public void cleanNxcodeCoupons(Connection con) throws SQLException {
+    void cleanNxcodeCoupons(Connection con) throws SQLException {
         if (!YamlConfig.config.server.USE_CLEAR_OUTDATED_COUPONS) return;
 
         long timeClear = System.currentTimeMillis() - 14 * 24 * 60 * 60 * 1000;

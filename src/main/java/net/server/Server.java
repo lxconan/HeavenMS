@@ -78,10 +78,9 @@ public class Server {
     private static Server instance = new Server();
     public static Server getInstance() { return instance; }
 
-    private final Set<Integer> activeFly = new HashSet<>();
+    private final FlyStateService flyStateService = new FlyStateService();
 
     private final CouponService couponService = CouponService.getInstance();
-
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
     private final Properties subnetInfo = new Properties();
@@ -599,15 +598,11 @@ public class Server {
     }
 
     public void changeFly(Integer accountid, boolean canFly) {
-        if (canFly) {
-            activeFly.add(accountid);
-        } else {
-            activeFly.remove(accountid);
-        }
+        flyStateService.changeFly(accountid, canFly);
     }
 
     public boolean canFly(Integer accountid) {
-        return activeFly.contains(accountid);
+        return flyStateService.canFly(accountid);
     }
 
     private void applyAllNameChanges() {
