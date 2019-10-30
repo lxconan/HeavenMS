@@ -80,8 +80,8 @@ public class Server {
     public static Server getInstance() { return instance; }
 
     private final Set<Integer> activeFly = new HashSet<>();
-    private final Map<Integer, Integer> couponRates = new HashMap<>(30);
-    private final List<Integer> activeCoupons = new LinkedList<>();
+
+    private final CouponService couponService = new CouponService();
 
     private IoAcceptor acceptor;
     private final WorldServer worldServer = WorldServer.getInstance();
@@ -127,7 +127,7 @@ public class Server {
     }
 
     public Map<Integer, Integer> getCouponRates() {
-        return couponRates;
+        return couponService.getCouponRates();
     }
 
     private void cleanNxcodeCoupons(Connection con) throws SQLException {
@@ -158,25 +158,8 @@ public class Server {
         ps.close();
     }
 
-    private void loadCouponRates(Connection c) throws SQLException {
-        PreparedStatement ps = c.prepareStatement("SELECT couponid, rate FROM nxcoupons");
-        ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-            int cid = rs.getInt("couponid");
-            int rate = rs.getInt("rate");
-
-            couponRates.put(cid, rate);
-        }
-
-        rs.close();
-        ps.close();
-    }
-
     public List<Integer> getActiveCoupons() {
-        synchronized (activeCoupons) {
-            return activeCoupons;
-        }
+        return couponService.getActiveCoupons();
     }
 
     public void commitActiveCoupons() {
@@ -191,11 +174,11 @@ public class Server {
 
     public void toggleCoupon(Integer couponId) {
         if (ItemConstants.isRateCoupon(couponId)) {
-            synchronized (activeCoupons) {
-                if (activeCoupons.contains(couponId)) {
-                    activeCoupons.remove(couponId);
+            synchronized (couponService.activeCoupons) {
+                if (couponService.activeCoupons.contains(couponId)) {
+                    couponService.activeCoupons.remove(couponId);
                 } else {
-                    activeCoupons.add(couponId);
+                    couponService.activeCoupons.add(couponId);
                 }
 
                 commitActiveCoupons();
@@ -204,8 +187,8 @@ public class Server {
     }
 
     public void updateActiveCoupons() throws SQLException {
-        synchronized (activeCoupons) {
-            activeCoupons.clear();
+        synchronized (couponService.activeCoupons) {
+            couponService.activeCoupons.clear();
             Calendar c = Calendar.getInstance();
 
             int weekDay = c.get(Calendar.DAY_OF_WEEK);
@@ -225,7 +208,7 @@ public class Server {
 
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
-                    activeCoupons.add(rs.getInt("couponid"));
+                    couponService.activeCoupons.add(rs.getInt("couponid"));
                 }
 
                 rs.close();
@@ -305,7 +288,7 @@ public class Server {
             ps.close();
 
             cleanNxcodeCoupons(c);
-            loadCouponRates(c);
+            couponService.loadCouponRates(c);
             updateActiveCoupons();
 
             c.close();
