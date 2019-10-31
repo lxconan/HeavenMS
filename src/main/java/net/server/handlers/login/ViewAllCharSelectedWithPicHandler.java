@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import net.AbstractMaplePacketHandler;
+import net.server.LoginStateService;
 import net.server.Server;
 import net.server.WorldCharacterServer;
 import net.server.WorldServer;
@@ -62,7 +63,6 @@ public class ViewAllCharSelectedWithPicHandler extends AbstractMaplePacketHandle
 
         IoSession session = c.getSession();
 
-        Server server = Server.getInstance();
         if(!WorldCharacterServer.getInstance().haveCharacterEntry(c.getAccID(), charId)) {
             MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
             return;
@@ -91,7 +91,7 @@ public class ViewAllCharSelectedWithPicHandler extends AbstractMaplePacketHandle
                 return;
             }
 
-            server.unregisterLoginState(c);
+            LoginStateService.getInstance().unregisterLoginState(c);
             c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION);
             WorldCharacterServer.getInstance().setCharacterInTransition(session, charId);
 

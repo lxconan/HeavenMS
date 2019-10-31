@@ -22,7 +22,6 @@
 package net.server;
 
 import client.MapleCharacter;
-import client.MapleClient;
 import client.MapleFamily;
 import client.SkillFactory;
 import client.command.CommandsExecutor;
@@ -35,10 +34,7 @@ import constants.net.ServerConstants;
 import net.MapleServerHandler;
 import net.mina.MapleCodecFactory;
 import net.server.audit.ThreadTracker;
-import net.server.audit.locks.MonitoredLockType;
-import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 import net.server.channel.Channel;
-import net.server.coordinator.session.MapleSessionCoordinator;
 import net.server.guild.MapleAlliance;
 import net.server.guild.MapleGuild;
 import net.server.guild.MapleGuildCharacter;
@@ -70,8 +66,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.Lock;
 
 public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
@@ -146,7 +140,7 @@ public class Server {
         TimerManager tMan = TimerManager.getInstance();
         tMan.start();
         tMan.register(tMan.purge(), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
-        disconnectIdlesOnLoginTask();
+        loginStateService.disconnectIdlesOnLoginTask();
 
         long timeLeft = ServerTimer.getTimeLeftForNextHour();
         tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
@@ -621,69 +615,8 @@ public class Server {
         }
     }
 
-    public void registerLoginState(MapleClient c) {
-        loginStateService.srvLock.lock();
-        try {
-            loginStateService.inLoginState.put(c, System.currentTimeMillis() + 600000);
-        } finally {
-            loginStateService.srvLock.unlock();
-        }
-    }
-
-    public void unregisterLoginState(MapleClient c) {
-        loginStateService.srvLock.lock();
-        try {
-            loginStateService.inLoginState.remove(c);
-        } finally {
-            loginStateService.srvLock.unlock();
-        }
-    }
-
-    private void disconnectIdlesOnLoginState() {
-        List<MapleClient> toDisconnect = new LinkedList<>();
-
-        loginStateService.srvLock.lock();
-        try {
-            long timeNow = System.currentTimeMillis();
-
-            for (Entry<MapleClient, Long> mc : loginStateService.inLoginState.entrySet()) {
-                if (timeNow > mc.getValue()) {
-                    toDisconnect.add(mc.getKey());
-                }
-            }
-
-            for (MapleClient c : toDisconnect) {
-                loginStateService.inLoginState.remove(c);
-            }
-        } finally {
-            loginStateService.srvLock.unlock();
-        }
-
-        for (MapleClient c : toDisconnect) {    // thanks Lei for pointing a deadlock issue with srvLock
-            if (c.isLoggedIn()) {
-                c.disconnect(false, false);
-            } else {
-                MapleSessionCoordinator.getInstance().closeSession(c.getSession(), true);
-            }
-        }
-    }
-
-    private void disconnectIdlesOnLoginTask() {
-        TimerManager.getInstance().register(new Runnable() {
-            @Override
-            public void run() {
-                disconnectIdlesOnLoginState();
-            }
-        }, 300000);
-    }
-
     public final Runnable shutdown(final boolean restart) {//no player should be online when trying to shutdown!
-        return new Runnable() {
-            @Override
-            public void run() {
-                shutdownInternal(restart);
-            }
-        };
+        return () -> shutdownInternal(restart);
     }
 
     private synchronized void shutdownInternal(boolean restart) {

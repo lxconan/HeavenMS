@@ -46,12 +46,9 @@ import java.util.concurrent.locks.Lock;
 
 import config.YamlConfig;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
-import net.server.ServerTimer;
-import net.server.WorldCharacterServer;
-import net.server.WorldServer;
+import net.server.*;
 import tools.*;
 
-import net.server.Server;
 import net.server.coordinator.session.MapleSessionCoordinator;
 import net.server.coordinator.session.MapleSessionCoordinator.AntiMulticlientResult;
 import net.server.channel.Channel;
@@ -1079,7 +1076,7 @@ public class MapleClient {
             this.player.empty(true); // clears schedules and stuff
         }
 
-        Server.getInstance().unregisterLoginState(this);
+        LoginStateService.getInstance().unregisterLoginState(this);
 
         this.accountName = null;
         this.macs = null;
