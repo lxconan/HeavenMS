@@ -84,12 +84,12 @@ public class Server {
     private final Properties subnetInfo = new Properties();
 
     private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
-    private final Map<MapleClient, Long> inLoginState = new HashMap<>(100);
+
+    private final LoginStateService loginStateService = LoginStateService.getInstance();
 
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
     private final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
 
-    private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
@@ -622,41 +622,41 @@ public class Server {
     }
 
     public void registerLoginState(MapleClient c) {
-        srvLock.lock();
+        loginStateService.srvLock.lock();
         try {
-            inLoginState.put(c, System.currentTimeMillis() + 600000);
+            loginStateService.inLoginState.put(c, System.currentTimeMillis() + 600000);
         } finally {
-            srvLock.unlock();
+            loginStateService.srvLock.unlock();
         }
     }
 
     public void unregisterLoginState(MapleClient c) {
-        srvLock.lock();
+        loginStateService.srvLock.lock();
         try {
-            inLoginState.remove(c);
+            loginStateService.inLoginState.remove(c);
         } finally {
-            srvLock.unlock();
+            loginStateService.srvLock.unlock();
         }
     }
 
     private void disconnectIdlesOnLoginState() {
         List<MapleClient> toDisconnect = new LinkedList<>();
 
-        srvLock.lock();
+        loginStateService.srvLock.lock();
         try {
             long timeNow = System.currentTimeMillis();
 
-            for (Entry<MapleClient, Long> mc : inLoginState.entrySet()) {
+            for (Entry<MapleClient, Long> mc : loginStateService.inLoginState.entrySet()) {
                 if (timeNow > mc.getValue()) {
                     toDisconnect.add(mc.getKey());
                 }
             }
 
             for (MapleClient c : toDisconnect) {
-                inLoginState.remove(c);
+                loginStateService.inLoginState.remove(c);
             }
         } finally {
-            srvLock.unlock();
+            loginStateService.srvLock.unlock();
         }
 
         for (MapleClient c : toDisconnect) {    // thanks Lei for pointing a deadlock issue with srvLock
