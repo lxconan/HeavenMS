@@ -138,7 +138,7 @@ public class MapleAlliance {
                     chr.saveGuildStatus();
                 }
 
-                Server.getInstance().addAlliance(id, alliance);
+                GuildAndAllianceService.getInstance().addAlliance(id, alliance);
 
                 int worldid = guildMasters.get(0).getWorld();
                 Server.getInstance().allianceMessage(id, MaplePacketCreator.updateAllianceInfo(alliance, worldid), -1, -1);
