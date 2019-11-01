@@ -1,7 +1,10 @@
 package net.server;
 
+import client.MapleCharacter;
 import net.server.guild.MapleAlliance;
 import net.server.guild.MapleGuild;
+import net.server.guild.MapleGuildCharacter;
+import tools.FilePrinter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,5 +109,121 @@ public class GuildAndAllianceService {
 
     public int createGuild(int leaderId, String name) {
         return MapleGuild.createGuild(leaderId, name);
+    }
+
+    public MapleGuild getGuildByName(String name) {
+        synchronized (guilds) {
+            for (MapleGuild mg : guilds.values()) {
+                if (mg.getName().equalsIgnoreCase(name)) {
+                    return mg;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public MapleGuild getGuild(int id) {
+        synchronized (guilds) {
+            if (guilds.get(id) != null) {
+                return guilds.get(id);
+            }
+
+            return null;
+        }
+    }
+
+    public MapleGuild getGuild(int id, int world, MapleCharacter mc) {
+        synchronized (guilds) {
+            MapleGuild g = guilds.get(id);
+            if (g != null) {
+                return g;
+            }
+
+            g = new MapleGuild(id, world);
+            if (g.getId() == -1) {
+                return null;
+            }
+
+            if (mc != null) {
+                MapleGuildCharacter mgc = g.getMGC(mc.getId());
+                if (mgc != null) {
+                    mc.setMGC(mgc);
+                    mgc.setCharacter(mc);
+                } else {
+                    FilePrinter.printError(FilePrinter.GUILD_CHAR_ERROR, "Could not find " + mc.getName() + " when loading guild " + id + ".");
+                }
+
+                g.setOnline(mc.getId(), true, mc.getClient().getChannel());
+            }
+
+            guilds.put(id, g);
+            return g;
+        }
+    }
+
+    public MapleGuild getGuild(int id, int world) {
+        return getGuild(id, world, null);
+    }
+
+    public void setGuildMemberOnline(MapleCharacter mc, boolean bOnline, int channel) {
+        MapleGuild g = getGuild(mc.getGuildId(), mc.getWorld(), mc);
+        g.setOnline(mc.getId(), bOnline, channel);
+    }
+
+    public int addGuildMember(MapleGuildCharacter mgc, MapleCharacter chr) {
+        MapleGuild g = guilds.get(mgc.getGuildId());
+        if (g != null) {
+            return g.addGuildMember(mgc, chr);
+        }
+        return 0;
+    }
+
+    public boolean setGuildAllianceId(int gId, int aId) {
+        MapleGuild guild = guilds.get(gId);
+        if (guild != null) {
+            guild.setAllianceId(aId);
+            return true;
+        }
+        return false;
+    }
+
+    public void resetAllianceGuildPlayersRank(int gId) {
+        guilds.get(gId).resetAllianceGuildPlayersRank();
+    }
+
+    public void leaveGuild(MapleGuildCharacter mgc) {
+        MapleGuild g = guilds.get(mgc.getGuildId());
+        if (g != null) {
+            g.leaveGuild(mgc);
+        }
+    }
+
+    public void guildChat(int gid, String name, int cid, String msg) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.guildChat(name, cid, msg);
+        }
+    }
+
+    public void changeRank(int gid, int cid, int newRank) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.changeRank(cid, newRank);
+        }
+    }
+
+    public void expelMember(MapleGuildCharacter initiator, String name, int cid) {
+        MapleGuild g = guilds.get(initiator.getGuildId());
+        if (g != null) {
+            g.expelMember(initiator, name, cid);
+        }
+    }
+
+    public void setGuildNotice(int gid, String notice) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.setGuildNotice(notice);
+        }
     }
 }
