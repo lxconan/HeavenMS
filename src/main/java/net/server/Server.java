@@ -233,32 +233,15 @@ public class Server {
     }
 
     public MapleAlliance getAlliance(int id) {
-        synchronized (guildAndAllianceService.alliances) {
-            if (guildAndAllianceService.alliances.containsKey(id)) {
-                return guildAndAllianceService.alliances.get(id);
-            }
-            return null;
-        }
+        return guildAndAllianceService.getAlliance(id);
     }
 
     public void addAlliance(int id, MapleAlliance alliance) {
-        synchronized (guildAndAllianceService.alliances) {
-            if (!guildAndAllianceService.alliances.containsKey(id)) {
-                guildAndAllianceService.alliances.put(id, alliance);
-            }
-        }
+        guildAndAllianceService.addAlliance(id, alliance);
     }
 
     public void disbandAlliance(int id) {
-        synchronized (guildAndAllianceService.alliances) {
-            MapleAlliance alliance = guildAndAllianceService.alliances.get(id);
-            if (alliance != null) {
-                for (Integer gid : alliance.getGuilds()) {
-                    guildAndAllianceService.guilds.get(gid).setAllianceId(0);
-                }
-                guildAndAllianceService.alliances.remove(id);
-            }
-        }
+        guildAndAllianceService.disbandAlliance(id);
     }
 
     public void allianceMessage(int id, final byte[] packet, int exception, int guildex) {
