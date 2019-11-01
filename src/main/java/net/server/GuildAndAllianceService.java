@@ -40,4 +40,71 @@ public class GuildAndAllianceService {
             }
         }
     }
+
+    public void allianceMessage(int id, final byte[] packet, int exception, int guildex) {
+        MapleAlliance alliance = alliances.get(id);
+        if (alliance != null) {
+            for (Integer gid : alliance.getGuilds()) {
+                if (guildex == gid) {
+                    continue;
+                }
+                MapleGuild guild = guilds.get(gid);
+                if (guild != null) {
+                    guild.broadcast(packet, exception);
+                }
+            }
+        }
+    }
+
+    public boolean addGuildtoAlliance(int aId, int guildId) {
+        MapleAlliance alliance = alliances.get(aId);
+        if (alliance != null) {
+            alliance.addGuild(guildId);
+            guilds.get(guildId).setAllianceId(aId);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGuildFromAlliance(int aId, int guildId) {
+        MapleAlliance alliance = alliances.get(aId);
+        if (alliance != null) {
+            alliance.removeGuild(guildId);
+            guilds.get(guildId).setAllianceId(0);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setAllianceRanks(int aId, String[] ranks) {
+        MapleAlliance alliance = alliances.get(aId);
+        if (alliance != null) {
+            alliance.setRankTitle(ranks);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setAllianceNotice(int aId, String notice) {
+        MapleAlliance alliance = alliances.get(aId);
+        if (alliance != null) {
+            alliance.setNotice(notice);
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    public boolean increaseAllianceCapacity(int aId, int inc) {
+        MapleAlliance alliance = alliances.get(aId);
+        if (alliance != null) {
+            alliance.increaseCapacity(inc);
+            return true;
+        }
+        return false;
+    }
+
+    public int createGuild(int leaderId, String name) {
+        return MapleGuild.createGuild(leaderId, name);
+    }
 }

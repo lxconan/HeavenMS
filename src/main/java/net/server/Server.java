@@ -245,69 +245,34 @@ public class Server {
     }
 
     public void allianceMessage(int id, final byte[] packet, int exception, int guildex) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(id);
-        if (alliance != null) {
-            for (Integer gid : alliance.getGuilds()) {
-                if (guildex == gid) {
-                    continue;
-                }
-                MapleGuild guild = guildAndAllianceService.guilds.get(gid);
-                if (guild != null) {
-                    guild.broadcast(packet, exception);
-                }
-            }
-        }
+        guildAndAllianceService.allianceMessage(id, packet, exception, guildex);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean addGuildtoAlliance(int aId, int guildId) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(aId);
-        if (alliance != null) {
-            alliance.addGuild(guildId);
-            guildAndAllianceService.guilds.get(guildId).setAllianceId(aId);
-            return true;
-        }
-        return false;
+        return guildAndAllianceService.addGuildtoAlliance(aId, guildId);
     }
 
+    @SuppressWarnings("InfiniteRecursion")
     public boolean removeGuildFromAlliance(int aId, int guildId) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(aId);
-        if (alliance != null) {
-            alliance.removeGuild(guildId);
-            guildAndAllianceService.guilds.get(guildId).setAllianceId(0);
-            return true;
-        }
-        return false;
+        return guildAndAllianceService.removeGuildFromAlliance(aId, guildId);
     }
 
     public boolean setAllianceRanks(int aId, String[] ranks) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(aId);
-        if (alliance != null) {
-            alliance.setRankTitle(ranks);
-            return true;
-        }
-        return false;
+        return guildAndAllianceService.setAllianceRanks(aId, ranks);
     }
 
     public boolean setAllianceNotice(int aId, String notice) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(aId);
-        if (alliance != null) {
-            alliance.setNotice(notice);
-            return true;
-        }
-        return false;
+        return guildAndAllianceService.setAllianceNotice(aId, notice);
     }
 
+    @SuppressWarnings("unused")
     public boolean increaseAllianceCapacity(int aId, int inc) {
-        MapleAlliance alliance = guildAndAllianceService.alliances.get(aId);
-        if (alliance != null) {
-            alliance.increaseCapacity(inc);
-            return true;
-        }
-        return false;
+        return guildAndAllianceService.increaseAllianceCapacity(aId, inc);
     }
 
     public int createGuild(int leaderId, String name) {
-        return MapleGuild.createGuild(leaderId, name);
+        return guildAndAllianceService.createGuild(leaderId, name);
     }
 
     public MapleGuild getGuildByName(String name) {
