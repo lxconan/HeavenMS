@@ -348,22 +348,12 @@ public class Server {
         return guildAndAllianceService.increaseGuildCapacity(gid);
     }
 
-    public void gainGP(int gid, int amount) {
-        MapleGuild g = guildAndAllianceService.guilds.get(gid);
-        if (g != null) {
-            g.gainGP(amount);
-        }
-    }
-
     public void guildMessage(int gid, byte[] packet) {
-        guildMessage(gid, packet, -1);
+        guildAndAllianceService.guildMessage(gid, packet);
     }
 
     public void guildMessage(int gid, byte[] packet, int exception) {
-        MapleGuild g = guildAndAllianceService.guilds.get(gid);
-        if (g != null) {
-            g.broadcast(packet, exception);
-        }
+        guildAndAllianceService.guildMessage(gid, packet, exception);
     }
 
     public PlayerBuffStorage getPlayerBuffStorage() {

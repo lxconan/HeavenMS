@@ -263,4 +263,15 @@ public class GuildAndAllianceService {
         }
         return false;
     }
+
+    public void guildMessage(int gid, byte[] packet, int exception) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.broadcast(packet, exception);
+        }
+    }
+
+    public void guildMessage(int gid, byte[] packet) {
+        guildMessage(gid, packet, -1);
+    }
 }
