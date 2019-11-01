@@ -361,32 +361,15 @@ public class Server {
     }
 
     public void deleteGuildCharacter(MapleCharacter mc) {
-        setGuildMemberOnline(mc, false, (byte) -1);
-        if (mc.getMGC().getGuildRank() > 1) {
-            leaveGuild(mc.getMGC());
-        } else {
-            disbandGuild(mc.getMGC().getGuildId());
-        }
+        guildAndAllianceService.deleteGuildCharacter(mc);
     }
 
     public void deleteGuildCharacter(MapleGuildCharacter mgc) {
-        if (mgc.getCharacter() != null) setGuildMemberOnline(mgc.getCharacter(), false, (byte) -1);
-        if (mgc.getGuildRank() > 1) {
-            leaveGuild(mgc);
-        } else {
-            disbandGuild(mgc.getGuildId());
-        }
+        guildAndAllianceService.deleteGuildCharacter(mgc);
     }
 
     public void reloadGuildCharacters(int world) {
-        World worlda = worldServer.getWorld(world);
-        for (MapleCharacter mc : worlda.getPlayerStorage().getAllCharacters()) {
-            if (mc.getGuildId() > 0) {
-                setGuildMemberOnline(mc, true, worlda.getId());
-                memberLevelJobUpdate(mc.getMGC());
-            }
-        }
-        worlda.reloadGuildSummary();
+        guildAndAllianceService.reloadGuildCharacters(world);
     }
 
     private void applyAllNameChanges() {

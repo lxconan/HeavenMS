@@ -4,6 +4,7 @@ import client.MapleCharacter;
 import net.server.guild.MapleAlliance;
 import net.server.guild.MapleGuild;
 import net.server.guild.MapleGuildCharacter;
+import net.server.world.World;
 import tools.FilePrinter;
 
 import java.util.HashMap;
@@ -12,8 +13,10 @@ import java.util.Map;
 public class GuildAndAllianceService {
     private static final GuildAndAllianceService instance = new GuildAndAllianceService();
     public static GuildAndAllianceService getInstance() {return instance;}
-    public final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
-    public final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
+
+    private final Map<Integer, MapleGuild> guilds = new HashMap<>(100);
+    private final Map<Integer, MapleAlliance> alliances = new HashMap<>(100);
+    private final WorldServer worldServer = WorldServer.getInstance();
 
     public MapleAlliance getAlliance(int id) {
         synchronized (alliances) {
@@ -273,5 +276,34 @@ public class GuildAndAllianceService {
 
     public void guildMessage(int gid, byte[] packet) {
         guildMessage(gid, packet, -1);
+    }
+
+    public void deleteGuildCharacter(MapleCharacter mc) {
+        setGuildMemberOnline(mc, false, (byte) -1);
+        if (mc.getMGC().getGuildRank() > 1) {
+            leaveGuild(mc.getMGC());
+        } else {
+            disbandGuild(mc.getMGC().getGuildId());
+        }
+    }
+
+    public void deleteGuildCharacter(MapleGuildCharacter mgc) {
+        if (mgc.getCharacter() != null) setGuildMemberOnline(mgc.getCharacter(), false, (byte) -1);
+        if (mgc.getGuildRank() > 1) {
+            leaveGuild(mgc);
+        } else {
+            disbandGuild(mgc.getGuildId());
+        }
+    }
+
+    public void reloadGuildCharacters(int world) {
+        World worlda = worldServer.getWorld(world);
+        for (MapleCharacter mc : worlda.getPlayerStorage().getAllCharacters()) {
+            if (mc.getGuildId() > 0) {
+                setGuildMemberOnline(mc, true, worlda.getId());
+                memberLevelJobUpdate(mc.getMGC());
+            }
+        }
+        worlda.reloadGuildSummary();
     }
 }
