@@ -5016,7 +5016,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
     public MapleAlliance getAlliance() {
         if(mgc != null) {
             try {
-                return Server.getInstance().getAlliance(getGuild().getAllianceId());
+                return GuildAndAllianceService.getInstance().getAlliance(getGuild().getAllianceId());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

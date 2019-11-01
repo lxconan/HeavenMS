@@ -25,6 +25,7 @@ import client.MapleCharacter;
 import client.MapleClient;
 import net.AbstractMaplePacketHandler;
 import net.opcodes.SendOpcode;
+import net.server.GuildAndAllianceService;
 import net.server.Server;
 import net.server.WorldServer;
 import net.server.guild.MapleGuild;
@@ -105,7 +106,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
                 int allianceid = slea.readInt();
                 //slea.readMapleAsciiString();  //recruiter's guild name
 
-                alliance = Server.getInstance().getAlliance(allianceid);
+                alliance = GuildAndAllianceService.getInstance().getAlliance(allianceid);
                 if (alliance == null) {
                     return;
                 }

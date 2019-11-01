@@ -1197,7 +1197,6 @@ public class MaplePacketCreator {
      * Gets a packet to spawn a special map object.
      *
      * @param summon
-     * @param skillLevel The level of the skill used.
      * @param animated   Animated spawn?
      * @return The spawn packet for the map object.
      */
@@ -2884,7 +2883,7 @@ public class MaplePacketCreator {
             guildName = mg.getName();
 
             MapleAlliance alliance =
-                Server.getInstance().getAlliance(chr.getGuild().getAllianceId());
+                GuildAndAllianceService.getInstance().getAlliance(chr.getGuild().getAllianceId());
             if (alliance != null) {
                 allianceName = alliance.getName();
             }
@@ -3025,11 +3024,6 @@ public class MaplePacketCreator {
              mplew.writeShort(0);
              mplew.write(0);*/
 
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
     public static byte[] forfeitQuest(short quest) {
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(SendOpcode.SHOW_STATUS_INFO.getValue());
@@ -3039,11 +3033,6 @@ public class MaplePacketCreator {
         return mplew.getPacket();
     }
 
-    /**
-     * @param c
-     * @param quest
-     * @return
-     */
     public static byte[] completeQuest(short quest, long time) {
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(SendOpcode.SHOW_STATUS_INFO.getValue());
@@ -3053,14 +3042,6 @@ public class MaplePacketCreator {
         mplew.writeLong(getTime(time));
         return mplew.getPacket();
     }
-
-    /**
-     * @param c
-     * @param quest
-     * @param npc
-     * @param progress
-     * @return
-     */
 
     public static byte[] updateQuestInfo(short quest, int npc) {
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();

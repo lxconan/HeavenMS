@@ -25,6 +25,7 @@ import java.io.File;
 import java.sql.SQLException;
 
 import config.YamlConfig;
+import net.server.GuildAndAllianceService;
 import net.server.Server;
 import net.server.WorldServer;
 import net.server.guild.MapleAlliance;
@@ -447,7 +448,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 	}
 
         public void upgradeAlliance() {
-                MapleAlliance alliance = Server.getInstance().getAlliance(c.getPlayer().getGuild().getAllianceId());
+                MapleAlliance alliance = GuildAndAllianceService.getInstance().getAlliance(c.getPlayer().getGuild().getAllianceId());
                 alliance.increaseCapacity(1);
 
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
@@ -469,7 +470,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         }
 
         public int getAllianceCapacity() {
-                return Server.getInstance().getAlliance(getPlayer().getGuild().getAllianceId()).getCapacity();
+                return GuildAndAllianceService.getInstance().getAlliance(getPlayer().getGuild().getAllianceId()).getCapacity();
         }
 
 	public boolean hasMerchant() {

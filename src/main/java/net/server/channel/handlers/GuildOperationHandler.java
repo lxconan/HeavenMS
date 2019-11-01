@@ -22,6 +22,7 @@
 package net.server.channel.handlers;
 
 import config.YamlConfig;
+import net.server.GuildAndAllianceService;
 import net.server.guild.MapleGuildResponse;
 import net.server.guild.MapleGuild;
 import constants.game.GameConstants;
@@ -147,7 +148,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 c.announce(MaplePacketCreator.showGuildInfo(mc));
 
                 allianceId = mc.getGuild().getAllianceId();
-                if(allianceId > 0) Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                if(allianceId > 0) GuildAndAllianceService.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
 
                 mc.saveGuildStatus(); // update database
                 mc.getMap().broadcastMessage(mc, MaplePacketCreator.guildNameChanged(mc.getId(), mc.getGuild().getName())); // thanks Vcoc for pointing out an issue with updating guild tooltip to players in the map
@@ -167,7 +168,9 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 Server.getInstance().leaveGuild(mc.getMGC());
 
                 c.announce(MaplePacketCreator.showGuildInfo(null));
-                if(allianceId > 0) Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                if(allianceId > 0) {
+                    GuildAndAllianceService.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                }
 
                 mc.getMGC().setGuildId(0);
                 mc.getMGC().setGuildRank(5);
@@ -185,7 +188,9 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 }
 
                 Server.getInstance().expelMember(mc.getMGC(), name, cid);
-                if(allianceId > 0) Server.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                if(allianceId > 0) {
+                    GuildAndAllianceService.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
+                }
                 break;
             case 0x0d:
                 if (mc.getGuildId() <= 0 || mc.getGuildRank() != 1) {

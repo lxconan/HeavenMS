@@ -31,10 +31,7 @@ import java.util.Map.Entry;
 
 import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
-import net.server.PlayerBuffValueHolder;
-import net.server.Server;
-import net.server.WorldCharacterServer;
-import net.server.WorldServer;
+import net.server.*;
 import net.server.channel.Channel;
 import net.server.channel.CharacterIdChannelPair;
 import net.server.guild.MapleAlliance;
@@ -300,7 +297,7 @@ public final class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
                         c.announce(MaplePacketCreator.showGuildInfo(player));
                         int allianceId = player.getGuild().getAllianceId();
                         if (allianceId > 0) {
-                            MapleAlliance newAlliance = server.getAlliance(allianceId);
+                            MapleAlliance newAlliance = GuildAndAllianceService.getInstance().getAlliance(allianceId);
                             if (newAlliance == null) {
                                 newAlliance = MapleAlliance.loadAlliance(allianceId);
                                 if (newAlliance != null) {
