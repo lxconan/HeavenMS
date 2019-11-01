@@ -237,16 +237,6 @@ public class Server {
         guildAndAllianceService.allianceMessage(id, packet, exception, guildex);
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    public boolean addGuildtoAlliance(int aId, int guildId) {
-        return guildAndAllianceService.addGuildtoAlliance(aId, guildId);
-    }
-
-    @SuppressWarnings("InfiniteRecursion")
-    public boolean removeGuildFromAlliance(int aId, int guildId) {
-        return guildAndAllianceService.removeGuildFromAlliance(aId, guildId);
-    }
-
     public boolean setAllianceRanks(int aId, String[] ranks) {
         return guildAndAllianceService.setAllianceRanks(aId, ranks);
     }

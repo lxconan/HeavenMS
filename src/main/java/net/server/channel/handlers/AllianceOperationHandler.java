@@ -122,7 +122,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
 
                 int guildid = chr.getGuildId();
 
-                Server.getInstance().addGuildtoAlliance(alliance.getId(), guildid);
+                GuildAndAllianceService.getInstance().addGuildtoAlliance(alliance.getId(), guildid);
                 Server.getInstance().resetAllianceGuildPlayersRank(guildid);
 
                 chr.getMGC().setAllianceRank(2);
@@ -148,7 +148,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
                 }
 
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.removeGuildFromAlliance(alliance, guildid, c.getWorld()), -1, -1);
-                Server.getInstance().removeGuildFromAlliance(alliance.getId(), guildid);
+                GuildAndAllianceService.getInstance().removeGuildFromAlliance(alliance.getId(), guildid);
 
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);

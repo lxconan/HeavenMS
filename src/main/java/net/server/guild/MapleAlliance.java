@@ -346,7 +346,7 @@ public class MapleAlliance {
         }
 
         srv.allianceMessage(alliance.getId(), MaplePacketCreator.removeGuildFromAlliance(alliance, guildId, worldId), -1, -1);
-        srv.removeGuildFromAlliance(alliance.getId(), guildId);
+        GuildAndAllianceService.getInstance().removeGuildFromAlliance(alliance.getId(), guildId);
         removeGuildFromAllianceOnDb(guildId);
 
         srv.allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, worldId), -1, -1);
