@@ -6,6 +6,9 @@ import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 import net.server.coordinator.session.MapleSessionCoordinator;
 import server.TimerManager;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +21,12 @@ public class LoginStateService {
 
     private final Map<MapleClient, Long> inLoginState = new HashMap<>(100);
     private final Lock srvLock = MonitoredReentrantLockFactory.createLock(MonitoredLockType.SERVER);
+
+    public void clearAccountLoginState(Connection c) throws SQLException {
+        try (PreparedStatement ps = c.prepareStatement("UPDATE accounts SET loggedin = 0")) {
+            ps.executeUpdate();
+        }
+    }
 
     public void registerLoginState(MapleClient c) {
         srvLock.lock();

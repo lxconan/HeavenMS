@@ -111,10 +111,9 @@ public class Server {
         Connection c = null;
         try {
             c = createConnection();
-            PreparedStatement ps = c.prepareStatement("UPDATE accounts SET loggedin = 0");
-            ps.executeUpdate();
-            ps.close();
-            ps = c.prepareStatement("UPDATE characters SET HasMerchant = 0");
+            loginStateService.clearAccountLoginState(c);
+
+            PreparedStatement ps = c.prepareStatement("UPDATE characters SET HasMerchant = 0");
             ps.executeUpdate();
             ps.close();
 
