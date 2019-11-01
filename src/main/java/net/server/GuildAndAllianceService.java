@@ -226,4 +226,41 @@ public class GuildAndAllianceService {
             g.setGuildNotice(notice);
         }
     }
+
+    public void memberLevelJobUpdate(MapleGuildCharacter mgc) {
+        MapleGuild g = guilds.get(mgc.getGuildId());
+        if (g != null) {
+            g.memberLevelJobUpdate(mgc);
+        }
+    }
+
+    public void changeRankTitle(int gid, String[] ranks) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.changeRankTitle(ranks);
+        }
+    }
+
+    public void setGuildEmblem(int gid, short bg, byte bgcolor, short logo, byte logocolor) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            g.setGuildEmblem(bg, bgcolor, logo, logocolor);
+        }
+    }
+
+    public void disbandGuild(int gid) {
+        synchronized (guilds) {
+            MapleGuild g = guilds.get(gid);
+            g.disbandGuild();
+            guilds.remove(gid);
+        }
+    }
+
+    public boolean increaseGuildCapacity(int gid) {
+        MapleGuild g = guilds.get(gid);
+        if (g != null) {
+            return g.increaseCapacity();
+        }
+        return false;
+    }
 }

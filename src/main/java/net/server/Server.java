@@ -95,6 +95,7 @@ public class Server {
         availableDeveloperRoom = true;
     }
 
+    @SuppressWarnings("unused") // used by event script
     public boolean canEnterDeveloperRoom() {
         return availableDeveloperRoom;
     }
@@ -328,40 +329,23 @@ public class Server {
     }
 
     public void memberLevelJobUpdate(MapleGuildCharacter mgc) {
-        MapleGuild g = guildAndAllianceService.guilds.get(mgc.getGuildId());
-        if (g != null) {
-            g.memberLevelJobUpdate(mgc);
-        }
+        guildAndAllianceService.memberLevelJobUpdate(mgc);
     }
 
     public void changeRankTitle(int gid, String[] ranks) {
-        MapleGuild g = guildAndAllianceService.guilds.get(gid);
-        if (g != null) {
-            g.changeRankTitle(ranks);
-        }
+        guildAndAllianceService.changeRankTitle(gid, ranks);
     }
 
     public void setGuildEmblem(int gid, short bg, byte bgcolor, short logo, byte logocolor) {
-        MapleGuild g = guildAndAllianceService.guilds.get(gid);
-        if (g != null) {
-            g.setGuildEmblem(bg, bgcolor, logo, logocolor);
-        }
+        guildAndAllianceService.setGuildEmblem(gid, bg, bgcolor, logo, logocolor);
     }
 
     public void disbandGuild(int gid) {
-        synchronized (guildAndAllianceService.guilds) {
-            MapleGuild g = guildAndAllianceService.guilds.get(gid);
-            g.disbandGuild();
-            guildAndAllianceService.guilds.remove(gid);
-        }
+        guildAndAllianceService.disbandGuild(gid);
     }
 
     public boolean increaseGuildCapacity(int gid) {
-        MapleGuild g = guildAndAllianceService.guilds.get(gid);
-        if (g != null) {
-            return g.increaseCapacity();
-        }
-        return false;
+        return guildAndAllianceService.increaseGuildCapacity(gid);
     }
 
     public void gainGP(int gid, int amount) {
