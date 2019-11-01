@@ -292,7 +292,7 @@ public class MapleAlliance {
 
             con.close();
             Server.getInstance().allianceMessage(allianceId, MaplePacketCreator.disbandAlliance(allianceId), -1, -1);
-            Server.getInstance().disbandAlliance(allianceId);
+            GuildAndAllianceService.getInstance().disbandAlliance(allianceId);
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         } finally {

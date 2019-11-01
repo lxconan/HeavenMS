@@ -233,10 +233,6 @@ public class Server {
         return subnetInfo;
     }
 
-    public void disbandAlliance(int id) {
-        guildAndAllianceService.disbandAlliance(id);
-    }
-
     public void allianceMessage(int id, final byte[] packet, int exception, int guildex) {
         guildAndAllianceService.allianceMessage(id, packet, exception, guildex);
     }
