@@ -237,27 +237,6 @@ public class Server {
         guildAndAllianceService.allianceMessage(id, packet, exception, guildex);
     }
 
-    public boolean setAllianceRanks(int aId, String[] ranks) {
-        return guildAndAllianceService.setAllianceRanks(aId, ranks);
-    }
-
-    public boolean setAllianceNotice(int aId, String notice) {
-        return guildAndAllianceService.setAllianceNotice(aId, notice);
-    }
-
-    @SuppressWarnings("unused")
-    public boolean increaseAllianceCapacity(int aId, int inc) {
-        return guildAndAllianceService.increaseAllianceCapacity(aId, inc);
-    }
-
-    public int createGuild(int leaderId, String name) {
-        return guildAndAllianceService.createGuild(leaderId, name);
-    }
-
-    public MapleGuild getGuildByName(String name) {
-        return guildAndAllianceService.getGuildByName(name);
-    }
-
     public MapleGuild getGuild(int id) {
         return guildAndAllianceService.getGuild(id);
     }

@@ -2879,7 +2879,7 @@ public class MaplePacketCreator {
         String guildName = "";
         String allianceName = "";
         if (chr.getGuildId() > 0) {
-            MapleGuild mg = Server.getInstance().getGuild(chr.getGuildId());
+            MapleGuild mg = GuildAndAllianceService.getInstance().getGuild(chr.getGuildId());
             guildName = mg.getName();
 
             MapleAlliance alliance =

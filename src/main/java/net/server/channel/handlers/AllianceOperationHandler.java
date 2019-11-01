@@ -126,7 +126,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
                 Server.getInstance().resetAllianceGuildPlayersRank(guildid);
 
                 chr.getMGC().setAllianceRank(2);
-                MapleGuild g = Server.getInstance().getGuild(chr.getGuildId());
+                MapleGuild g = GuildAndAllianceService.getInstance().getGuild(chr.getGuildId());
                 if (g != null) {
                     g.getMGC(chr.getId()).setAllianceRank(2);
                 }
@@ -154,7 +154,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
                 Server.getInstance().guildMessage(guildid, MaplePacketCreator.disbandAlliance(allianceid));
 
-                alliance.dropMessage("[" + Server.getInstance().getGuild(guildid).getName() + "] guild has been expelled from the union.");
+                alliance.dropMessage("[" + GuildAndAllianceService.getInstance().getGuild(guildid).getName() + "] guild has been expelled from the union.");
                 break;
             }
             case 0x07: { // Change Alliance Leader
@@ -176,7 +176,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
                 for (int i = 0; i < 5; i++) {
                     ranks[i] = slea.readMapleAsciiString();
                 }
-                Server.getInstance().setAllianceRanks(alliance.getId(), ranks);
+                GuildAndAllianceService.getInstance().setAllianceRanks(alliance.getId(), ranks);
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.changeAllianceRankTitle(alliance.getId(), ranks), -1, -1);
                 break;
             case 0x09: {
@@ -191,7 +191,7 @@ public final class AllianceOperationHandler extends AbstractMaplePacketHandler {
             }
             case 0x0A:
                 String notice = slea.readMapleAsciiString();
-                Server.getInstance().setAllianceNotice(alliance.getId(), notice);
+                GuildAndAllianceService.getInstance().setAllianceNotice(alliance.getId(), notice);
                 Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), notice), -1, -1);
 
                 alliance.dropMessage(5, "* Alliance Notice : " + notice);

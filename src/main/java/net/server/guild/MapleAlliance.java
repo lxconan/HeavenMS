@@ -134,7 +134,7 @@ public class MapleAlliance {
 
                     MapleCharacter chr = guildMasters.get(i);
                     chr.getMGC().setAllianceRank((i == 0) ? 1 : 2);
-                    Server.getInstance().getGuild(chr.getGuildId()).getMGC(chr.getId()).setAllianceRank((i == 0) ? 1 : 2);
+                    GuildAndAllianceService.getInstance().getGuild(chr.getGuildId()).getMGC(chr.getId()).setAllianceRank((i == 0) ? 1 : 2);
                     chr.saveGuildStatus();
                 }
 
@@ -449,7 +449,7 @@ public class MapleAlliance {
     public MapleGuildCharacter getLeader() {
         synchronized(guilds) {
             for(Integer gId: guilds) {
-                MapleGuild guild = Server.getInstance().getGuild(gId);
+                MapleGuild guild = GuildAndAllianceService.getInstance().getGuild(gId);
                 MapleGuildCharacter mgc = guild.getMGC(guild.getLeaderId());
 
                 if(mgc.getAllianceRank() == 1) return mgc;
@@ -477,7 +477,7 @@ public class MapleAlliance {
     }
 
     public static void sendInvitation(MapleClient c, String targetGuildName, int allianceId) {
-        MapleGuild mg = Server.getInstance().getGuildByName(targetGuildName);
+        MapleGuild mg = GuildAndAllianceService.getInstance().getGuildByName(targetGuildName);
         if(mg == null) {
             c.getPlayer().dropMessage(5, "The entered guild does not exist.");
         } else {
