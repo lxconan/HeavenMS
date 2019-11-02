@@ -69,30 +69,19 @@ public class Server {
     private static Server instance = new Server();
     public static Server getInstance() { return instance; }
 
-    private final CouponService couponService = CouponService.getInstance();
     private IoAcceptor acceptor;
+    private final CouponService couponService = CouponService.getInstance();
     private final WorldServer worldServer = WorldServer.getInstance();
-    private final Properties subnetInfo = new Properties();
 
 
     private final LoginStateService loginStateService = LoginStateService.getInstance();
 
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
 
-    private boolean availableDeveloperRoom = false;
     private boolean online = false;
 
     public boolean isOnline() {
         return online;
-    }
-
-    public void setAvailableDeveloperRoom() {
-        availableDeveloperRoom = true;
-    }
-
-    @SuppressWarnings("unused") // used by event script
-    public boolean canEnterDeveloperRoom() {
-        return availableDeveloperRoom;
     }
 
     public void init() {
@@ -222,10 +211,6 @@ public class Server {
         AutoJCE.removeCryptographyRestrictions();
         DatabaseMigration.migrate();
         Server.getInstance().init();
-    }
-
-    public Properties getSubnetInfo() {
-        return subnetInfo;
     }
 
     public PlayerBuffStorage getPlayerBuffStorage() {

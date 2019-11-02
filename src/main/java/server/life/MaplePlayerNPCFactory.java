@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
+
+import net.server.DeveloperRoomService;
 import net.server.Server;
 import provider.MapleData;
 import provider.MapleDataProvider;
@@ -35,30 +37,30 @@ import provider.MapleDataTool;
  * @author RonanLana
  */
 public class MaplePlayerNPCFactory {
-    
+
     private static final Map<Integer, List<MaplePlayerNPC>> dnpcMaps = new HashMap<>();
     private static Integer runningDeveloperOid = 2147483000;  // 647 slots, long enough
-    
+
     public static void loadDeveloperRoomMetadata(MapleDataProvider npc) {
         MapleData thisData = npc.getData("9977777.img");
         if(thisData != null) {
             MapleDataProvider map = MapleDataProviderFactory.getDataProvider(new File("wz/Map.wz"));
-            
+
             thisData = map.getData("Map/Map7/777777777.img");
             if(thisData != null) {
                 MapleDataProvider sound = MapleDataProviderFactory.getDataProvider(new File("wz/Sound.wz"));
-                
+
                 thisData = sound.getData("Field.img");
                 if(thisData != null) {
                     MapleData md = thisData.getChildByPath("anthem/brazil");
                     if(md != null) {
-                        Server.getInstance().setAvailableDeveloperRoom();
+                        DeveloperRoomService.getInstance().setAvailableDeveloperRoom();
                     }
                 }
             }
         }
     }
-    
+
     public static void loadFactoryMetadata() {
         MapleDataProvider npc = MapleDataProviderFactory.getDataProvider(new File("wz/Npc.wz"));
         loadDeveloperRoomMetadata(npc);
@@ -101,7 +103,7 @@ public class MaplePlayerNPCFactory {
             }
         } else {
             MapleData thisData = npc.getData("9977777.img");
-            
+
             if(thisData != null) {
                 byte[] encData = {0x52,0x6F,0x6E,0x61,0x6E};
                 String name = new String(encData);
@@ -127,7 +129,7 @@ public class MaplePlayerNPCFactory {
             }
         }
     }
-    
+
     public static List<MaplePlayerNPC> getDeveloperNpcsFromMapid(int mapid) {
         return dnpcMaps.get(mapid);
     }
