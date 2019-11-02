@@ -233,10 +233,6 @@ public class Server {
         return subnetInfo;
     }
 
-    public MapleGuild getGuild(int id) {
-        return guildAndAllianceService.getGuild(id);
-    }
-
     public MapleGuild getGuild(int id, int world) {
         return guildAndAllianceService.getGuild(id, world);
     }

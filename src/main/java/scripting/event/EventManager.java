@@ -24,6 +24,7 @@ package scripting.event;
 import config.YamlConfig;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.api.scripting.ScriptUtils;
+import net.server.GuildAndAllianceService;
 import net.server.ServerTimer;
 import net.server.WorldServer;
 import tools.exceptions.EventInstanceInProgressException;
@@ -804,7 +805,7 @@ public class EventManager {
     }
 
     private void exportReadyGuild(Integer guildId) {
-        MapleGuild mg = server.getGuild(guildId);
+        MapleGuild mg = GuildAndAllianceService.getInstance().getGuild(guildId);
         String callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                        + " and HAS JUST STARTED THE STRATEGY PHASE. After 3 minutes, no more guild members will be allowed to join the effort."
                        + " Check out Shuang at the excavation site in Perion for more info.";
@@ -813,7 +814,7 @@ public class EventManager {
     }
 
     private void exportMovedQueueToGuild(Integer guildId, int place) {
-        MapleGuild mg = server.getGuild(guildId);
+        MapleGuild mg = GuildAndAllianceService.getInstance().getGuild(guildId);
         String callout = "[Guild Quest] Your guild has been registered to attend to the Sharenian Guild Quest at channel " + this.getChannelServer().getId()
                        + " and is currently on the " + GameConstants.ordinal(place) + " place on the waiting queue.";
 

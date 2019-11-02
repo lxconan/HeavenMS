@@ -466,7 +466,7 @@ public class MapleAlliance {
     public void dropMessage(int type, String message) {
         synchronized(guilds) {
             for(Integer gId: guilds) {
-                MapleGuild guild = Server.getInstance().getGuild(gId);
+                MapleGuild guild = GuildAndAllianceService.getInstance().getGuild(gId);
                 guild.dropMessage(type, message);
             }
         }

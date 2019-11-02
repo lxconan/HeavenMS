@@ -60,8 +60,7 @@ import java.util.PriorityQueue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledFuture;
 
-import net.server.ServerTimer;
-import net.server.WorldCharacterServer;
+import net.server.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scripting.event.EventInstanceManager;
@@ -74,8 +73,6 @@ import server.maps.MapleMiniDungeon;
 import server.maps.MapleMiniDungeonInfo;
 import server.maps.MaplePlayerShop;
 import server.maps.MaplePlayerShopItem;
-import net.server.PlayerStorage;
-import net.server.Server;
 import net.server.audit.LockCollector;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantLock;
@@ -717,7 +714,7 @@ public class World {
         }
         if (bDifferentGuild) {
             if (mc.isLoggedinWorld()) {
-                MapleGuild guild = Server.getInstance().getGuild(guildid);
+                MapleGuild guild = GuildAndAllianceService.getInstance().getGuild(guildid);
                 if (guild != null) {
                     mc.getMap().broadcastMessage(mc, MaplePacketCreator.guildNameChanged(cid, guild.getName()));
                     mc.getMap().broadcastMessage(mc, MaplePacketCreator.guildMarkChanged(cid, guild));
