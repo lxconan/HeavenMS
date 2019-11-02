@@ -233,30 +233,6 @@ public class Server {
         return subnetInfo;
     }
 
-    public int addGuildMember(MapleGuildCharacter mgc, MapleCharacter chr) {
-        return guildAndAllianceService.addGuildMember(mgc, chr);
-    }
-
-    public boolean setGuildAllianceId(int gId, int aId) {
-        return guildAndAllianceService.setGuildAllianceId(gId, aId);
-    }
-
-    public void resetAllianceGuildPlayersRank(int gId) {
-        guildAndAllianceService.resetAllianceGuildPlayersRank(gId);
-    }
-
-    public void leaveGuild(MapleGuildCharacter mgc) {
-        guildAndAllianceService.leaveGuild(mgc);
-    }
-
-    public void guildChat(int gid, String name, int cid, String msg) {
-        guildAndAllianceService.guildChat(gid, name, cid, msg);
-    }
-
-    public void changeRank(int gid, int cid, int newRank) {
-        guildAndAllianceService.changeRank(gid, cid, newRank);
-    }
-
     public void expelMember(MapleGuildCharacter initiator, String name, int cid) {
         guildAndAllianceService.expelMember(initiator, name, cid);
     }

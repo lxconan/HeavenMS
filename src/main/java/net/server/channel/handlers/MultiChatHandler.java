@@ -67,7 +67,7 @@ public final class MultiChatHandler extends AbstractMaplePacketHandler {
                 LogHelper.logChat(c, "Party", chattext);
             }
         } else if (type == 2 && player.getGuildId() > 0) {
-            Server.getInstance().guildChat(player.getGuildId(), player.getName(), player.getId(), chattext);
+            GuildAndAllianceService.getInstance().guildChat(player.getGuildId(), player.getName(), player.getId(), chattext);
             if (YamlConfig.config.server.USE_ENABLE_CHAT_LOG) {
                 LogHelper.logChat(c, "Guild", chattext);
             }

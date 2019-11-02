@@ -138,7 +138,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 mc.getMGC().setGuildRank(5); // start at lowest rank
                 mc.getMGC().setAllianceRank(5);
 
-                int s = Server.getInstance().addGuildMember(mc.getMGC(), mc);
+                int s = GuildAndAllianceService.getInstance().addGuildMember(mc.getMGC(), mc);
                 if (s == 0) {
                     mc.dropMessage(1, "The guild you are trying to join is already full.");
                     mc.getMGC().setGuildId(0);
@@ -165,7 +165,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 allianceId = mc.getGuild().getAllianceId();
 
                 c.announce(MaplePacketCreator.updateGP(mc.getGuildId(), 0));
-                Server.getInstance().leaveGuild(mc.getMGC());
+                GuildAndAllianceService.getInstance().leaveGuild(mc.getMGC());
 
                 c.announce(MaplePacketCreator.showGuildInfo(null));
                 if(allianceId > 0) {
@@ -214,7 +214,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 if (newRank <= 1 || newRank > 5) {
                     return;
                 }
-                Server.getInstance().changeRank(mc.getGuildId(), cid, newRank);
+                GuildAndAllianceService.getInstance().changeRank(mc.getGuildId(), cid, newRank);
                 break;
             case 0x0f:
                 if (mc.getGuildId() <= 0 || mc.getGuildRank() != 1 || mc.getMapId() != 200000301) {

@@ -120,7 +120,7 @@ public class MatchCheckerGuildCreation implements MatchCheckerListenerRecipe {
 
                 leader.getMGC().setGuildId(gid);
                 MapleGuild guild = GuildAndAllianceService.getInstance().getGuild(leader.getGuildId(), leader.getWorld(), leader);  // initialize guild structure
-                Server.getInstance().changeRank(gid, leader.getId(), 1);
+                GuildAndAllianceService.getInstance().changeRank(gid, leader.getId(), 1);
 
                 leader.announce(MaplePacketCreator.showGuildInfo(leader));
                 leader.dropMessage(1, "You have successfully created a Guild.");
@@ -133,7 +133,7 @@ public class MatchCheckerGuildCreation implements MatchCheckerListenerRecipe {
                     mgc.setGuildRank(cofounder ? 2 : 5);
                     mgc.setAllianceRank(5);
 
-                    Server.getInstance().addGuildMember(mgc, chr);
+                    GuildAndAllianceService.getInstance().addGuildMember(mgc, chr);
 
                     if (chr.isLoggedinWorld()) {
                         chr.announce(MaplePacketCreator.showGuildInfo(chr));

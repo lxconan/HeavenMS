@@ -129,8 +129,8 @@ public class MapleAlliance {
             int id = alliance.getId();
             try {
                 for(int i = 0; i < guildMasters.size(); i++) {
-                    Server.getInstance().setGuildAllianceId(guilds.get(i), id);
-                    Server.getInstance().resetAllianceGuildPlayersRank(guilds.get(i));
+                    GuildAndAllianceService.getInstance().setGuildAllianceId(guilds.get(i), id);
+                    GuildAndAllianceService.getInstance().resetAllianceGuildPlayersRank(guilds.get(i));
 
                     MapleCharacter chr = guildMasters.get(i);
                     chr.getMGC().setAllianceRank((i == 0) ? 1 : 2);
