@@ -1010,7 +1010,7 @@ public class MapleClient {
                             }
                             if (guild != null) {
                                 final Server server = Server.getInstance();
-                                server.setGuildMemberOnline(player, false, player.getClient().getChannel());
+                                GuildAndAllianceService.getInstance().setGuildMemberOnline(player, false, player.getClient().getChannel());
                                 player.getClient().announce(MaplePacketCreator.showGuildInfo(player));
                             }
                             if (bl != null) {

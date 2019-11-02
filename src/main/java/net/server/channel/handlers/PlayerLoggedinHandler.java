@@ -293,7 +293,7 @@ public final class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
                     } else {
                         playerGuild.getMGC(player.getId()).setCharacter(player);
                         player.setMGC(playerGuild.getMGC(player.getId()));
-                        server.setGuildMemberOnline(player, true, c.getChannel());
+                        GuildAndAllianceService.getInstance().setGuildMemberOnline(player, true, c.getChannel());
                         c.announce(MaplePacketCreator.showGuildInfo(player));
                         int allianceId = player.getGuild().getAllianceId();
                         if (allianceId > 0) {
