@@ -26,6 +26,7 @@ import client.MapleClient;
 import client.autoban.AutobanFactory;
 import config.YamlConfig;
 import net.AbstractMaplePacketHandler;
+import net.server.GuildAndAllianceService;
 import net.server.Server;
 import net.server.world.World;
 import tools.FilePrinter;
@@ -40,7 +41,7 @@ public final class MultiChatHandler extends AbstractMaplePacketHandler {
         if(player.getAutobanManager().getLastSpam(7) + 200 > currentServerTime()) {
                 return;
         }
-        
+
         int type = slea.readByte(); // 0 for buddys, 1 for partys
         int numRecipients = slea.readByte();
         int recipients[] = new int[numRecipients];
@@ -53,7 +54,7 @@ public final class MultiChatHandler extends AbstractMaplePacketHandler {
         	FilePrinter.printError(FilePrinter.EXPLOITS + c.getPlayer().getName() + ".txt", c.getPlayer().getName() + " tried to send text with length of " + chattext.length());
         	c.disconnect(true, false);
         	return;
-        }	
+        }
         World world = c.getWorldServer();
         if (type == 0) {
             world.buddyChat(recipients, player.getId(), player.getName(), chattext);
@@ -73,7 +74,7 @@ public final class MultiChatHandler extends AbstractMaplePacketHandler {
         } else if (type == 3 && player.getGuild() != null) {
             int allianceId = player.getGuild().getAllianceId();
             if (allianceId > 0) {
-                Server.getInstance().allianceMessage(allianceId, MaplePacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);
+                GuildAndAllianceService.getInstance().allianceMessage(allianceId, MaplePacketCreator.multiChat(player.getName(), chattext, 3), player.getId(), -1);
                 if (YamlConfig.config.server.USE_ENABLE_CHAT_LOG) {
                     LogHelper.logChat(c, "Ally", chattext);
                 }

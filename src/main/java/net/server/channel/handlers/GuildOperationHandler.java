@@ -233,7 +233,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
 
                 if (mc.getGuild() != null && mc.getGuild().getAllianceId() > 0) {
                     MapleAlliance alliance = mc.getAlliance();
-                    Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
+                    GuildAndAllianceService.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
                 }
 
                 mc.gainMeso(-YamlConfig.config.server.CHANGE_EMBLEM_COST, true, false, true);

@@ -5951,7 +5951,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             //Server.getInstance().getGuild(guildid, world, mgc).gainGP(40);
             int allianceId = getGuild().getAllianceId();
             if (allianceId > 0) {
-                Server.getInstance().allianceMessage(allianceId, MaplePacketCreator.updateAllianceJobLevel(this), getId(), -1);
+                GuildAndAllianceService.getInstance().allianceMessage(allianceId, MaplePacketCreator.updateAllianceJobLevel(this), getId(), -1);
             }
         } catch (Exception e) {
             e.printStackTrace();

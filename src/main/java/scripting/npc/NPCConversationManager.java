@@ -451,8 +451,8 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
                 MapleAlliance alliance = GuildAndAllianceService.getInstance().getAlliance(c.getPlayer().getGuild().getAllianceId());
                 alliance.increaseCapacity(1);
 
-                Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
-                Server.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
+			GuildAndAllianceService.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.getGuildAlliances(alliance, c.getWorld()), -1, -1);
+			GuildAndAllianceService.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
 
                 c.announce(MaplePacketCreator.updateAllianceInfo(alliance, c.getWorld()));  // thanks Vcoc for finding an alliance update to leader issue
         }

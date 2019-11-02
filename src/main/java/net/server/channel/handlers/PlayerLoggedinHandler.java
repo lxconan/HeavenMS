@@ -311,7 +311,7 @@ public final class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
                                 c.announce(MaplePacketCreator.allianceNotice(newAlliance.getId(), newAlliance.getNotice()));
 
                                 if (newcomer) {
-                                    server.allianceMessage(allianceId, MaplePacketCreator.allianceMemberOnline(player, true), player.getId(), -1);
+                                    GuildAndAllianceService.getInstance().allianceMessage(allianceId, MaplePacketCreator.allianceMemberOnline(player, true), player.getId(), -1);
                                 }
                             }
                         }
