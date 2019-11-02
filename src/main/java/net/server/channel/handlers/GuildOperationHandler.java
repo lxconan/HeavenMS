@@ -187,7 +187,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                     return;
                 }
 
-                Server.getInstance().expelMember(mc.getMGC(), name, cid);
+                GuildAndAllianceService.getInstance().expelMember(mc.getMGC(), name, cid);
                 if(allianceId > 0) {
                     GuildAndAllianceService.getInstance().getAlliance(allianceId).updateAlliancePackets(mc);
                 }
@@ -202,7 +202,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                     ranks[i] = slea.readMapleAsciiString();
                 }
 
-                Server.getInstance().changeRankTitle(mc.getGuildId(), ranks);
+                GuildAndAllianceService.getInstance().changeRankTitle(mc.getGuildId(), ranks);
                 break;
             case 0x0e:
                 cid = slea.readInt();
@@ -229,7 +229,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 byte bgcolor = slea.readByte();
                 short logo = slea.readShort();
                 byte logocolor = slea.readByte();
-                Server.getInstance().setGuildEmblem(mc.getGuildId(), bg, bgcolor, logo, logocolor);
+                GuildAndAllianceService.getInstance().setGuildEmblem(mc.getGuildId(), bg, bgcolor, logo, logocolor);
 
                 if (mc.getGuild() != null && mc.getGuild().getAllianceId() > 0) {
                     MapleAlliance alliance = mc.getAlliance();
@@ -251,7 +251,7 @@ public final class GuildOperationHandler extends AbstractMaplePacketHandler {
                 if (notice.length() > 100) {
                     return;
                 }
-                Server.getInstance().setGuildNotice(mc.getGuildId(), notice);
+                GuildAndAllianceService.getInstance().setGuildNotice(mc.getGuildId(), notice);
                 break;
             case 0x1E:
                 slea.readInt();

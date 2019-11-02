@@ -35,9 +35,6 @@ import net.MapleServerHandler;
 import net.mina.MapleCodecFactory;
 import net.server.audit.ThreadTracker;
 import net.server.channel.Channel;
-import net.server.guild.MapleAlliance;
-import net.server.guild.MapleGuild;
-import net.server.guild.MapleGuildCharacter;
 import net.server.task.*;
 import net.server.world.World;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -81,8 +78,6 @@ public class Server {
     private final LoginStateService loginStateService = LoginStateService.getInstance();
 
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
-
-    private final GuildAndAllianceService guildAndAllianceService = GuildAndAllianceService.getInstance();
 
     private boolean availableDeveloperRoom = false;
     private boolean online = false;
@@ -233,56 +228,8 @@ public class Server {
         return subnetInfo;
     }
 
-    public void expelMember(MapleGuildCharacter initiator, String name, int cid) {
-        guildAndAllianceService.expelMember(initiator, name, cid);
-    }
-
-    public void setGuildNotice(int gid, String notice) {
-        guildAndAllianceService.setGuildNotice(gid, notice);
-    }
-
-    public void memberLevelJobUpdate(MapleGuildCharacter mgc) {
-        guildAndAllianceService.memberLevelJobUpdate(mgc);
-    }
-
-    public void changeRankTitle(int gid, String[] ranks) {
-        guildAndAllianceService.changeRankTitle(gid, ranks);
-    }
-
-    public void setGuildEmblem(int gid, short bg, byte bgcolor, short logo, byte logocolor) {
-        guildAndAllianceService.setGuildEmblem(gid, bg, bgcolor, logo, logocolor);
-    }
-
-    public void disbandGuild(int gid) {
-        guildAndAllianceService.disbandGuild(gid);
-    }
-
-    public boolean increaseGuildCapacity(int gid) {
-        return guildAndAllianceService.increaseGuildCapacity(gid);
-    }
-
-    public void guildMessage(int gid, byte[] packet) {
-        guildAndAllianceService.guildMessage(gid, packet);
-    }
-
-    public void guildMessage(int gid, byte[] packet, int exception) {
-        guildAndAllianceService.guildMessage(gid, packet, exception);
-    }
-
     public PlayerBuffStorage getPlayerBuffStorage() {
         return buffStorage;
-    }
-
-    public void deleteGuildCharacter(MapleCharacter mc) {
-        guildAndAllianceService.deleteGuildCharacter(mc);
-    }
-
-    public void deleteGuildCharacter(MapleGuildCharacter mgc) {
-        guildAndAllianceService.deleteGuildCharacter(mgc);
-    }
-
-    public void reloadGuildCharacters(int world) {
-        guildAndAllianceService.reloadGuildCharacters(world);
     }
 
     private void applyAllNameChanges() {

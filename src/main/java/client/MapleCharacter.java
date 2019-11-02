@@ -2215,7 +2215,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
                             ps.setInt(2, accId);
                             try (ResultSet rs = ps.executeQuery()) {
                                     if (rs.next() && rs.getInt("guildid") > 0) {
-                                            Server.getInstance().deleteGuildCharacter(new MapleGuildCharacter(player, cid, 0, rs.getString("name"), (byte) -1, (byte) -1, 0, rs.getInt("guildrank"), rs.getInt("guildid"), false, rs.getInt("allianceRank")));
+                                        GuildAndAllianceService.getInstance().deleteGuildCharacter(new MapleGuildCharacter(player, cid, 0, rs.getString("name"), (byte) -1, (byte) -1, 0, rs.getInt("guildrank"), rs.getInt("guildid"), false, rs.getInt("allianceRank")));
                                     }
                             }
                     }
@@ -2531,7 +2531,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             return;
         }
         try {
-            Server.getInstance().disbandGuild(guildid);
+            GuildAndAllianceService.getInstance().disbandGuild(guildid);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -5947,7 +5947,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
         }
 
         try {
-            Server.getInstance().memberLevelJobUpdate(this.mgc);
+            GuildAndAllianceService.getInstance().memberLevelJobUpdate(this.mgc);
             int allianceId = getGuild().getAllianceId();
             if (allianceId > 0) {
                 GuildAndAllianceService.getInstance().allianceMessage(allianceId, MaplePacketCreator.updateAllianceJobLevel(this), getId(), -1);
@@ -6058,7 +6058,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
             return;
         }
 
-        if(Server.getInstance().increaseGuildCapacity(guildid)) {
+        if(GuildAndAllianceService.getInstance().increaseGuildCapacity(guildid)) {
             gainMeso(-cost, true, false, true);
         } else {
             dropMessage(1, "Your guild already reached the maximum capacity of players.");

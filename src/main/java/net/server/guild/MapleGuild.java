@@ -39,6 +39,7 @@ import java.util.Set;
 
 import java.util.concurrent.locks.Lock;
 
+import net.server.GuildAndAllianceService;
 import net.server.WorldServer;
 import net.server.audit.locks.factory.MonitoredReentrantLockFactory;
 
@@ -394,7 +395,7 @@ public class MapleGuild {
     }
 
     public void broadcastMessage(byte[] packet) {
-        Server.getInstance().guildMessage(id, packet);
+        GuildAndAllianceService.getInstance().guildMessage(id, packet);
     }
 
     public final void setOnline(int cid, boolean online, int channel) {
