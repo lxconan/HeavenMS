@@ -353,7 +353,7 @@ public class MapleAlliance {
         GuildAndAllianceService.getInstance().allianceMessage(alliance.getId(), MaplePacketCreator.allianceNotice(alliance.getId(), alliance.getNotice()), -1, -1);
         srv.guildMessage(guildId, MaplePacketCreator.disbandAlliance(alliance.getId()));
 
-        alliance.dropMessage("[" + srv.getGuild(guildId, worldId).getName() + "] guild has left the union.");
+        alliance.dropMessage("[" + GuildAndAllianceService.getInstance().getGuild(guildId, worldId).getName() + "] guild has left the union.");
         return true;
     }
 

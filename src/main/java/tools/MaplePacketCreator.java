@@ -7372,7 +7372,7 @@ public class MaplePacketCreator {
         mplew.writeInt(alliance.getCapacity()); // probably capacity
         mplew.writeShort(0);
         for (Integer guildid : alliance.getGuilds()) {
-            getGuildInfo(mplew, Server.getInstance().getGuild(guildid, world));
+            getGuildInfo(mplew, GuildAndAllianceService.getInstance().getGuild(guildid, world));
         }
         return mplew.getPacket();
     }
@@ -7383,7 +7383,7 @@ public class MaplePacketCreator {
         mplew.write(0x0D);
         mplew.writeInt(alliance.getGuilds().size());
         for (Integer guild : alliance.getGuilds()) {
-            getGuildInfo(mplew, Server.getInstance().getGuild(guild, worldId));
+            getGuildInfo(mplew, GuildAndAllianceService.getInstance().getGuild(guild, worldId));
         }
         return mplew.getPacket();
     }
