@@ -233,10 +233,6 @@ public class Server {
         return subnetInfo;
     }
 
-    public MapleGuild getGuild(int id, int world, MapleCharacter mc) {
-        return guildAndAllianceService.getGuild(id, world, mc);
-    }
-
     public void setGuildMemberOnline(MapleCharacter mc, boolean bOnline, int channel) {
         guildAndAllianceService.setGuildMemberOnline(mc, bOnline, channel);
     }

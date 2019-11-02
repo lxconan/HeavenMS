@@ -615,7 +615,7 @@ public class World {
         if(mgc == null) return null;
 
         int gid = mgc.getGuildId();
-        MapleGuild g = Server.getInstance().getGuild(gid, mgc.getWorld(), mgc.getCharacter());
+        MapleGuild g = GuildAndAllianceService.getInstance().getGuild(gid, mgc.getWorld(), mgc.getCharacter());
         if (gsStore.get(gid) == null) {
             gsStore.put(gid, new MapleGuildSummary(g));
         }
@@ -646,7 +646,7 @@ public class World {
         if (gsStore.containsKey(gid)) {
             return gsStore.get(gid);
         } else {
-            MapleGuild g = Server.getInstance().getGuild(gid, wid, null);
+            MapleGuild g = GuildAndAllianceService.getInstance().getGuild(gid, wid, null);
             if (g != null) {
                 gsStore.put(gid, new MapleGuildSummary(g));
             }
@@ -662,7 +662,7 @@ public class World {
         MapleGuild g;
         Server server = Server.getInstance();
         for (int i : gsStore.keySet()) {
-            g = server.getGuild(i, getId(), null);
+            g = GuildAndAllianceService.getInstance().getGuild(i, getId(), null);
             if (g != null) {
                 gsStore.put(i, new MapleGuildSummary(g));
             } else {

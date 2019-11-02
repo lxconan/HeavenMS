@@ -31,6 +31,7 @@ import java.util.List;
 
 import client.Skill;
 import config.YamlConfig;
+import net.server.GuildAndAllianceService;
 import net.server.Server;
 import net.server.ServerTimer;
 import net.server.channel.Channel;
@@ -739,7 +740,7 @@ public class AbstractPlayerInteraction {
 
 	public MapleGuild getGuild() {
 		try {
-			return Server.getInstance().getGuild(getPlayer().getGuildId(), getPlayer().getWorld(), null);
+			return GuildAndAllianceService.getInstance().getGuild(getPlayer().getGuildId(), getPlayer().getWorld(), null);
 		} catch (Exception e) {
                         e.printStackTrace();
 		}

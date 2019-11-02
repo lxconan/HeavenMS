@@ -5006,7 +5006,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
 
     public MapleGuild getGuild() {
         try {
-            return Server.getInstance().getGuild(getGuildId(), getWorld(), this);
+            return GuildAndAllianceService.getInstance().getGuild(getGuildId(), getWorld(), this);
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

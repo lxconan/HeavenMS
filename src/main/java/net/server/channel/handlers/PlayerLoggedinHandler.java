@@ -285,7 +285,7 @@ public final class PlayerLoggedinHandler extends AbstractMaplePacketHandler {
                     c.announce(MaplePacketCreator.getFamilyInfo(null));
                 }
                 if (player.getGuildId() > 0) {
-                    MapleGuild playerGuild = server.getGuild(player.getGuildId(), player.getWorld(), player);
+                    MapleGuild playerGuild = GuildAndAllianceService.getInstance().getGuild(player.getGuildId(), player.getWorld(), player);
                     if (playerGuild == null) {
                         player.deleteGuild(player.getGuildId());
                         player.getMGC().setGuildId(0);
