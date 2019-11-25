@@ -21,6 +21,7 @@
  */
 package net.server;
 
+import abstraction.dao.CharacterGateway;
 import client.MapleCharacter;
 import client.MapleFamily;
 import client.SkillFactory;
@@ -72,11 +73,9 @@ public class Server {
     private IoAcceptor acceptor;
     private final CouponService couponService = CouponService.getInstance();
     private final WorldServer worldServer = WorldServer.getInstance();
-
-
     private final LoginStateService loginStateService = LoginStateService.getInstance();
-
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
+    private final CharacterGateway characterGateway = CharacterGateway.getInstance();
 
     private boolean online = false;
 
@@ -86,25 +85,17 @@ public class Server {
 
     public void init() {
         logger.info("HeavenMS v" + ServerConstants.VERSION + " starting up.");
-
-        if (YamlConfig.config.server.SHUTDOWNHOOK)
-            Runtime.getRuntime().addShutdownHook(new Thread(shutdown(false)));
-
-        TimeZone.setDefault(TimeZone.getTimeZone(YamlConfig.config.server.TIMEZONE));
+        initializeShutdownHook();
+        initializeTimezone();
 
         Connection c = null;
         try {
             c = createConnection();
             loginStateService.clearAccountLoginState(c);
-
-            PreparedStatement ps = c.prepareStatement("UPDATE characters SET HasMerchant = 0");
-            ps.executeUpdate();
-            ps.close();
-
+            characterGateway.clearMerchantState(c);
             couponService.cleanNxcodeCoupons(c);
             couponService.loadCouponRates(c);
             couponService.updateActiveCoupons();
-
             c.close();
         } catch (SQLException sqle) {
             sqle.printStackTrace();
@@ -203,6 +194,15 @@ public class Server {
         for (Channel ch : worldServer.getAllChannels()) {
             ch.reloadEventScriptManager();
         }
+    }
+
+    private void initializeTimezone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(YamlConfig.config.server.TIMEZONE));
+    }
+
+    private void initializeShutdownHook() {
+        if (YamlConfig.config.server.SHUTDOWNHOOK)
+            Runtime.getRuntime().addShutdownHook(new Thread(shutdown(false)));
     }
 
     public static void main(String args[]) {
@@ -332,6 +332,7 @@ public class Server {
         worldServer.resetServerWorlds();
 
         logger.info("Worlds + Channels are offline.");
+
         acceptor.unbind();
         acceptor = null;
         if (!restart) {  // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
