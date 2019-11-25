@@ -105,34 +105,8 @@ public class Server {
         //MaplePet.clearMissingPetsFromDb();    // thanks Optimist for noticing this taking too long to run
         MapleCashidGenerator.loadExistentCashIdsFromDb();
 
-        IoBuffer.setUseDirectBuffer(false);
-        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("codec", (IoFilter) new ProtocolCodecFilter(new MapleCodecFactory()));
-
         ThreadManager.getInstance().start();
-        TimerManager tMan = TimerManager.getInstance();
-        tMan.start();
-        tMan.register(tMan.purge(), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
-        loginStateService.disconnectIdlesOnLoginTask();
-
-        long timeLeft = ServerTimer.getTimeLeftForNextHour();
-        tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
-        tMan.register(new ReleaseLockTask(), 2 * 60 * 1000, 2 * 60 * 1000);
-        tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, timeLeft);
-        tMan.register(new RankingCommandTask(), 5 * 60 * 1000, 5 * 60 * 1000);
-        tMan.register(new RankingLoginTask(), YamlConfig.config.server.RANKING_INTERVAL, timeLeft);
-        tMan.register(new LoginCoordinatorTask(), 60 * 60 * 1000, timeLeft);
-        tMan.register(new EventRecallCoordinatorTask(), 60 * 60 * 1000, timeLeft);
-        tMan.register(new LoginStorageTask(), 2 * 60 * 1000, 2 * 60 * 1000);
-        tMan.register(new DueyFredrickTask(), 60 * 60 * 1000, timeLeft);
-        tMan.register(new InvitationTask(), 30 * 1000, 30 * 1000);
-        tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
-
-        timeLeft = ServerTimer.getTimeLeftForNextDay();
-        MapleExpeditionBossLog.resetBossLogTable();
-        tMan.register(new BossLogTask(), 24 * 60 * 60 * 1000, timeLeft);
-
+        initializeTimelyTasks();
         long timeToTake = System.currentTimeMillis();
         SkillFactory.loadAllSkills();
 
@@ -174,6 +148,10 @@ public class Server {
             logger.info("Families loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds\r\n");
         }
 
+        IoBuffer.setUseDirectBuffer(false);
+        IoBuffer.setAllocator(new SimpleBufferAllocator());
+        acceptor = new NioSocketAcceptor();
+        acceptor.getFilterChain().addLast("codec", (IoFilter) new ProtocolCodecFilter(new MapleCodecFactory()));
         acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 30);
         acceptor.setHandler(new MapleServerHandler());
         try {
@@ -194,6 +172,30 @@ public class Server {
         for (Channel ch : worldServer.getAllChannels()) {
             ch.reloadEventScriptManager();
         }
+    }
+
+    private void initializeTimelyTasks() {
+        TimerManager tMan = TimerManager.getInstance();
+        tMan.start();
+        tMan.register(tMan.purge(), YamlConfig.config.server.PURGING_INTERVAL);//Purging ftw...
+        loginStateService.disconnectIdlesOnLoginTask();
+
+        long timeLeft = ServerTimer.getTimeLeftForNextHour();
+        tMan.register(new CharacterDiseaseTask(), YamlConfig.config.server.UPDATE_INTERVAL, YamlConfig.config.server.UPDATE_INTERVAL);
+        tMan.register(new ReleaseLockTask(), 2 * 60 * 1000, 2 * 60 * 1000);
+        tMan.register(new CouponTask(), YamlConfig.config.server.COUPON_INTERVAL, timeLeft);
+        tMan.register(new RankingCommandTask(), 5 * 60 * 1000, 5 * 60 * 1000);
+        tMan.register(new RankingLoginTask(), YamlConfig.config.server.RANKING_INTERVAL, timeLeft);
+        tMan.register(new LoginCoordinatorTask(), 60 * 60 * 1000, timeLeft);
+        tMan.register(new EventRecallCoordinatorTask(), 60 * 60 * 1000, timeLeft);
+        tMan.register(new LoginStorageTask(), 2 * 60 * 1000, 2 * 60 * 1000);
+        tMan.register(new DueyFredrickTask(), 60 * 60 * 1000, timeLeft);
+        tMan.register(new InvitationTask(), 30 * 1000, 30 * 1000);
+        tMan.register(new RespawnTask(), YamlConfig.config.server.RESPAWN_INTERVAL, YamlConfig.config.server.RESPAWN_INTERVAL);
+
+        timeLeft = ServerTimer.getTimeLeftForNextDay();
+        MapleExpeditionBossLog.resetBossLogTable();
+        tMan.register(new BossLogTask(), 24 * 60 * 60 * 1000, timeLeft);
     }
 
     private void initializeTimezone() {
