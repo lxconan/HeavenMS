@@ -922,6 +922,7 @@ public class MapleItemInformationProvider {
 
     public Item scrollEquipWithId(Item equip, int scrollId, boolean usingWhiteScroll, int vegaItemId, boolean isGM) {
         boolean assertGM = (isGM && YamlConfig.config.server.USE_PERFECT_GM_SCROLL);
+        boolean scrollAlwaysSuccess =YamlConfig.config.server.SCROLL_ALWAYS_SUCCESS;
 
         if (equip instanceof Equip) {
             Equip nEquip = (Equip) equip;
@@ -946,7 +947,7 @@ public class MapleItemInformationProvider {
                     break;
                 }
 
-                if(assertGM || rollSuccessChance(prop)) {
+                if(assertGM || scrollAlwaysSuccess || rollSuccessChance(prop)) {
                     short flag = nEquip.getFlag();
                     switch (scrollId) {
                         case 2040727:

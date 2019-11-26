@@ -465,3 +465,6 @@ server:
 
     # Enable all commands to all users. For debugging purpose.
     ENABLE_ALL_COMMANDS: true
+
+    # Treat all scrolls as 100% success rate. For testing purpose.
+    SCROLL_ALWAYS_SUCCESS: true
