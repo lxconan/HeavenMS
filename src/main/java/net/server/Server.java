@@ -88,18 +88,18 @@ public class Server {
         initializeShutdownHook();
         initializeTimezone();
 
-        Connection c = null;
-        try {
-            c = createConnection();
+        try (Connection c = createConnection()) {
             loginStateService.clearAccountLoginState(c);
             characterGateway.clearMerchantState(c);
             couponService.cleanNxcodeCoupons(c);
             couponService.loadCouponRates(c);
             couponService.updateActiveCoupons();
-            c.close();
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            final String message = "Fail to loading player and coupon state.";
+            logger.error(message, sqle);
+            throw new RuntimeException(message, sqle);
         }
+
         applyAllNameChanges(); //name changes can be missed by INSTANT_NAME_CHANGE
         applyAllWorldTransfers();
         //MaplePet.clearMissingPetsFromDb();    // thanks Optimist for noticing this taking too long to run
@@ -107,26 +107,22 @@ public class Server {
 
         ThreadManager.getInstance().start();
         initializeTimelyTasks();
-        long timeToTake = System.currentTimeMillis();
         SkillFactory.loadAllSkills();
-
-        logger.info("Skills loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds");
-
-        timeToTake = System.currentTimeMillis();
-
         CashItemFactory.getSpecialCashItems();
-
-        logger.info("Items loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds");
-
-        timeToTake = System.currentTimeMillis();
         MapleQuest.loadAllQuest();
-
-        logger.info("Quest loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds\r\n");
-
         NewYearCardRecord.startPendingNewYearCardRequests();
-
         if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().registerThreadTrackerTask();
+        initializeWorldAndChannels();
+        loadFamilySystem();
+        OpcodeConstants.generateOpcodeNames();
+        createIoPipeline();
+        logger.info("HeavenMS is now online.");
+        online = true;
+        MapleSkillbookInformationProvider.getInstance();
+        CommandsExecutor.getInstance();
+    }
 
+    private void initializeWorldAndChannels() {
         try {
             Integer worldCount = Math.min(GameConstants.WORLD_NAMES.length, YamlConfig.config.server.WORLDS);
 
@@ -134,7 +130,6 @@ public class Server {
                 worldServer.initWorld();
             }
             worldServer.initWorldPlayerRanking();
-
             MaplePlayerNPCFactory.loadFactoryMetadata();
             worldServer.loadPlayerNpcMapStepFromDb();
         } catch (Exception e) {
@@ -142,12 +137,21 @@ public class Server {
             System.exit(0);
         }
 
+        for (Channel ch : worldServer.getAllChannels()) {
+            ch.reloadEventScriptManager();
+        }
+    }
+
+    private void loadFamilySystem() {
+        long timeToTake;
         if (YamlConfig.config.server.USE_FAMILY_SYSTEM) {
             timeToTake = System.currentTimeMillis();
             MapleFamily.loadAllFamilies();
             logger.info("Families loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds\r\n");
         }
+    }
 
+    private void createIoPipeline() {
         IoBuffer.setUseDirectBuffer(false);
         IoBuffer.setAllocator(new SimpleBufferAllocator());
         acceptor = new NioSocketAcceptor();
@@ -162,16 +166,6 @@ public class Server {
         }
 
         logger.info("Listening on port 8484");
-        logger.info("HeavenMS is now online.");
-        online = true;
-
-        MapleSkillbookInformationProvider.getInstance();
-        OpcodeConstants.generateOpcodeNames();
-        CommandsExecutor.getInstance();
-
-        for (Channel ch : worldServer.getAllChannels()) {
-            ch.reloadEventScriptManager();
-        }
     }
 
     private void initializeTimelyTasks() {
