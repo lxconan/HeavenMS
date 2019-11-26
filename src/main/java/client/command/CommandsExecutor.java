@@ -235,6 +235,7 @@ public class CommandsExecutor {
     private void registerLv2Commands(boolean enableAllCommands) {
         levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
         final int rank = enableAllCommands ? 0 : 2;
+        addCommand("scrollshop", rank, ScrollShopCommand.class);
         addCommand("recharge", rank, RechargeCommand.class);
         addCommand("whereami", rank, WhereaMiCommand.class);
         addCommand("hide", rank, HideCommand.class);
