@@ -6,6 +6,7 @@ import client.command.Command;
 import server.MapleShopFactory;
 
 public class ScrollShopCommand extends Command {
+
     public ScrollShopCommand() {
         setDescription("");
     }
@@ -14,11 +15,18 @@ public class ScrollShopCommand extends Command {
     public void execute(MapleClient client, String[] params) {
         MapleCharacter player = client.getPlayer();
 
-        if (params.length != 0) {
-            player.yellowMessage("Syntax: !scrollshop");
+        final String syntaxMessage = "Syntax: !scrollshop <10|60>";
+        if (params.length != 1) {
+            player.yellowMessage(syntaxMessage);
             return;
         }
 
-        MapleShopFactory.getInstance().getShop(1405).sendShop(client);
+        final String shopType = params[0];
+        if ("10".equals(shopType) || "60".equals(shopType)) {
+            int shopId = "10".equals(shopType) ? 1405 : 1406;
+            MapleShopFactory.getInstance().getShop(shopId).sendShop(client);
+        } else {
+            player.yellowMessage(syntaxMessage);
+        }
     }
 }
