@@ -22,7 +22,6 @@
 package net.server;
 
 import abstraction.dao.CharacterGateway;
-import client.MapleCharacter;
 import client.MapleFamily;
 import client.SkillFactory;
 import client.command.CommandsExecutor;
@@ -58,11 +57,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.Security;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -81,6 +76,7 @@ public class Server {
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
     private final CharacterGateway characterGateway = CharacterGateway.getInstance();
     private final NameChangingService nameChangingService = NameChangingService.getInstance();
+    private final WorldTransferService worldTransferService = WorldTransferService.getInstance();
 
     private boolean online = false;
 
@@ -107,7 +103,7 @@ public class Server {
 
         //name changes can be missed by INSTANT_NAME_CHANGE
         nameChangingService.applyAllNameChanges();
-        applyAllWorldTransfers();
+        worldTransferService.applyAllWorldTransfers();
         //MaplePet.clearMissingPetsFromDb();    // thanks Optimist for noticing this taking too long to run
         MapleCashidGenerator.loadExistentCashIdsFromDb();
 
@@ -206,61 +202,6 @@ public class Server {
 
     public PlayerBuffStorage getPlayerBuffStorage() {
         return buffStorage;
-    }
-
-    private void applyAllWorldTransfers() {
-        try (Connection con = createConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM worldtransfers WHERE completionTime IS NULL")) {
-            ResultSet rs = ps.executeQuery();
-            List<Integer> removedTransfers = new LinkedList<Integer>();
-            while (rs.next()) {
-                int nameChangeId = rs.getInt("id");
-                int characterId = rs.getInt("characterId");
-                int oldWorld = rs.getInt("from");
-                int newWorld = rs.getInt("to");
-                String reason = MapleCharacter.checkWorldTransferEligibility(con, characterId, oldWorld, newWorld); //check if character is still
-                // eligible
-                if (reason != null) {
-                    removedTransfers.add(nameChangeId);
-                    FilePrinter.print(FilePrinter.WORLD_TRANSFER,
-                        "World transfer cancelled : Character ID " + characterId + " at " + Calendar.getInstance().getTime().toString() + ", Reason" +
-                            " : " + reason);
-                    try (PreparedStatement delPs = con.prepareStatement("DELETE FROM worldtransfers WHERE id = ?")) {
-                        delPs.setInt(1, nameChangeId);
-                        delPs.executeUpdate();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        FilePrinter.printError(FilePrinter.WORLD_TRANSFER, e, "Failed to delete world transfer for character ID " + characterId);
-                    }
-                }
-            }
-            rs.beforeFirst();
-            List<Pair<Integer, Pair<Integer, Integer>>> worldTransfers = new LinkedList<Pair<Integer, Pair<Integer, Integer>>>(); //logging only
-            // <charid, <oldWorld, newWorld>>
-            while (rs.next()) {
-                con.setAutoCommit(false);
-                int nameChangeId = rs.getInt("id");
-                if (removedTransfers.contains(nameChangeId)) continue;
-                int characterId = rs.getInt("characterId");
-                int oldWorld = rs.getInt("from");
-                int newWorld = rs.getInt("to");
-                boolean success = MapleCharacter.doWorldTransfer(con, characterId, oldWorld, newWorld, nameChangeId);
-                if (!success) con.rollback();
-                else worldTransfers.add(new Pair<Integer, Pair<Integer, Integer>>(characterId, new Pair<Integer, Integer>(oldWorld, newWorld)));
-                con.setAutoCommit(true);
-            }
-            //log
-            for (Pair<Integer, Pair<Integer, Integer>> worldTransferPair : worldTransfers) {
-                int charId = worldTransferPair.getLeft();
-                int oldWorld = worldTransferPair.getRight().getLeft();
-                int newWorld = worldTransferPair.getRight().getRight();
-                FilePrinter.print(FilePrinter.WORLD_TRANSFER, "World transfer applied : Character ID " + charId + " from World " + oldWorld + " to " +
-                    "World " + newWorld + " at " + Calendar.getInstance().getTime().toString());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.WORLD_TRANSFER, e, "Failed to retrieve list of pending world transfers.");
-        }
     }
 
     public final Runnable shutdown(final boolean restart) {//no player should be online when trying to shutdown!

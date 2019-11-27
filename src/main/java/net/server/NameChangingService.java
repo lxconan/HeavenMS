@@ -16,7 +16,7 @@ import java.util.List;
 
 public class NameChangingService {
     private static final NameChangingService instance = new NameChangingService();
-    private static Logger logger = LoggerFactory.getLogger(Server.class);
+    private static Logger logger = LoggerFactory.getLogger(NameChangingService.class);
     public static NameChangingService getInstance() {return instance;}
 
     private NameChangingService() {}
