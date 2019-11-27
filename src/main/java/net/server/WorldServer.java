@@ -184,7 +184,7 @@ public class WorldServer {
         }
     }
 
-    void resetServerWorlds() {  // thanks maple006 for noticing proprietary lists assigned to null
+    private void resetServerWorlds() {  // thanks maple006 for noticing proprietary lists assigned to null
         wldWLock.lock();
         try {
             worlds.clear();
@@ -345,5 +345,25 @@ public class WorldServer {
         for (Channel ch : getAllChannels()) {
             ch.reloadEventScriptManager();
         }
+    }
+
+    public void shutdown() {
+        if (getWorlds() == null) return; // already shutdown
+        for (World w : getWorlds()) {
+            w.shutdown();
+        }
+
+        List<Channel> allChannels = getAllChannels();
+        for (Channel ch : allChannels) {
+            while (!ch.finishedShutdown()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    logger.error("Thread interrupted while shutting down channel.", ie);
+                }
+            }
+        }
+
+        resetServerWorlds();
     }
 }

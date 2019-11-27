@@ -33,9 +33,7 @@ import constants.net.ServerConstants;
 import net.MapleServerHandler;
 import net.mina.MapleCodecFactory;
 import net.server.audit.ThreadTracker;
-import net.server.channel.Channel;
 import net.server.task.*;
-import net.server.world.World;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.buffer.SimpleBufferAllocator;
 import org.apache.mina.core.filterchain.IoFilter;
@@ -58,7 +56,6 @@ import java.net.InetSocketAddress;
 import java.security.Security;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.TimeZone;
 
 public class Server {
@@ -113,7 +110,7 @@ public class Server {
         CashItemFactory.getSpecialCashItems();
         MapleQuest.loadAllQuest();
         NewYearCardRecord.startPendingNewYearCardRequests();
-        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().registerThreadTrackerTask();
+        registerThreadTrackerTasks();
         initializeWorldAndChannels();
         loadFamilySystem();
         OpcodeConstants.generateOpcodeNames();
@@ -140,23 +137,6 @@ public class Server {
             MapleFamily.loadAllFamilies();
             logger.info("Families loaded in " + ((System.currentTimeMillis() - timeToTake) / 1000.0) + " seconds\r\n");
         }
-    }
-
-    private void createIoPipeline() {
-        IoBuffer.setUseDirectBuffer(false);
-        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("codec", (IoFilter) new ProtocolCodecFilter(new MapleCodecFactory()));
-        acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 30);
-        acceptor.setHandler(new MapleServerHandler());
-        try {
-            acceptor.bind(new InetSocketAddress(8484));
-        } catch (IOException ex) {
-            logger.error("Cannot bind address.", ex);
-            System.exit(-1);
-        }
-
-        logger.info("Listening on port 8484");
     }
 
     private void initializeTimelyTasks() {
@@ -210,36 +190,47 @@ public class Server {
 
     private synchronized void shutdownInternal() {
         logger.info("Shutting down the server!");
-        if (worldServer.getWorlds() == null) return;//already shutdown
-        for (World w : worldServer.getWorlds()) {
-            w.shutdown();
-        }
-
-        List<Channel> allChannels = worldServer.getAllChannels();
-        for (Channel ch : allChannels) {
-            while (!ch.finishedShutdown()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace();
-                    System.err.println("FUCK MY LIFE");
-                }
-            }
-        }
-
-        worldServer.resetServerWorlds();
+        worldServer.shutdown();
         logger.info("Worlds + Channels are offline.");
-
-        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().cancelThreadTrackerTask();
+        cancelThreadTrackerTasks();
 
         ThreadManager.getInstance().stop();
         TimerManager.getInstance().purge();
         TimerManager.getInstance().stop();
 
-        acceptor.unbind();
-        acceptor = null;
+        destroyIoPipeline();
         // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
         new Thread(() -> System.exit(0)).start();
+    }
+
+    private void destroyIoPipeline() {
+        acceptor.unbind();
+        acceptor = null;
+    }
+
+    private void createIoPipeline() {
+        IoBuffer.setUseDirectBuffer(false);
+        IoBuffer.setAllocator(new SimpleBufferAllocator());
+        acceptor = new NioSocketAcceptor();
+        acceptor.getFilterChain().addLast("codec", (IoFilter) new ProtocolCodecFilter(new MapleCodecFactory()));
+        acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 30);
+        acceptor.setHandler(new MapleServerHandler());
+        try {
+            acceptor.bind(new InetSocketAddress(8484));
+        } catch (IOException ex) {
+            logger.error("Cannot bind address.", ex);
+            System.exit(-1);
+        }
+
+        logger.info("Listening on port 8484");
+    }
+
+    private void registerThreadTrackerTasks() {
+        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().registerThreadTrackerTask();
+    }
+
+    private void cancelThreadTrackerTasks() {
+        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().cancelThreadTrackerTask();
     }
 
     private Connection createConnection() throws SQLException {
