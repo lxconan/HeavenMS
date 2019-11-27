@@ -996,49 +996,51 @@ public class MapleItemInformationProvider {
     }
 
     public static void improveEquipStats(Equip nEquip, Map<String, Integer> stats) {
+        int scrollRate = YamlConfig.config.server.SCROLL_RATE;
+
         for (Entry<String, Integer> stat : stats.entrySet()) {
             switch (stat.getKey()) {
                 case "STR":
-                    nEquip.setStr(getShortMaxIfOverflow(nEquip.getStr() + stat.getValue().intValue()));
+                    nEquip.setStr(getShortMaxIfOverflow(nEquip.getStr() + stat.getValue() * scrollRate));
                     break;
                 case "DEX":
-                    nEquip.setDex(getShortMaxIfOverflow(nEquip.getDex() + stat.getValue().intValue()));
+                    nEquip.setDex(getShortMaxIfOverflow(nEquip.getDex() + stat.getValue() * scrollRate));
                     break;
                 case "INT":
-                    nEquip.setInt(getShortMaxIfOverflow(nEquip.getInt() + stat.getValue().intValue()));
+                    nEquip.setInt(getShortMaxIfOverflow(nEquip.getInt() + stat.getValue() * scrollRate));
                     break;
                 case "LUK":
-                    nEquip.setLuk(getShortMaxIfOverflow(nEquip.getLuk() + stat.getValue().intValue()));
+                    nEquip.setLuk(getShortMaxIfOverflow(nEquip.getLuk() + stat.getValue() * scrollRate));
                     break;
                 case "PAD":
-                    nEquip.setWatk(getShortMaxIfOverflow(nEquip.getWatk() + stat.getValue().intValue()));
+                    nEquip.setWatk(getShortMaxIfOverflow(nEquip.getWatk() + stat.getValue() * scrollRate));
                     break;
                 case "PDD":
-                    nEquip.setWdef(getShortMaxIfOverflow(nEquip.getWdef() + stat.getValue().intValue()));
+                    nEquip.setWdef(getShortMaxIfOverflow(nEquip.getWdef() + stat.getValue() * scrollRate));
                     break;
                 case "MAD":
-                    nEquip.setMatk(getShortMaxIfOverflow(nEquip.getMatk() + stat.getValue().intValue()));
+                    nEquip.setMatk(getShortMaxIfOverflow(nEquip.getMatk() + stat.getValue() * scrollRate));
                     break;
                 case "MDD":
-                    nEquip.setMdef(getShortMaxIfOverflow(nEquip.getMdef() + stat.getValue().intValue()));
+                    nEquip.setMdef(getShortMaxIfOverflow(nEquip.getMdef() + stat.getValue() * scrollRate));
                     break;
                 case "ACC":
-                    nEquip.setAcc(getShortMaxIfOverflow(nEquip.getAcc() + stat.getValue().intValue()));
+                    nEquip.setAcc(getShortMaxIfOverflow(nEquip.getAcc() + stat.getValue() * scrollRate));
                     break;
                 case "EVA":
-                    nEquip.setAvoid(getShortMaxIfOverflow(nEquip.getAvoid() + stat.getValue().intValue()));
+                    nEquip.setAvoid(getShortMaxIfOverflow(nEquip.getAvoid() + stat.getValue() * scrollRate));
                     break;
                 case "Speed":
-                    nEquip.setSpeed(getShortMaxIfOverflow(nEquip.getSpeed() + stat.getValue().intValue()));
+                    nEquip.setSpeed(getShortMaxIfOverflow(nEquip.getSpeed() + stat.getValue() * scrollRate));
                     break;
                 case "Jump":
-                    nEquip.setJump(getShortMaxIfOverflow(nEquip.getJump() + stat.getValue().intValue()));
+                    nEquip.setJump(getShortMaxIfOverflow(nEquip.getJump() + stat.getValue() * scrollRate));
                     break;
                 case "MHP":
-                    nEquip.setHp(getShortMaxIfOverflow(nEquip.getHp() + stat.getValue().intValue()));
+                    nEquip.setHp(getShortMaxIfOverflow(nEquip.getHp() + stat.getValue() * scrollRate));
                     break;
                 case "MMP":
-                    nEquip.setMp(getShortMaxIfOverflow(nEquip.getMp() + stat.getValue().intValue()));
+                    nEquip.setMp(getShortMaxIfOverflow(nEquip.getMp() + stat.getValue() * scrollRate));
                     break;
                 case "afterImage":
                     break;

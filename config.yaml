@@ -468,3 +468,4 @@ server:
 
     # Treat all scrolls as 100% success rate. For testing purpose.
     SCROLL_ALWAYS_SUCCESS: true
+    SCROLL_RATE: 2

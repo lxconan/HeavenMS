@@ -310,4 +310,5 @@ public class ServerConfig {
     // Enable all commands to all users. For debugging purpose.
     public boolean ENABLE_ALL_COMMANDS;
     public boolean SCROLL_ALWAYS_SUCCESS;
+    public int SCROLL_RATE;
 }
