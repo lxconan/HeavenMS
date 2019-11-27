@@ -189,7 +189,7 @@ public class Server {
 
     private void initializeShutdownHook() {
         if (YamlConfig.config.server.SHUTDOWNHOOK)
-            Runtime.getRuntime().addShutdownHook(new Thread(shutdown(false)));
+            Runtime.getRuntime().addShutdownHook(new Thread(shutdown()));
     }
 
     public static void main(String args[]) {
@@ -204,12 +204,12 @@ public class Server {
         return buffStorage;
     }
 
-    public final Runnable shutdown(final boolean restart) {//no player should be online when trying to shutdown!
-        return () -> shutdownInternal(restart);
+    public final Runnable shutdown() {//no player should be online when trying to shutdown!
+        return this::shutdownInternal;
     }
 
-    private synchronized void shutdownInternal(boolean restart) {
-        logger.info((restart ? "Restarting" : "Shutting down") + " the server!\r\n");
+    private synchronized void shutdownInternal() {
+        logger.info("Shutting down the server!");
         if (worldServer.getWorlds() == null) return;//already shutdown
         for (World w : worldServer.getWorlds()) {
             w.shutdown();
@@ -238,24 +238,8 @@ public class Server {
 
         acceptor.unbind();
         acceptor = null;
-        if (!restart) {  // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.exit(0);
-                }
-            }).start();
-        } else {
-            logger.info("Restarting the server....");
-            try {
-                instance.finalize();//FUU I CAN AND IT'S FREE
-            } catch (Throwable ex) {
-                ex.printStackTrace();
-            }
-            instance = null;
-            System.gc();
-            getInstance().init();//DID I DO EVERYTHING?! D:
-        }
+        // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
+        new Thread(() -> System.exit(0)).start();
     }
 
     private Connection createConnection() throws SQLException {
