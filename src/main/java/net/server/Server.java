@@ -68,7 +68,10 @@ import java.util.*;
 public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
     private static Server instance = new Server();
-    public static Server getInstance() { return instance; }
+
+    public static Server getInstance() {
+        return instance;
+    }
 
     private IoAcceptor acceptor;
     private final CouponService couponService = CouponService.getInstance();
@@ -124,21 +127,10 @@ public class Server {
 
     private void initializeWorldAndChannels() {
         try {
-            Integer worldCount = Math.min(GameConstants.WORLD_NAMES.length, YamlConfig.config.server.WORLDS);
-
-            for (int i = 0; i < worldCount; i++) {
-                worldServer.initWorld();
-            }
-            worldServer.initWorldPlayerRanking();
-            MaplePlayerNPCFactory.loadFactoryMetadata();
-            worldServer.loadPlayerNpcMapStepFromDb();
+            worldServer.initialize();
         } catch (Exception e) {
-            logger.error("Syntax error in 'world.ini'", e);
+            logger.error("Initialize worlds failed.", e);
             System.exit(0);
-        }
-
-        for (Channel ch : worldServer.getAllChannels()) {
-            ch.reloadEventScriptManager();
         }
     }
 

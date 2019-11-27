@@ -3,12 +3,14 @@ package net.server;
 import abstraction.dao.PlayerNpcFieldGateway;
 import client.MapleCharacter;
 import config.YamlConfig;
+import constants.game.GameConstants;
 import net.server.audit.locks.MonitoredLockType;
 import net.server.audit.locks.MonitoredReentrantReadWriteLock;
 import net.server.channel.Channel;
 import net.server.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.life.MaplePlayerNPCFactory;
 import tools.DatabaseConnection;
 import tools.Pair;
 
@@ -58,7 +60,7 @@ public class WorldServer {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    int initWorld() {
+    private int initWorld() {
         wldWLock.lock();
         try {
             int i = worlds.size();
@@ -285,7 +287,7 @@ public class WorldServer {
         }
     }
 
-    void initWorldPlayerRanking() {
+    private void initWorldPlayerRanking() {
         if (YamlConfig.config.server.USE_WHOLE_SERVER_RANKING) {
             playerRanking.add(new ArrayList<>(0));
         }
@@ -315,7 +317,7 @@ public class WorldServer {
         return false;
     }
 
-    public void loadPlayerNpcMapStepFromDb() {
+    private void loadPlayerNpcMapStepFromDb() {
         try {
             List<World> worldList = getWorlds();
             playerNpcFieldGateway.forEach(playerNpcField -> {
@@ -328,6 +330,20 @@ public class WorldServer {
             });
         } catch (SQLException e) {
             logger.error("Error occurred while loading player npc map step from db.", e);
+        }
+    }
+
+    public void initialize() {
+        int worldCount = Math.min(GameConstants.WORLD_NAMES.length, YamlConfig.config.server.WORLDS);
+        for (int i = 0; i < worldCount; i++) {
+            initWorld();
+        }
+        initWorldPlayerRanking();
+        MaplePlayerNPCFactory.loadFactoryMetadata();
+        loadPlayerNpcMapStepFromDb();
+
+        for (Channel ch : getAllChannels()) {
+            ch.reloadEventScriptManager();
         }
     }
 }
