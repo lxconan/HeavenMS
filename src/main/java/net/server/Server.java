@@ -29,7 +29,6 @@ import client.command.CommandsExecutor;
 import client.inventory.manipulator.MapleCashidGenerator;
 import client.newyear.NewYearCardRecord;
 import config.YamlConfig;
-import constants.game.GameConstants;
 import constants.net.OpcodeConstants;
 import constants.net.ServerConstants;
 import net.MapleServerHandler;
@@ -52,7 +51,6 @@ import server.MapleSkillbookInformationProvider;
 import server.ThreadManager;
 import server.TimerManager;
 import server.expeditions.MapleExpeditionBossLog;
-import server.life.MaplePlayerNPCFactory;
 import server.quest.MapleQuest;
 import tools.*;
 
@@ -63,7 +61,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimeZone;
 
 public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
@@ -79,6 +80,7 @@ public class Server {
     private final LoginStateService loginStateService = LoginStateService.getInstance();
     private final PlayerBuffStorage buffStorage = new PlayerBuffStorage();
     private final CharacterGateway characterGateway = CharacterGateway.getInstance();
+    private final NameChangingService nameChangingService = NameChangingService.getInstance();
 
     private boolean online = false;
 
@@ -103,7 +105,8 @@ public class Server {
             throw new RuntimeException(message, sqle);
         }
 
-        applyAllNameChanges(); //name changes can be missed by INSTANT_NAME_CHANGE
+        //name changes can be missed by INSTANT_NAME_CHANGE
+        nameChangingService.applyAllNameChanges();
         applyAllWorldTransfers();
         //MaplePet.clearMissingPetsFromDb();    // thanks Optimist for noticing this taking too long to run
         MapleCashidGenerator.loadExistentCashIdsFromDb();
@@ -203,33 +206,6 @@ public class Server {
 
     public PlayerBuffStorage getPlayerBuffStorage() {
         return buffStorage;
-    }
-
-    private void applyAllNameChanges() {
-        try (Connection con = createConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM namechanges WHERE completionTime IS NULL")) {
-            ResultSet rs = ps.executeQuery();
-            List<Pair<String, String>> changedNames = new LinkedList<Pair<String, String>>(); //logging only
-            while (rs.next()) {
-                con.setAutoCommit(false);
-                int nameChangeId = rs.getInt("id");
-                int characterId = rs.getInt("characterId");
-                String oldName = rs.getString("old");
-                String newName = rs.getString("new");
-                boolean success = MapleCharacter.doNameChange(con, characterId, oldName, newName, nameChangeId);
-                if (!success) con.rollback(); //discard changes
-                else changedNames.add(new Pair<String, String>(oldName, newName));
-                con.setAutoCommit(true);
-            }
-            //log
-            for (Pair<String, String> namePair : changedNames) {
-                FilePrinter.print(FilePrinter.CHANGE_CHARACTER_NAME,
-                    "Name change applied : from \"" + namePair.getLeft() + "\" to \"" + namePair.getRight() + "\" at " + Calendar.getInstance().getTime().toString());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            FilePrinter.printError(FilePrinter.CHANGE_CHARACTER_NAME, e, "Failed to retrieve list of pending name changes.");
-        }
     }
 
     private void applyAllWorldTransfers() {
