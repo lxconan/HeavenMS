@@ -216,9 +216,6 @@ public class Server {
         }
 
         List<Channel> allChannels = worldServer.getAllChannels();
-
-        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().cancelThreadTrackerTask();
-
         for (Channel ch : allChannels) {
             while (!ch.finishedShutdown()) {
                 try {
@@ -230,13 +227,14 @@ public class Server {
             }
         }
 
+        worldServer.resetServerWorlds();
+        logger.info("Worlds + Channels are offline.");
+
+        if (YamlConfig.config.server.USE_THREAD_TRACKER) ThreadTracker.getInstance().cancelThreadTrackerTask();
+
         ThreadManager.getInstance().stop();
         TimerManager.getInstance().purge();
         TimerManager.getInstance().stop();
-
-        worldServer.resetServerWorlds();
-
-        logger.info("Worlds + Channels are offline.");
 
         acceptor.unbind();
         acceptor = null;
