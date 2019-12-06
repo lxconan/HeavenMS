@@ -311,4 +311,5 @@ public class ServerConfig {
     public boolean ENABLE_ALL_COMMANDS;
     public boolean SCROLL_ALWAYS_SUCCESS;
     public int SCROLL_RATE;
+    public boolean SCROLL_INFINITE_UPGRADE;
 }

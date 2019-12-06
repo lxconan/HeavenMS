@@ -978,13 +978,13 @@ public class MapleItemInformationProvider {
                     }
                     if (!ItemConstants.isCleanSlate(scrollId)) {
                         if (!assertGM && !ItemConstants.isModifierScroll(scrollId)) {   // issue with modifier scrolls taking slots found thanks to Masterrulax, justin, BakaKnyx
-                            nEquip.setUpgradeSlots((byte) (nEquip.getUpgradeSlots() - 1));
+                            reduceUpgradeSlots(nEquip);
                         }
                         nEquip.setLevel((byte) (nEquip.getLevel() + 1));
                     }
                 } else {
                     if (!YamlConfig.config.server.USE_PERFECT_SCROLLING && !usingWhiteScroll && !ItemConstants.isCleanSlate(scrollId) && !assertGM && !ItemConstants.isModifierScroll(scrollId)) {
-                        nEquip.setUpgradeSlots((byte) (nEquip.getUpgradeSlots() - 1));
+                        reduceUpgradeSlots(nEquip);
                     }
                     if (Randomizer.nextInt(100) < stats.get("cursed")) {
                         return null;
@@ -993,6 +993,11 @@ public class MapleItemInformationProvider {
             }
         }
         return equip;
+    }
+
+    private static void reduceUpgradeSlots(Equip equipment) {
+        if (YamlConfig.config.server.SCROLL_INFINITE_UPGRADE) return;
+        equipment.setUpgradeSlots((byte)(equipment.getUpgradeSlots() - 1));
     }
 
     public static void improveEquipStats(Equip nEquip, Map<String, Integer> stats) {

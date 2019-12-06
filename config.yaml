@@ -468,4 +468,7 @@ server:
 
     # Treat all scrolls as 100% success rate. For testing purpose.
     SCROLL_ALWAYS_SUCCESS: true
+    # The factor while upgrade equipment status.
     SCROLL_RATE: 2
+    # Infinite scroll application.
+    SCROLL_INFINITE_UPGRADE: true
