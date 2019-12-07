@@ -253,7 +253,7 @@ public class CommandsExecutor {
         addCommand("warp", rank, WarpCommand.class);
         addCommand(new String[]{"warphere", "summon"}, rank, SummonCommand.class);
         addCommand(new String[]{"warpto", "reach", "follow"}, rank, ReachCommand.class);
-        addCommand("gmshop", rank, GmShopCommand.class);
+        // addCommand("gmshop", rank, GmShopCommand.class);
         addCommand("greatshop", rank, GreatShopCommand.class);
         addCommand("heal", rank, HealCommand.class);
         addCommand("item", rank, ItemCommand.class);
